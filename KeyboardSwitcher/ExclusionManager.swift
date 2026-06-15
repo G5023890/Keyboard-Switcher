@@ -12,8 +12,11 @@ final class ExclusionManager {
         "com.sublimetext.4",
         "com.agilebits.onepassword7",
         "com.1password.1password",
+        "com.bitwarden.desktop",
+        "org.keepassxc.keepassxc",
         "com.apple.ScreenSharing",
-        "com.microsoft.rdc.macos"
+        "com.microsoft.rdc.macos",
+        "com.philandro.anydesk"
     ]
 
     var excludedBundleIdentifiers: Set<String>
@@ -41,8 +44,11 @@ final class ExclusionManager {
         case "com.sublimetext.4": "Sublime Text"
         case "com.apple.TextEdit": "TextEdit"
         case "com.agilebits.onepassword7", "com.1password.1password": "1Password"
+        case "com.bitwarden.desktop": "Bitwarden"
+        case "org.keepassxc.keepassxc": "KeePassXC"
         case "com.apple.ScreenSharing": "Screen Sharing"
         case "com.microsoft.rdc.macos": "Microsoft Remote Desktop"
+        case "com.philandro.anydesk": "AnyDesk"
         default: bundleIdentifier
         }
     }

@@ -1,6 +1,6 @@
 # Third-Party Notices
 
-This file documents third-party data and externally supplied assets included in Keyboard Switcher `v0.75`.
+This file documents third-party data and externally supplied assets included in Keyboard Switcher `v0.85`.
 
 ## Russian Frequency Data
 
@@ -74,7 +74,7 @@ These assets were supplied for the Keyboard Switcher project. No third-party sou
 
 ## Evaluated But Not Bundled
 
-The following resources were considered during development but are not bundled in `v0.75`:
+The following resources were considered during development but are not bundled in `v0.85`:
 
 - `first20hours/google-10000-english`: not included because its license notice cautions against commercial use without licensing from the Linguistic Data Consortium.
 - `dwyl/english-words`: not included because the app does not currently need a very large English word list.

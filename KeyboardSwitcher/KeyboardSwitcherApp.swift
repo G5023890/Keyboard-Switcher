@@ -11,9 +11,8 @@ struct KeyboardSwitcherApp: App {
             MenuBarContent()
                 .environmentObject(appState)
         } label: {
-            Text(appState.currentLanguage.menuGlyph)
-                .font(.system(size: 13, weight: .semibold, design: .rounded))
-                .monospaced()
+            Text(appState.currentLanguage.menuBarIcon(for: appState.menuBarIconStyle))
+                .font(.system(size: appState.menuBarIconStyle == .flags ? 15 : 13, weight: .semibold, design: .rounded))
                 .accessibilityLabel("Current keyboard layout: \(appState.currentLanguage.displayName)")
         }
         .menuBarExtraStyle(.menu)
@@ -21,7 +20,7 @@ struct KeyboardSwitcherApp: App {
         Settings {
             SettingsView()
                 .environmentObject(appState)
-                .frame(width: 620, height: 540)
+                .frame(width: 760, height: 560)
         }
     }
 }
@@ -47,7 +46,10 @@ private struct MenuBarContent: View {
 
             Divider()
 
+            Toggle("Enable Keyboard Switcher", isOn: $appState.isKeyboardSwitcherEnabled)
+
             Toggle("Auto-correct typed words", isOn: $appState.isAutoCorrectionEnabled)
+                .disabled(!appState.isKeyboardSwitcherEnabled)
 
             Button("Undo Last Correction") {
                 appState.undoLastCorrection()

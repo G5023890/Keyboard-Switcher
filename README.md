@@ -2,7 +2,7 @@
 
 Keyboard Switcher is a native macOS menu bar utility that corrects text typed with the wrong keyboard layout. It currently targets English, Russian, and Hebrew, runs locally, and keeps the app bundle small by using Apple system frameworks plus compact bundled word lists.
 
-Current release checkpoint: `v0.75`.
+Current release checkpoint: `v0.85`.
 
 ## What It Does
 
@@ -105,7 +105,7 @@ Summary:
 - English common-word data is derived from Michael Wehar's `Public-Domain-Word-Lists`, whose README describes `5000-more-common.txt` as public domain.
 - The app icon and switch sound are project-provided assets.
 
-Resources that were evaluated but are not bundled in `v0.75`:
+Resources that were evaluated but are not bundled in `v0.85`:
 
 - `first20hours/google-10000-english`, because its license notice cautions against commercial use without licensing from the Linguistic Data Consortium.
 - `dwyl/english-words`, because the current app does not need a very large English word list.

@@ -9,6 +9,65 @@ final class KeyboardSwitcherCoreTests: XCTestCase {
         return LearningStore(defaults: defaults)
     }
 
+    func testMenuBarIconStyles() {
+        XCTAssertEqual(KeyboardLanguage.english.menuBarIcon(for: .glyphs), "A")
+        XCTAssertEqual(KeyboardLanguage.russian.menuBarIcon(for: .glyphs), "Я")
+        XCTAssertEqual(KeyboardLanguage.hebrew.menuBarIcon(for: .glyphs), "א")
+
+        XCTAssertEqual(KeyboardLanguage.english.menuBarIcon(for: .flags), "🇺🇸")
+        XCTAssertEqual(KeyboardLanguage.russian.menuBarIcon(for: .flags), "🇷🇺")
+        XCTAssertEqual(KeyboardLanguage.hebrew.menuBarIcon(for: .flags), "🇮🇱")
+
+        XCTAssertEqual(KeyboardLanguage.english.menuBarIcon(for: .minimal), "●")
+        XCTAssertEqual(KeyboardLanguage.russian.menuBarIcon(for: .minimal), "●")
+        XCTAssertEqual(KeyboardLanguage.hebrew.menuBarIcon(for: .minimal), "●")
+    }
+
+    func testCorrectionSensitivityThresholds() {
+        XCTAssertEqual(CorrectionSensitivity.conservative.threshold, 0.72)
+        XCTAssertEqual(CorrectionSensitivity.balanced.threshold, 0.62)
+        XCTAssertEqual(CorrectionSensitivity.aggressive.threshold, 0.55)
+        XCTAssertEqual(CorrectionSensitivity.closest(to: 0.62), .balanced)
+        XCTAssertEqual(CorrectionSensitivity.closest(to: 0.70), .custom)
+    }
+
+    func testKeyboardMonitorPreferencesGateSwitchAndSound() {
+        var preferences = KeyboardMonitorPreferences()
+        XCTAssertTrue(preferences.shouldSwitchInputSource())
+        XCTAssertTrue(preferences.shouldPlaySound(origin: .automatic))
+        XCTAssertTrue(preferences.shouldPlaySound(origin: .manual))
+
+        preferences.switchInputSourceAfterCorrection = false
+        XCTAssertFalse(preferences.shouldSwitchInputSource())
+
+        preferences.playSoundWhenLayoutCorrected = false
+        XCTAssertFalse(preferences.shouldPlaySound(origin: .automatic))
+
+        preferences.playSoundWhenLayoutCorrected = true
+        preferences.playSoundOnlyForAutomaticCorrections = true
+        XCTAssertTrue(preferences.shouldPlaySound(origin: .automatic))
+        XCTAssertFalse(preferences.shouldPlaySound(origin: .manual))
+    }
+
+    func testManualCorrectionCanSkipLearning() {
+        let undo = CorrectionUndoManager()
+        let learningStore = isolatedLearningStore()
+        let engine = CorrectionEngine(undoController: undo, learningStore: learningStore)
+        engine.learnsFromManualCorrections = false
+
+        engine.recordManualCorrection(original: "ghbdtn", replacement: "привет")
+
+        XCTAssertNil(learningStore.preference(for: "ghbdtn"))
+        XCTAssertTrue(undo.canUndo)
+    }
+
+    func testExclusionPresetsContainExpectedBundleIdentifiers() {
+        XCTAssertTrue(ExclusionPreset.developerTools.bundleIdentifiers.contains("com.apple.Terminal"))
+        XCTAssertTrue(ExclusionPreset.developerTools.bundleIdentifiers.contains("com.todesktop.230313mzl4w4u92"))
+        XCTAssertTrue(ExclusionPreset.passwordManagers.bundleIdentifiers.contains("com.1password.1password"))
+        XCTAssertTrue(ExclusionPreset.remoteDesktop.bundleIdentifiers.contains("com.microsoft.rdc.macos"))
+    }
+
     func testRussianCandidateForPrivet() {
         let strokes = [5, 4, 11, 2, 17, 45].map { KeyStroke(keyCode: Int64($0), isShifted: false) }
         let candidates = LayoutEngine.candidates(for: strokes, enabledLanguages: Set(KeyboardLanguage.allCases))

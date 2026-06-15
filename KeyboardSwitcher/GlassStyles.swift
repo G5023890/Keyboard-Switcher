@@ -9,9 +9,9 @@ extension View {
 private struct GlassPanelModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
-            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
             .overlay {
-                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
                     .strokeBorder(.white.opacity(0.18), lineWidth: 1)
             }
             .shadow(color: .black.opacity(0.08), radius: 18, y: 8)

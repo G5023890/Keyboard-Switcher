@@ -18,6 +18,8 @@ final class KeyboardMonitor {
     private let exclusionManager: ExclusionManager
     private let inputSourceManager = InputSourceManager()
     private let soundPlayer = SoundPlayer()
+    var preferences = KeyboardMonitorPreferences()
+    var automaticallyCorrectsTypedWords = true
     private var eventTap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
     private var strokes: [KeyStroke] = []
@@ -33,15 +35,27 @@ final class KeyboardMonitor {
     }
 
     func start() {
-        guard eventTap == nil else { return }
+        if let eventTap {
+            CGEvent.tapEnable(tap: eventTap, enable: true)
+            diagnostics.status = "Listening"
+            return
+        }
 
-        let mask = (1 << CGEventType.keyDown.rawValue) | (1 << CGEventType.flagsChanged.rawValue)
+        let mask = (1 << CGEventType.keyDown.rawValue)
+            | (1 << CGEventType.flagsChanged.rawValue)
+            | (1 << CGEventType.tapDisabledByTimeout.rawValue)
+            | (1 << CGEventType.tapDisabledByUserInput.rawValue)
         let callback: CGEventTapCallBack = { proxy, type, event, refcon in
             guard let refcon else {
                 return Unmanaged.passUnretained(event)
             }
 
             let monitor = Unmanaged<KeyboardMonitor>.fromOpaque(refcon).takeUnretainedValue()
+            if type == .tapDisabledByTimeout || type == .tapDisabledByUserInput {
+                monitor.reenableEventTap(reason: type == .tapDisabledByTimeout ? "timeout" : "user input")
+                return Unmanaged.passUnretained(event)
+            }
+
             if monitor.handle(proxy: proxy, type: type, event: event) {
                 return nil
             }
@@ -68,6 +82,17 @@ final class KeyboardMonitor {
         }
         CGEvent.tapEnable(tap: eventTap, enable: true)
         diagnostics.status = "Listening"
+    }
+
+    func ensureRunning() {
+        guard let eventTap else {
+            start()
+            return
+        }
+
+        if !CGEvent.tapIsEnabled(tap: eventTap) {
+            reenableEventTap(reason: "health check")
+        }
     }
 
     func stop() {
@@ -111,6 +136,11 @@ final class KeyboardMonitor {
         guard type == .keyDown else { return false }
 
         if let terminator = wordTerminator(for: keyCode) {
+            guard automaticallyCorrectsTypedWords else {
+                diagnostics.lastDecision = "Automatic correction disabled"
+                resetBuffer()
+                return false
+            }
             let didCorrect = finalizeCurrentWord(terminator: terminator)
             resetBuffer()
             return didCorrect
@@ -139,6 +169,17 @@ final class KeyboardMonitor {
         return false
     }
 
+    private func reenableEventTap(reason: String) {
+        guard let eventTap else {
+            start()
+            return
+        }
+
+        CGEvent.tapEnable(tap: eventTap, enable: true)
+        diagnostics.status = "Listening"
+        diagnostics.lastDecision = "Re-enabled event tap after \(reason)"
+    }
+
     private func finalizeCurrentWord(terminator: String) -> Bool {
         let evaluation = correctionEngine.evaluate(strokes: strokes, typedText: typedText)
         diagnostics.lastTypedWord = typedText
@@ -161,7 +202,7 @@ final class KeyboardMonitor {
             with: replacement,
             language: decision.language
         )
-        switchInputSource(to: decision.language)
+        handlePostCorrection(language: decision.language, origin: .automatic)
         isApplyingCorrection = false
         diagnostics.lastCorrection = "\(original) -> \(replacement)"
         diagnostics.lastDecision = "Corrected to \(decision.language.displayName), score \(Int(decision.score * 100))%"
@@ -209,7 +250,7 @@ final class KeyboardMonitor {
         }
 
         TextReplacementPerformer.replaceSelection(with: decision.replacement)
-        switchInputSource(to: decision.language)
+        handlePostCorrection(language: decision.language, origin: .manual)
         correctionEngine.recordManualCorrection(original: selectedWord, replacement: decision.replacement)
         diagnostics.lastCorrection = "\(selectedWord) -> \(decision.replacement)"
         diagnostics.lastDecision = "Manual corrected to \(decision.language.displayName)"
@@ -217,11 +258,19 @@ final class KeyboardMonitor {
         return true
     }
 
-    private func switchInputSource(to language: KeyboardLanguage) {
+    private func handlePostCorrection(language: KeyboardLanguage, origin: CorrectionOrigin) {
+        guard preferences.shouldSwitchInputSource() else {
+            diagnostics.lastLayoutSwitch = "Switch disabled"
+            return
+        }
+        switchInputSource(to: language, origin: origin)
+    }
+
+    private func switchInputSource(to language: KeyboardLanguage, origin: CorrectionOrigin) {
         let previousLanguage = inputSourceManager.currentKeyboardLanguage()
         let didSwitch = inputSourceManager.selectKeyboardLanguage(language)
-        if didSwitch && previousLanguage != language {
-            soundPlayer.playLayoutSwitch()
+        if didSwitch && previousLanguage != language && preferences.shouldPlaySound(origin: origin) {
+            soundPlayer.playLayoutSwitch(volume: preferences.soundVolume)
         }
         diagnostics.lastLayoutSwitch = didSwitch ? "Switched to \(language.displayName)" : "Could not switch to \(language.displayName)"
     }

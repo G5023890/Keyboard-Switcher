@@ -18,6 +18,7 @@ struct CorrectionEvaluation: Equatable {
 final class CorrectionEngine {
     var confidenceThreshold = 0.42
     var enabledLanguages = Set(KeyboardLanguage.allCases)
+    var learnsFromManualCorrections = true
 
     private let classifier = TextClassifier()
     private let undoController: CorrectionUndoManager
@@ -146,7 +147,9 @@ final class CorrectionEngine {
 
     func recordManualCorrection(original: String, replacement: String) {
         guard let language = LayoutEngine.detectScriptLanguage(for: replacement) else { return }
-        learningStore.recordPreference(original: original, replacement: replacement, language: language)
+        if learnsFromManualCorrections {
+            learningStore.recordPreference(original: original, replacement: replacement, language: language)
+        }
         undoController.record(original: original, replacement: replacement, language: language, origin: .manual)
     }
 

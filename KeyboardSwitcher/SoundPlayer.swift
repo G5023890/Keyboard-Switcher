@@ -10,12 +10,13 @@ final class SoundPlayer {
         layoutSwitchSound = NSSound(contentsOf: url, byReference: false)
     }
 
-    func playLayoutSwitch() {
+    func playLayoutSwitch(volume: Double = 0.75) {
         guard let sound = layoutSwitchSound else { return }
 
         if sound.isPlaying {
             sound.stop()
         }
+        sound.volume = Float(max(0, min(volume, 1)))
         sound.currentTime = 0
         sound.play()
     }

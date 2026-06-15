@@ -30,6 +30,12 @@ final class LearningStore: @unchecked Sendable {
         }
     }
 
+    func allPreferences() -> [LearnedCorrection] {
+        lock.withLock {
+            preferences.values.sorted { $0.updatedAt > $1.updatedAt }
+        }
+    }
+
     func isSuppressed(original: String, replacement: String) -> Bool {
         lock.withLock {
             suppressions.contains(Self.pairKey(original: original, replacement: replacement))
@@ -72,6 +78,24 @@ final class LearningStore: @unchecked Sendable {
         lock.withLock {
             preferences.removeValue(forKey: Self.key(for: original))
             suppressions.insert(Self.pairKey(original: original, replacement: replacement))
+            save()
+        }
+    }
+
+    func removePreference(original: String) {
+        let original = Self.normalized(original)
+        guard !original.isEmpty else { return }
+
+        lock.withLock {
+            preferences.removeValue(forKey: Self.key(for: original))
+            save()
+        }
+    }
+
+    func reset() {
+        lock.withLock {
+            preferences.removeAll()
+            suppressions.removeAll()
             save()
         }
     }
