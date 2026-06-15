@@ -1,0 +1,15 @@
+Keyboard Switcher project license notice
+========================================
+
+No open-source license for the Keyboard Switcher application code has been
+declared yet.
+
+Until a license is added by the project owner, the application source code,
+project files, and project-provided assets should be treated as all rights
+reserved, except for separately attributed third-party data documented in:
+
+LICENSES/THIRD-PARTY-NOTICES.md
+
+Bundled third-party notices are also copied into the app bundle at:
+
+KeyboardSwitcher/Resources/THIRD-PARTY-NOTICES.txt

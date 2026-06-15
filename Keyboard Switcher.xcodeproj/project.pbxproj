@@ -1,0 +1,265 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		1A0001010000000000000001 /* KeyboardSwitcherApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0000010000000000000001 /* KeyboardSwitcherApp.swift */; };
+		1A0001020000000000000001 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0000020000000000000001 /* AppState.swift */; };
+		1A0001030000000000000001 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0000030000000000000001 /* SettingsView.swift */; };
+		1A0001040000000000000001 /* GlassStyles.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0000040000000000000001 /* GlassStyles.swift */; };
+		1A0001050000000000000001 /* InputSourceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0000050000000000000001 /* InputSourceManager.swift */; };
+		1A0001060000000000000001 /* KeyboardMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0000060000000000000001 /* KeyboardMonitor.swift */; };
+		1A0001070000000000000001 /* LayoutEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0000070000000000000001 /* LayoutEngine.swift */; };
+		1A0001080000000000000001 /* CorrectionEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0000080000000000000001 /* CorrectionEngine.swift */; };
+		1A0001090000000000000001 /* PermissionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0000090000000000000001 /* PermissionManager.swift */; };
+		1A00010A0000000000000001 /* ExclusionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A00000A0000000000000001 /* ExclusionManager.swift */; };
+		1A00010B0000000000000001 /* TextClassifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A00000B0000000000000001 /* TextClassifier.swift */; };
+		1A00010C0000000000000001 /* GeneratedIconFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A00000C0000000000000001 /* GeneratedIconFactory.swift */; };
+		1A00010D0000000000000001 /* UndoManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A00000D0000000000000001 /* UndoManager.swift */; };
+		1A00010E0000000000000001 /* KeyboardSwitcherCoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A00000E0000000000000001 /* KeyboardSwitcherCoreTests.swift */; };
+		1A00010F0000000000000001 /* russian-frequency-50000.txt in Resources */ = {isa = PBXBuildFile; fileRef = 1A0000120000000000000001 /* russian-frequency-50000.txt */; };
+		1A0001100000000000000001 /* THIRD-PARTY-NOTICES.txt in Resources */ = {isa = PBXBuildFile; fileRef = 1A0000130000000000000001 /* THIRD-PARTY-NOTICES.txt */; };
+		1A0001110000000000000001 /* english-common-5000.txt in Resources */ = {isa = PBXBuildFile; fileRef = 1A0000140000000000000001 /* english-common-5000.txt */; };
+		1A0001120000000000000001 /* LearningStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0000150000000000000001 /* LearningStore.swift */; };
+		1A0001130000000000000001 /* IconProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0000160000000000000001 /* IconProvider.swift */; };
+		1A0001140000000000000001 /* AppIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = 1A0000170000000000000001 /* AppIcon.icns */; };
+		1A0001150000000000000001 /* KeyboardSwitcherIcon_1024_whitebg.png in Resources */ = {isa = PBXBuildFile; fileRef = 1A0000180000000000000001 /* KeyboardSwitcherIcon_1024_whitebg.png */; };
+		1A0001160000000000000001 /* SoundPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0000190000000000000001 /* SoundPlayer.swift */; };
+		1A0001170000000000000001 /* switch_typewriter_shift.wav in Resources */ = {isa = PBXBuildFile; fileRef = 1A00001A0000000000000001 /* switch_typewriter_shift.wav */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		1A0003000000000000000001 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1A0004000000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 1A0005000000000000000001;
+			remoteInfo = "Keyboard Switcher";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		1A0000010000000000000001 /* KeyboardSwitcherApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardSwitcherApp.swift; sourceTree = "<group>"; };
+		1A0000020000000000000001 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
+		1A0000030000000000000001 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		1A0000040000000000000001 /* GlassStyles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlassStyles.swift; sourceTree = "<group>"; };
+		1A0000050000000000000001 /* InputSourceManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputSourceManager.swift; sourceTree = "<group>"; };
+		1A0000060000000000000001 /* KeyboardMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardMonitor.swift; sourceTree = "<group>"; };
+		1A0000070000000000000001 /* LayoutEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutEngine.swift; sourceTree = "<group>"; };
+		1A0000080000000000000001 /* CorrectionEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CorrectionEngine.swift; sourceTree = "<group>"; };
+		1A0000090000000000000001 /* PermissionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionManager.swift; sourceTree = "<group>"; };
+		1A00000A0000000000000001 /* ExclusionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExclusionManager.swift; sourceTree = "<group>"; };
+		1A00000B0000000000000001 /* TextClassifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextClassifier.swift; sourceTree = "<group>"; };
+		1A00000C0000000000000001 /* GeneratedIconFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeneratedIconFactory.swift; sourceTree = "<group>"; };
+		1A00000D0000000000000001 /* UndoManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UndoManager.swift; sourceTree = "<group>"; };
+		1A00000E0000000000000001 /* KeyboardSwitcherCoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardSwitcherCoreTests.swift; sourceTree = "<group>"; };
+		1A00000F0000000000000001 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		1A0000100000000000000001 /* Keyboard Switcher.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Keyboard Switcher.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		1A0000110000000000000001 /* Keyboard SwitcherTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Keyboard SwitcherTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		1A0000120000000000000001 /* russian-frequency-50000.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Resources/russian-frequency-50000.txt"; sourceTree = "<group>"; };
+		1A0000130000000000000001 /* THIRD-PARTY-NOTICES.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Resources/THIRD-PARTY-NOTICES.txt"; sourceTree = "<group>"; };
+		1A0000140000000000000001 /* english-common-5000.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Resources/english-common-5000.txt"; sourceTree = "<group>"; };
+		1A0000150000000000000001 /* LearningStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LearningStore.swift; sourceTree = "<group>"; };
+		1A0000160000000000000001 /* IconProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconProvider.swift; sourceTree = "<group>"; };
+		1A0000170000000000000001 /* AppIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = "Resources/AppIcon.icns"; sourceTree = "<group>"; };
+		1A0000180000000000000001 /* KeyboardSwitcherIcon_1024_whitebg.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Resources/KeyboardSwitcherIcon_1024_whitebg.png"; sourceTree = "<group>"; };
+		1A0000190000000000000001 /* SoundPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundPlayer.swift; sourceTree = "<group>"; };
+		1A00001A0000000000000001 /* switch_typewriter_shift.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Resources/switch_typewriter_shift.wav"; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		1A0006000000000000000001 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = ( ); runOnlyForDeploymentPostprocessing = 0; };
+		1A0006010000000000000001 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = ( ); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		1A0007000000000000000001 = {
+			isa = PBXGroup;
+			children = (
+				1A0007010000000000000001 /* KeyboardSwitcher */,
+				1A0007020000000000000001 /* KeyboardSwitcherTests */,
+				1A0007030000000000000001 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		1A0007010000000000000001 /* KeyboardSwitcher */ = {
+			isa = PBXGroup;
+			children = (
+				1A0000010000000000000001 /* KeyboardSwitcherApp.swift */,
+				1A0000020000000000000001 /* AppState.swift */,
+				1A0000030000000000000001 /* SettingsView.swift */,
+				1A0000040000000000000001 /* GlassStyles.swift */,
+				1A0000050000000000000001 /* InputSourceManager.swift */,
+				1A0000060000000000000001 /* KeyboardMonitor.swift */,
+				1A0000070000000000000001 /* LayoutEngine.swift */,
+				1A0000080000000000000001 /* CorrectionEngine.swift */,
+				1A0000090000000000000001 /* PermissionManager.swift */,
+				1A00000A0000000000000001 /* ExclusionManager.swift */,
+				1A00000B0000000000000001 /* TextClassifier.swift */,
+				1A0000150000000000000001 /* LearningStore.swift */,
+				1A0000160000000000000001 /* IconProvider.swift */,
+				1A0000190000000000000001 /* SoundPlayer.swift */,
+				1A00000C0000000000000001 /* GeneratedIconFactory.swift */,
+				1A00000D0000000000000001 /* UndoManager.swift */,
+				1A00000F0000000000000001 /* Info.plist */,
+				1A0000120000000000000001 /* russian-frequency-50000.txt */,
+				1A0000140000000000000001 /* english-common-5000.txt */,
+				1A0000170000000000000001 /* AppIcon.icns */,
+				1A0000180000000000000001 /* KeyboardSwitcherIcon_1024_whitebg.png */,
+				1A00001A0000000000000001 /* switch_typewriter_shift.wav */,
+				1A0000130000000000000001 /* THIRD-PARTY-NOTICES.txt */,
+			);
+			path = KeyboardSwitcher;
+			sourceTree = "<group>";
+		};
+		1A0007020000000000000001 /* KeyboardSwitcherTests */ = {
+			isa = PBXGroup;
+			children = (
+				1A00000E0000000000000001 /* KeyboardSwitcherCoreTests.swift */,
+			);
+			path = KeyboardSwitcherTests;
+			sourceTree = "<group>";
+		};
+		1A0007030000000000000001 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				1A0000100000000000000001 /* Keyboard Switcher.app */,
+				1A0000110000000000000001 /* Keyboard SwitcherTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		1A0005000000000000000001 /* Keyboard Switcher */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1A0009000000000000000001 /* Build configuration list for PBXNativeTarget "Keyboard Switcher" */;
+			buildPhases = (
+				1A0008000000000000000001 /* Sources */,
+				1A0006000000000000000001 /* Frameworks */,
+				1A0008010000000000000001 /* Resources */,
+			);
+			buildRules = ( );
+			dependencies = ( );
+			name = "Keyboard Switcher";
+			productName = "Keyboard Switcher";
+			productReference = 1A0000100000000000000001 /* Keyboard Switcher.app */;
+			productType = "com.apple.product-type.application";
+		};
+		1A0005010000000000000001 /* Keyboard SwitcherTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1A0009010000000000000001 /* Build configuration list for PBXNativeTarget "Keyboard SwitcherTests" */;
+			buildPhases = (
+				1A0008020000000000000001 /* Sources */,
+				1A0006010000000000000001 /* Frameworks */,
+				1A0008030000000000000001 /* Resources */,
+			);
+			buildRules = ( );
+			dependencies = (
+				1A0003010000000000000001 /* PBXTargetDependency */,
+			);
+			name = "Keyboard SwitcherTests";
+			productName = "Keyboard SwitcherTests";
+			productReference = 1A0000110000000000000001 /* Keyboard SwitcherTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		1A0004000000000000000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2700;
+				LastUpgradeCheck = 2700;
+				TargetAttributes = {
+					1A0005000000000000000001 = {CreatedOnToolsVersion = 27.0; };
+					1A0005010000000000000001 = {CreatedOnToolsVersion = 27.0; TestTargetID = 1A0005000000000000000001; };
+				};
+			};
+			buildConfigurationList = 1A0009020000000000000001 /* Build configuration list for PBXProject "Keyboard Switcher" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (en, Base);
+			mainGroup = 1A0007000000000000000001;
+			productRefGroup = 1A0007030000000000000001 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				1A0005000000000000000001 /* Keyboard Switcher */,
+				1A0005010000000000000001 /* Keyboard SwitcherTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		1A0008010000000000000001 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (
+				1A00010F0000000000000001 /* russian-frequency-50000.txt in Resources */,
+				1A0001110000000000000001 /* english-common-5000.txt in Resources */,
+				1A0001140000000000000001 /* AppIcon.icns in Resources */,
+				1A0001150000000000000001 /* KeyboardSwitcherIcon_1024_whitebg.png in Resources */,
+				1A0001170000000000000001 /* switch_typewriter_shift.wav in Resources */,
+				1A0001100000000000000001 /* THIRD-PARTY-NOTICES.txt in Resources */,
+			); runOnlyForDeploymentPostprocessing = 0; };
+		1A0008030000000000000001 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = ( ); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		1A0008000000000000000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1A0001010000000000000001 /* KeyboardSwitcherApp.swift in Sources */,
+				1A0001020000000000000001 /* AppState.swift in Sources */,
+				1A0001030000000000000001 /* SettingsView.swift in Sources */,
+				1A0001040000000000000001 /* GlassStyles.swift in Sources */,
+				1A0001050000000000000001 /* InputSourceManager.swift in Sources */,
+				1A0001060000000000000001 /* KeyboardMonitor.swift in Sources */,
+				1A0001070000000000000001 /* LayoutEngine.swift in Sources */,
+				1A0001080000000000000001 /* CorrectionEngine.swift in Sources */,
+				1A0001090000000000000001 /* PermissionManager.swift in Sources */,
+				1A00010A0000000000000001 /* ExclusionManager.swift in Sources */,
+				1A00010B0000000000000001 /* TextClassifier.swift in Sources */,
+				1A0001120000000000000001 /* LearningStore.swift in Sources */,
+				1A0001130000000000000001 /* IconProvider.swift in Sources */,
+				1A0001160000000000000001 /* SoundPlayer.swift in Sources */,
+				1A00010C0000000000000001 /* GeneratedIconFactory.swift in Sources */,
+				1A00010D0000000000000001 /* UndoManager.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		1A0008020000000000000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (1A00010E0000000000000001 /* KeyboardSwitcherCoreTests.swift in Sources */);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		1A0003010000000000000001 /* PBXTargetDependency */ = {isa = PBXTargetDependency; target = 1A0005000000000000000001 /* Keyboard Switcher */; targetProxy = 1A0003000000000000000001 /* PBXContainerItemProxy */; };
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		1A000A000000000000000001 /* Debug */ = {isa = XCBuildConfiguration; buildSettings = {ALWAYS_SEARCH_USER_PATHS = NO; CLANG_ENABLE_MODULES = YES; CODE_SIGN_ENTITLEMENTS = KeyboardSwitcher/KeyboardSwitcher.entitlements; CODE_SIGN_IDENTITY = "-"; COMBINE_HIDPI_IMAGES = YES; CURRENT_PROJECT_VERSION = 1; DEAD_CODE_STRIPPING = YES; DEVELOPMENT_TEAM = ""; ENABLE_HARDENED_RUNTIME = YES; ENABLE_PREVIEWS = YES; GENERATE_INFOPLIST_FILE = NO; INFOPLIST_FILE = KeyboardSwitcher/Info.plist; LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/../Frameworks"); MACOSX_DEPLOYMENT_TARGET = 15.0; MARKETING_VERSION = 0.1.0; PRODUCT_BUNDLE_IDENTIFIER = com.local.KeyboardSwitcher; PRODUCT_NAME = "Keyboard Switcher"; SDKROOT = macosx; SWIFT_EMIT_LOC_STRINGS = YES; SWIFT_VERSION = 6.0; }; name = Debug; };
+		1A000A010000000000000001 /* Release */ = {isa = XCBuildConfiguration; buildSettings = {ALWAYS_SEARCH_USER_PATHS = NO; CLANG_ENABLE_MODULES = YES; CODE_SIGN_ENTITLEMENTS = KeyboardSwitcher/KeyboardSwitcher.entitlements; CODE_SIGN_IDENTITY = "-"; COMBINE_HIDPI_IMAGES = YES; CURRENT_PROJECT_VERSION = 1; DEAD_CODE_STRIPPING = YES; DEVELOPMENT_TEAM = ""; ENABLE_HARDENED_RUNTIME = YES; ENABLE_PREVIEWS = YES; GENERATE_INFOPLIST_FILE = NO; INFOPLIST_FILE = KeyboardSwitcher/Info.plist; LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/../Frameworks"); MACOSX_DEPLOYMENT_TARGET = 15.0; MARKETING_VERSION = 0.1.0; PRODUCT_BUNDLE_IDENTIFIER = com.local.KeyboardSwitcher; PRODUCT_NAME = "Keyboard Switcher"; SDKROOT = macosx; SWIFT_COMPILATION_MODE = wholemodule; SWIFT_EMIT_LOC_STRINGS = YES; SWIFT_VERSION = 6.0; }; name = Release; };
+		1A000A020000000000000001 /* Debug */ = {isa = XCBuildConfiguration; buildSettings = {ALWAYS_SEARCH_USER_PATHS = NO; CLANG_ANALYZER_NONNULL = YES; CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE; CLANG_CXX_LANGUAGE_STANDARD = "gnu++20"; CLANG_ENABLE_MODULES = YES; CLANG_ENABLE_OBJC_ARC = YES; CLANG_ENABLE_OBJC_WEAK = YES; CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES; CLANG_WARN_BOOL_CONVERSION = YES; CLANG_WARN_COMMA = YES; CLANG_WARN_CONSTANT_CONVERSION = YES; CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES; CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR; CLANG_WARN_DOCUMENTATION_COMMENTS = YES; CLANG_WARN_EMPTY_BODY = YES; CLANG_WARN_ENUM_CONVERSION = YES; CLANG_WARN_INFINITE_RECURSION = YES; CLANG_WARN_INT_CONVERSION = YES; CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES; CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES; CLANG_WARN_OBJC_LITERAL_CONVERSION = YES; CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR; CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES; CLANG_WARN_RANGE_LOOP_ANALYSIS = YES; CLANG_WARN_STRICT_PROTOTYPES = YES; CLANG_WARN_SUSPICIOUS_MOVE = YES; CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE; CLANG_WARN_UNREACHABLE_CODE = YES; CLANG_WARN__DUPLICATE_METHOD_MATCH = YES; COPY_PHASE_STRIP = NO; DEBUG_INFORMATION_FORMAT = dwarf; ENABLE_STRICT_OBJC_MSGSEND = YES; ENABLE_TESTABILITY = YES; GCC_C_LANGUAGE_STANDARD = gnu17; GCC_DYNAMIC_NO_PIC = NO; GCC_NO_COMMON_BLOCKS = YES; GCC_OPTIMIZATION_LEVEL = 0; GCC_PREPROCESSOR_DEFINITIONS = ("DEBUG=1", "$(inherited)"); GCC_WARN_64_TO_32_BIT_CONVERSION = YES; GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR; GCC_WARN_UNDECLARED_SELECTOR = YES; GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE; GCC_WARN_UNUSED_FUNCTION = YES; GCC_WARN_UNUSED_VARIABLE = YES; ONLY_ACTIVE_ARCH = YES; SDKROOT = macosx; SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG; }; name = Debug; };
+		1A000A030000000000000001 /* Release */ = {isa = XCBuildConfiguration; buildSettings = {ALWAYS_SEARCH_USER_PATHS = NO; CLANG_ANALYZER_NONNULL = YES; CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE; CLANG_CXX_LANGUAGE_STANDARD = "gnu++20"; CLANG_ENABLE_MODULES = YES; CLANG_ENABLE_OBJC_ARC = YES; CLANG_ENABLE_OBJC_WEAK = YES; CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES; CLANG_WARN_BOOL_CONVERSION = YES; CLANG_WARN_COMMA = YES; CLANG_WARN_CONSTANT_CONVERSION = YES; CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES; CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR; CLANG_WARN_DOCUMENTATION_COMMENTS = YES; CLANG_WARN_EMPTY_BODY = YES; CLANG_WARN_ENUM_CONVERSION = YES; CLANG_WARN_INFINITE_RECURSION = YES; CLANG_WARN_INT_CONVERSION = YES; CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES; CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES; CLANG_WARN_OBJC_LITERAL_CONVERSION = YES; CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR; CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES; CLANG_WARN_RANGE_LOOP_ANALYSIS = YES; CLANG_WARN_STRICT_PROTOTYPES = YES; CLANG_WARN_SUSPICIOUS_MOVE = YES; CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE; CLANG_WARN_UNREACHABLE_CODE = YES; CLANG_WARN__DUPLICATE_METHOD_MATCH = YES; COPY_PHASE_STRIP = NO; DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym"; ENABLE_NS_ASSERTIONS = NO; ENABLE_STRICT_OBJC_MSGSEND = YES; GCC_C_LANGUAGE_STANDARD = gnu17; GCC_NO_COMMON_BLOCKS = YES; GCC_WARN_64_TO_32_BIT_CONVERSION = YES; GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR; GCC_WARN_UNDECLARED_SELECTOR = YES; GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE; GCC_WARN_UNUSED_FUNCTION = YES; GCC_WARN_UNUSED_VARIABLE = YES; SDKROOT = macosx; SWIFT_COMPILATION_MODE = wholemodule; }; name = Release; };
+		1A000A040000000000000001 /* Debug */ = {isa = XCBuildConfiguration; buildSettings = {BUNDLE_LOADER = "$(TEST_HOST)"; CODE_SIGN_IDENTITY = "-"; COMBINE_HIDPI_IMAGES = YES; GENERATE_INFOPLIST_FILE = YES; MACOSX_DEPLOYMENT_TARGET = 15.0; PRODUCT_BUNDLE_IDENTIFIER = com.local.KeyboardSwitcherTests; PRODUCT_NAME = "$(TARGET_NAME)"; SDKROOT = macosx; SWIFT_VERSION = 6.0; TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Keyboard Switcher.app/Contents/MacOS/Keyboard Switcher"; }; name = Debug; };
+		1A000A050000000000000001 /* Release */ = {isa = XCBuildConfiguration; buildSettings = {BUNDLE_LOADER = "$(TEST_HOST)"; CODE_SIGN_IDENTITY = "-"; COMBINE_HIDPI_IMAGES = YES; GENERATE_INFOPLIST_FILE = YES; MACOSX_DEPLOYMENT_TARGET = 15.0; PRODUCT_BUNDLE_IDENTIFIER = com.local.KeyboardSwitcherTests; PRODUCT_NAME = "$(TARGET_NAME)"; SDKROOT = macosx; SWIFT_VERSION = 6.0; TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Keyboard Switcher.app/Contents/MacOS/Keyboard Switcher"; }; name = Release; };
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1A0009000000000000000001 /* Build configuration list for PBXNativeTarget "Keyboard Switcher" */ = {isa = XCConfigurationList; buildConfigurations = (1A000A000000000000000001 /* Debug */, 1A000A010000000000000001 /* Release */); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+		1A0009010000000000000001 /* Build configuration list for PBXNativeTarget "Keyboard SwitcherTests" */ = {isa = XCConfigurationList; buildConfigurations = (1A000A040000000000000001 /* Debug */, 1A000A050000000000000001 /* Release */); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+		1A0009020000000000000001 /* Build configuration list for PBXProject "Keyboard Switcher" */ = {isa = XCConfigurationList; buildConfigurations = (1A000A020000000000000001 /* Debug */, 1A000A030000000000000001 /* Release */); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+/* End XCConfigurationList section */
+	};
+	rootObject = 1A0004000000000000000001 /* Project object */;
+}
