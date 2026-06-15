@@ -181,7 +181,11 @@ final class KeyboardMonitor {
     }
 
     private func finalizeCurrentWord(terminator: String) -> Bool {
-        let evaluation = correctionEngine.evaluate(strokes: strokes, typedText: typedText)
+        let evaluation = correctionEngine.evaluate(
+            strokes: strokes,
+            typedText: typedText,
+            allowsShortFunctionalWords: terminator == " "
+        )
         diagnostics.lastTypedWord = typedText
         diagnostics.lastCandidates = evaluation.candidateScores
             .map { "\($0.candidate.language.displayName): \($0.candidate.text) \(Int($0.score * 100))%" }

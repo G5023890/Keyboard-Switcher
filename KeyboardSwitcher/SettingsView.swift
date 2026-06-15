@@ -515,7 +515,7 @@ struct SettingsView: View {
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Keyboard Switcher")
                             .font(.system(size: 20, weight: .semibold))
-                        Text("Version 0.85 · checkpoint v0.85")
+                        Text("Version 0.85 · checkpoint 1959.15.06.26")
                             .foregroundStyle(.secondary)
                         Text("Local automatic correction for English, Russian, and Hebrew layouts.")
                             .font(.system(size: 12))

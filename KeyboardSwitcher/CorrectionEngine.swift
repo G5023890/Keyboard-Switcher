@@ -26,17 +26,26 @@ final class CorrectionEngine {
     private let commonCandidateFixes = [
         "спосибо": "спасибо"
     ]
+    private let shortFunctionalWords: [KeyboardLanguage: Set<String>] = [
+        .english: ["a", "as", "at", "by", "i", "if", "in", "is", "it", "of", "on", "or", "to", "we"],
+        .russian: ["а", "в", "и", "к", "о", "с", "у", "я"],
+        .hebrew: ["ב", "ו", "זה", "לא", "ל", "מה", "על", "עם", "של"]
+    ]
 
     init(undoController: CorrectionUndoManager, learningStore: LearningStore = .shared) {
         self.undoController = undoController
         self.learningStore = learningStore
     }
 
-    func decision(for strokes: [KeyStroke], typedText: String) -> CorrectionDecision? {
-        evaluate(strokes: strokes, typedText: typedText).decision
+    func decision(for strokes: [KeyStroke], typedText: String, allowsShortFunctionalWords: Bool = true) -> CorrectionDecision? {
+        evaluate(strokes: strokes, typedText: typedText, allowsShortFunctionalWords: allowsShortFunctionalWords).decision
     }
 
-    func evaluate(strokes: [KeyStroke], typedText: String) -> CorrectionEvaluation {
+    func evaluate(strokes: [KeyStroke], typedText: String, allowsShortFunctionalWords: Bool = true) -> CorrectionEvaluation {
+        if allowsShortFunctionalWords, let decision = shortWordDecision(for: strokes, typedText: typedText) {
+            return CorrectionEvaluation(typedText: typedText, candidateScores: [], decision: decision, reason: "Short functional word")
+        }
+
         guard strokes.count >= 3 else {
             return CorrectionEvaluation(typedText: typedText, candidateScores: [], decision: nil, reason: "Need at least 3 letters")
         }
@@ -103,6 +112,11 @@ final class CorrectionEngine {
     }
 
     func manualReplacement(for word: String) -> CorrectionDecision? {
+        if let strokes = LayoutEngine.strokes(for: word),
+           let decision = shortWordDecision(for: strokes, typedText: word) {
+            return decision
+        }
+
         guard word.count >= 2 else { return nil }
         let isMixedLayoutWord = isMixedLayoutWord(word)
         let resolvedStrokes = isMixedLayoutWord ? LayoutEngine.mixedLayoutStrokes(for: word) : LayoutEngine.strokes(for: word)
@@ -172,6 +186,104 @@ final class CorrectionEngine {
         let fixedText = commonCandidateFixes[candidate.text.lowercased()] ?? candidate.text
         let preferredText = classifier.preferredSpelling(for: fixedText, language: candidate.language)
         return LayoutCandidate(language: candidate.language, text: preferredText)
+    }
+
+    private func shortWordDecision(for strokes: [KeyStroke], typedText: String) -> CorrectionDecision? {
+        guard (1...2).contains(strokes.count),
+              !classifier.looksUnsafeForCorrection(typedText) else {
+            return nil
+        }
+
+        if let decision = shortRussianPronounDecision(for: strokes, typedText: typedText) {
+            return decision
+        }
+
+        if let decision = shortEnglishPronounDecision(for: strokes, typedText: typedText) {
+            return decision
+        }
+
+        if let decision = shortFunctionalWordDecision(for: strokes, typedText: typedText) {
+            return decision
+        }
+
+        return nil
+    }
+
+    private func shortRussianPronounDecision(for strokes: [KeyStroke], typedText: String) -> CorrectionDecision? {
+        guard enabledLanguages.contains(.russian),
+              ["z", "Z"].contains(typedText) else {
+            return nil
+        }
+
+        let replacement = typedText == "Z" ? "Я" : "я"
+        guard !learningStore.isSuppressed(original: typedText, replacement: replacement),
+              LayoutEngine.candidates(for: strokes, enabledLanguages: enabledLanguages)
+                .contains(LayoutCandidate(language: .russian, text: replacement)) else {
+            return nil
+        }
+
+        return CorrectionDecision(
+            replacement: replacement,
+            language: .russian,
+            score: 0.95,
+            runnerUpScore: 0
+        )
+    }
+
+    private func shortEnglishPronounDecision(for strokes: [KeyStroke], typedText: String) -> CorrectionDecision? {
+        guard enabledLanguages.contains(.english),
+              ["ш", "Ш"].contains(typedText) else {
+            return nil
+        }
+
+        let replacement = "I"
+        guard !learningStore.isSuppressed(original: typedText, replacement: replacement),
+              LayoutEngine.candidates(for: strokes, enabledLanguages: enabledLanguages)
+                .contains(LayoutCandidate(language: .english, text: typedText == "Ш" ? "I" : "i")) else {
+            return nil
+        }
+
+        return CorrectionDecision(
+            replacement: replacement,
+            language: .english,
+            score: 0.95,
+            runnerUpScore: 0
+        )
+    }
+
+    private func shortFunctionalWordDecision(for strokes: [KeyStroke], typedText: String) -> CorrectionDecision? {
+        let normalizedTypedText = typedText.lowercased()
+        let currentLanguage = LayoutEngine.detectScriptLanguage(for: typedText)
+        let candidates = LayoutEngine.candidates(for: strokes, enabledLanguages: enabledLanguages)
+            .filter { candidate in
+                candidate.text != typedText
+                    && candidate.language != currentLanguage
+                    && shortFunctionalWords[candidate.language]?.contains(candidate.text.lowercased()) == true
+            }
+
+        guard candidates.count == 1, let candidate = candidates.first else {
+            return nil
+        }
+
+        let replacement = preferredShortFunctionalSpelling(for: candidate.text, language: candidate.language)
+        guard replacement.lowercased() != normalizedTypedText,
+              !learningStore.isSuppressed(original: typedText, replacement: replacement) else {
+            return nil
+        }
+
+        return CorrectionDecision(
+            replacement: replacement,
+            language: candidate.language,
+            score: 0.90,
+            runnerUpScore: 0
+        )
+    }
+
+    private func preferredShortFunctionalSpelling(for text: String, language: KeyboardLanguage) -> String {
+        if language == .english, text.lowercased() == "i" {
+            return "I"
+        }
+        return text
     }
 
     private func containsMultipleScripts(_ text: String) -> Bool {

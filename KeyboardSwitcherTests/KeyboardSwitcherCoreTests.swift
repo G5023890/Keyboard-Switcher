@@ -82,6 +82,105 @@ final class KeyboardSwitcherCoreTests: XCTestCase {
         XCTAssertTrue(candidates.contains(LayoutCandidate(language: .russian, text: "как")))
     }
 
+    func testRussianPronounYaCorrectsAsShortWord() {
+        let undo = CorrectionUndoManager()
+        let engine = CorrectionEngine(undoController: undo, learningStore: isolatedLearningStore())
+        engine.confidenceThreshold = 0.62
+
+        let lower = LayoutEngine.strokes(for: "z", language: .english) ?? []
+        let upper = LayoutEngine.strokes(for: "Z", language: .english) ?? []
+
+        XCTAssertEqual(engine.decision(for: lower, typedText: "z")?.replacement, "я")
+        XCTAssertEqual(engine.decision(for: lower, typedText: "z")?.language, .russian)
+        XCTAssertEqual(engine.decision(for: upper, typedText: "Z")?.replacement, "Я")
+        XCTAssertEqual(engine.decision(for: upper, typedText: "Z")?.language, .russian)
+    }
+
+    func testManualReplacementForRussianPronounYa() {
+        let undo = CorrectionUndoManager()
+        let engine = CorrectionEngine(undoController: undo, learningStore: isolatedLearningStore())
+
+        XCTAssertEqual(engine.manualReplacement(for: "z")?.replacement, "я")
+        XCTAssertEqual(engine.manualReplacement(for: "z")?.language, .russian)
+        XCTAssertEqual(engine.manualReplacement(for: "Z")?.replacement, "Я")
+        XCTAssertEqual(engine.manualReplacement(for: "Z")?.language, .russian)
+    }
+
+    func testEnglishPronounICorrectsAsShortWord() {
+        let undo = CorrectionUndoManager()
+        let engine = CorrectionEngine(undoController: undo, learningStore: isolatedLearningStore())
+        engine.confidenceThreshold = 0.62
+
+        let lower = LayoutEngine.strokes(for: "ш", language: .russian) ?? []
+        let upper = LayoutEngine.strokes(for: "Ш", language: .russian) ?? []
+
+        XCTAssertEqual(engine.decision(for: lower, typedText: "ш")?.replacement, "I")
+        XCTAssertEqual(engine.decision(for: lower, typedText: "ш")?.language, .english)
+        XCTAssertEqual(engine.decision(for: upper, typedText: "Ш")?.replacement, "I")
+        XCTAssertEqual(engine.decision(for: upper, typedText: "Ш")?.language, .english)
+    }
+
+    func testManualReplacementForEnglishPronounI() {
+        let undo = CorrectionUndoManager()
+        let engine = CorrectionEngine(undoController: undo, learningStore: isolatedLearningStore())
+
+        XCTAssertEqual(engine.manualReplacement(for: "ш")?.replacement, "I")
+        XCTAssertEqual(engine.manualReplacement(for: "ш")?.language, .english)
+        XCTAssertEqual(engine.manualReplacement(for: "Ш")?.replacement, "I")
+        XCTAssertEqual(engine.manualReplacement(for: "Ш")?.language, .english)
+    }
+
+    func testShortRussianConjunctionICorrectsAsFunctionalWord() {
+        let undo = CorrectionUndoManager()
+        let engine = CorrectionEngine(undoController: undo, learningStore: isolatedLearningStore())
+        engine.confidenceThreshold = 0.62
+
+        let strokes = LayoutEngine.strokes(for: "b", language: .english) ?? []
+
+        XCTAssertEqual(engine.decision(for: strokes, typedText: "b")?.replacement, "и")
+        XCTAssertEqual(engine.decision(for: strokes, typedText: "b")?.language, .russian)
+        XCTAssertEqual(engine.manualReplacement(for: "b")?.replacement, "и")
+    }
+
+    func testShortFunctionalWordsRequireExplicitAllowanceForAutomaticCorrection() {
+        let undo = CorrectionUndoManager()
+        let engine = CorrectionEngine(undoController: undo, learningStore: isolatedLearningStore())
+        engine.confidenceThreshold = 0.62
+
+        let strokes = LayoutEngine.strokes(for: "b", language: .english) ?? []
+
+        XCTAssertEqual(engine.decision(for: strokes, typedText: "b", allowsShortFunctionalWords: true)?.replacement, "и")
+        XCTAssertNil(engine.decision(for: strokes, typedText: "b", allowsShortFunctionalWords: false))
+    }
+
+    func testShortEnglishPrepositionsCorrectAsFunctionalWords() {
+        let undo = CorrectionUndoManager()
+        let engine = CorrectionEngine(undoController: undo, learningStore: isolatedLearningStore())
+        engine.confidenceThreshold = 0.62
+
+        let article = LayoutEngine.strokes(for: "ф", language: .russian) ?? []
+        let preposition = LayoutEngine.strokes(for: "шт", language: .russian) ?? []
+
+        XCTAssertEqual(engine.decision(for: article, typedText: "ф")?.replacement, "a")
+        XCTAssertEqual(engine.decision(for: article, typedText: "ф")?.language, .english)
+        XCTAssertEqual(engine.decision(for: preposition, typedText: "шт")?.replacement, "in")
+        XCTAssertEqual(engine.decision(for: preposition, typedText: "шт")?.language, .english)
+    }
+
+    func testShortHebrewFunctionalWordsCorrectFromEnglishLayout() {
+        let undo = CorrectionUndoManager()
+        let engine = CorrectionEngine(undoController: undo, learningStore: isolatedLearningStore())
+        engine.confidenceThreshold = 0.62
+
+        let conjunction = LayoutEngine.strokes(for: "u", language: .english) ?? []
+        let possessive = LayoutEngine.strokes(for: "ak", language: .english) ?? []
+
+        XCTAssertEqual(engine.decision(for: conjunction, typedText: "u")?.replacement, "ו")
+        XCTAssertEqual(engine.decision(for: conjunction, typedText: "u")?.language, .hebrew)
+        XCTAssertEqual(engine.decision(for: possessive, typedText: "ak")?.replacement, "של")
+        XCTAssertEqual(engine.decision(for: possessive, typedText: "ak")?.language, .hebrew)
+    }
+
     func testCorrectionDecisionForPrivet() {
         let undo = CorrectionUndoManager()
         let engine = CorrectionEngine(undoController: undo)

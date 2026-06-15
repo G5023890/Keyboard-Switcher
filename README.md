@@ -2,7 +2,7 @@
 
 Keyboard Switcher is a native macOS menu bar utility that corrects text typed with the wrong keyboard layout. It currently targets English, Russian, and Hebrew, runs locally, and keeps the app bundle small by using Apple system frameworks plus compact bundled word lists.
 
-Current release checkpoint: `v0.85`.
+Current release checkpoint: `v0.85 (1959.15.06.26)`.
 
 ## What It Does
 
@@ -14,6 +14,7 @@ Current release checkpoint: `v0.85`.
 - Plays a bundled typewriter-style switch sound when the layout actually changes.
 - Supports Double Shift manual correction for the word before the cursor.
 - Learns from manual Double Shift corrections and from Undo suppressions.
+- Handles selected short functional words such as Russian `и`, English `I`/`in`, and Hebrew `ו`/`של` with extra safeguards.
 - Avoids correction in excluded apps and unsafe text shapes such as URLs, emails, file paths, shell-like commands, and code-like tokens.
 - Uses local dictionaries, local spelling signals, compact scoring rules, and user learning. It does not send typed text to the internet.
 
@@ -42,11 +43,24 @@ Candidates are scored using:
 - Apple `NaturalLanguage` / `NLLanguageRecognizer`.
 - Apple `NSSpellChecker` where a local dictionary is available.
 - Short-word safety rules.
+- A strict whitelist for 1-2 character functional words. In automatic mode these short words require Space as the terminator; punctuation and Enter do not trigger them.
 - Technical casing rules for terms like `macOS`, `iOS`, `CoreML`, `SwiftUI`, and `Xcode`.
 - Local user learning.
 - Local suppressions after undo.
 
 The app only applies a correction when the winner is clear enough. Low-confidence cases are left alone.
+
+Recent short-word examples:
+
+- `b` + Space -> `и `
+- `z` + Space -> `я `
+- `ш` + Space -> `I `
+- `ф` + Space -> `a `
+- `шт` + Space -> `in `
+- `u` + Space -> `ו `
+- `ak` + Space -> `של `
+
+Double Shift remains an explicit manual override and can correct short words without requiring a trailing Space.
 
 ## Manual Learning With Double Shift
 
@@ -93,7 +107,7 @@ Bundled resources are kept small:
 - `KeyboardSwitcher/Resources/switch_typewriter_shift.wav`
 - `KeyboardSwitcher/Resources/THIRD-PARTY-NOTICES.txt`
 
-The current installed app bundle is roughly 4 MB, comfortably below the 500 MB hard limit.
+The current installed app bundle is roughly 5 MB, comfortably below the 500 MB hard limit.
 
 ## Third-Party Notices
 
@@ -117,7 +131,7 @@ No open-source license for the Keyboard Switcher application code has been decla
 
 ## Requirements
 
-- macOS 15 or newer target, tested on current macOS beta.
+- macOS 15.0 Sequoia or newer target, tested on current macOS beta.
 - Xcode-beta.
 - Accessibility permission for runtime use.
 
@@ -147,7 +161,7 @@ DEVELOPER_DIR=/Applications/Xcode-beta.app/Contents/Developer \
   test
 ```
 
-Current checkpoint test status: 21 unit tests passing.
+Current checkpoint test status: 34 unit tests passing.
 
 ## Install Locally
 
@@ -178,7 +192,9 @@ After installing:
 7. Confirm the menu bar indicator changes between `A`, `Я`, and `א`.
 8. Confirm layout switching happens after a correction whose target language differs from the current input source.
 9. Confirm the switch sound plays only when the input source actually changes.
-10. Test excluded apps such as Terminal and Xcode.
+10. Test short functional words: `b` + Space -> `и `, `ш` + Space -> `I `, and `u` + Space -> `ו `.
+11. Confirm short functional words do not auto-correct on non-Space terminators.
+12. Test excluded apps such as Terminal and Xcode.
 
 ## Repository Hygiene
 
