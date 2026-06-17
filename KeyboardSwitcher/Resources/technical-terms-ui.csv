@@ -1,0 +1,793 @@
+﻿term,normalized,category,case_sensitive,protect_action,match_type,reason
+A/B Test,a/b test,AI / ML / data,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase; technical delimiter
+AB Test,ab test,AI / ML / data,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+AI,ai,AI / ML / data,yes,never_correct,exact_or_case_preserving,acronym
+Analytics,analytics,AI / ML / data,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+ASR,asr,AI / ML / data,yes,never_correct,exact_or_case_preserving,acronym
+Benchmark,benchmark,AI / ML / data,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+ChatGPT,chatgpt,AI / ML / data,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Checkpoint,checkpoint,AI / ML / data,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Claude,claude,AI / ML / data,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+CNN,cnn,AI / ML / data,yes,never_correct,exact_or_case_preserving,acronym
+Context Window,context window,AI / ML / data,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Core ML Tools,core ml tools,AI / ML / data,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Dataset,dataset,AI / ML / data,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Embedding,embedding,AI / ML / data,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Embeddings,embeddings,AI / ML / data,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Eval,eval,AI / ML / data,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+FAISS,faiss,AI / ML / data,yes,never_correct,exact_or_case_preserving,acronym
+Feature Flag,feature flag,AI / ML / data,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Fine-tuning,fine-tuning,AI / ML / data,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase; technical delimiter
+GAN,gan,AI / ML / data,yes,never_correct,exact_or_case_preserving,acronym
+Gemini,gemini,AI / ML / data,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+GPT,gpt,AI / ML / data,yes,never_correct,exact_or_case_preserving,acronym
+HNSW,hnsw,AI / ML / data,yes,never_correct,exact_or_case_preserving,acronym
+Inference,inference,AI / ML / data,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+JAX,jax,AI / ML / data,yes,never_correct,exact_or_case_preserving,acronym
+Keras,keras,AI / ML / data,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Llama,llama,AI / ML / data,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+llama.cpp,llama.cpp,AI / ML / data,yes,never_correct,exact_or_case_preserving,technical delimiter
+LLM,llm,AI / ML / data,yes,never_correct,exact_or_case_preserving,acronym
+LLMs,llms,AI / ML / data,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+LoRA,lora,AI / ML / data,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+LSTM,lstm,AI / ML / data,yes,never_correct,exact_or_case_preserving,acronym
+Mistral,mistral,AI / ML / data,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+ML,ml,AI / ML / data,yes,never_correct,exact_or_case_preserving,acronym
+MLX,mlx,AI / ML / data,yes,never_correct,exact_or_case_preserving,acronym
+Model Card,model card,AI / ML / data,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+MoE,moe,AI / ML / data,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+NLG,nlg,AI / ML / data,yes,never_correct,exact_or_case_preserving,acronym
+NLP,nlp,AI / ML / data,yes,never_correct,exact_or_case_preserving,acronym
+NLU,nlu,AI / ML / data,yes,never_correct,exact_or_case_preserving,acronym
+NumPy,numpy,AI / ML / data,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+OCR,ocr,AI / ML / data,yes,never_correct,exact_or_case_preserving,acronym
+Ollama,ollama,AI / ML / data,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+ONNX,onnx,AI / ML / data,yes,never_correct,exact_or_case_preserving,acronym
+OpenAI,openai,AI / ML / data,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Pandas,pandas,AI / ML / data,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Privacy Manifest,privacy manifest,AI / ML / data,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Prompt,prompt,AI / ML / data,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+PyTorch,pytorch,AI / ML / data,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+QLoRA,qlora,AI / ML / data,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Quantization,quantization,AI / ML / data,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+RAG,rag,AI / ML / data,yes,never_correct,exact_or_case_preserving,acronym
+RNN,rnn,AI / ML / data,yes,never_correct,exact_or_case_preserving,acronym
+scikit-learn,scikit-learn,AI / ML / data,yes,never_correct,exact_or_case_preserving,technical delimiter
+STT,stt,AI / ML / data,yes,never_correct,exact_or_case_preserving,acronym
+System Prompt,system prompt,AI / ML / data,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Telemetry,telemetry,AI / ML / data,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+TensorFlow,tensorflow,AI / ML / data,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Tokenizer,tokenizer,AI / ML / data,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Transformer,transformer,AI / ML / data,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+TTS,tts,AI / ML / data,yes,never_correct,exact_or_case_preserving,acronym
+VAE,vae,AI / ML / data,yes,never_correct,exact_or_case_preserving,acronym
+Vector DB,vector db,AI / ML / data,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Weights,weights,AI / ML / data,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Whisper,whisper,AI / ML / data,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+whisper.cpp,whisper.cpp,AI / ML / data,yes,never_correct,exact_or_case_preserving,technical delimiter
+Accelerate,accelerate,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+ActivityKit,activitykit,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+App Intents,app intents,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+AppKit,appkit,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Apple Intelligence,apple intelligence,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+ARKit,arkit,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+AVFoundation,avfoundation,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+BackgroundTasks,backgroundtasks,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+CarPlay,carplay,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+CloudKit,cloudkit,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Combine,combine,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Concurrency,concurrency,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Core AI,core ai,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Core Animation,core animation,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Core Audio,core audio,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Core Bluetooth,core bluetooth,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Core Data,core data,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Core Graphics,core graphics,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Core Image,core image,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Core Location,core location,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Core Media,core media,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Core ML,core ml,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Core Motion,core motion,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Core Spotlight,core spotlight,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Core Text,core text,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Core Video,core video,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+CoreAI,coreai,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+CoreAnimation,coreanimation,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+CoreAudio,coreaudio,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+CoreBluetooth,corebluetooth,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+CoreData,coredata,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+CoreGraphics,coregraphics,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+CoreImage,coreimage,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+CoreLocation,corelocation,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+CoreMedia,coremedia,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+CoreML,coreml,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+CoreMotion,coremotion,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+CoreSpotlight,corespotlight,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+CoreText,coretext,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+CoreVideo,corevideo,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Create ML,create ml,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+CreateML,createml,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+CryptoKit,cryptokit,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+DeviceCheck,devicecheck,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Dynamic Island,dynamic island,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Foundation,foundation,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+HealthKit,healthkit,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+HomeKit,homekit,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Intents,intents,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+IntentsUI,intentsui,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Keychain Services,keychain services,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Live Activities,live activities,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+LocalAuthentication,localauthentication,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+MapKit,mapkit,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Metal,metal,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+MetalKit,metalkit,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+NaturalLanguage,naturallanguage,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Network.framework,network.framework,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase; technical delimiter
+NLLanguageRecognizer,nllanguagerecognizer,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+NSSpellChecker,nsspellchecker,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Observation,observation,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+PassKit,passkit,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+PDFKit,pdfkit,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+PencilKit,pencilkit,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+PhotosUI,photosui,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+PushKit,pushkit,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+QuickLook,quicklook,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+RealityKit,realitykit,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+San Francisco,san francisco,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+SceneKit,scenekit,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Security.framework,security.framework,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase; technical delimiter
+SF Pro,sf pro,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+SF Symbols,sf symbols,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Sign in with Apple,sign in with apple,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+SiriKit,sirikit,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+SpriteKit,spritekit,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+StoreKit,storekit,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+SwiftUI,swiftui,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+TipKit,tipkit,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+UIKit,uikit,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+URLSession,urlsession,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+UserNotifications,usernotifications,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Vision,vision,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+VisionKit,visionkit,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+WatchKit,watchkit,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+WebKit,webkit,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+WidgetKit,widgetkit,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+WKWebView,wkwebview,Apple frameworks & APIs,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+AirDrop,airdrop,Apple platforms & OS,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+AirPlay,airplay,Apple platforms & OS,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+AirPods,airpods,Apple platforms & OS,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+AirPrint,airprint,Apple platforms & OS,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+App Sandbox,app sandbox,Apple platforms & OS,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+App Store,app store,Apple platforms & OS,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+App Store Connect,app store connect,Apple platforms & OS,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Apple Silicon,apple silicon,Apple platforms & OS,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Apple Vision Pro,apple vision pro,Apple platforms & OS,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Apple Watch,apple watch,Apple platforms & OS,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Control Center,control center,Apple platforms & OS,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Dock,dock,Apple platforms & OS,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Face ID,face id,Apple platforms & OS,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+FaceTime,facetime,Apple platforms & OS,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+FileVault,filevault,Apple platforms & OS,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Finder,finder,Apple platforms & OS,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Gatekeeper,gatekeeper,Apple platforms & OS,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+HIG,hig,Apple platforms & OS,yes,never_correct,exact_or_case_preserving,acronym
+Human Interface Guidelines,human interface guidelines,Apple platforms & OS,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+iCloud,icloud,Apple platforms & OS,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+iCloud Drive,icloud drive,Apple platforms & OS,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+iMac,imac,Apple platforms & OS,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+iOS,ios,Apple platforms & OS,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+iPad,ipad,Apple platforms & OS,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+iPadOS,ipados,Apple platforms & OS,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+iPhone,iphone,Apple platforms & OS,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Keychain,keychain,Apple platforms & OS,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Launchpad,launchpad,Apple platforms & OS,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Liquid Glass,liquid glass,Apple platforms & OS,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+M1,m1,Apple platforms & OS,yes,never_correct,exact_or_case_preserving,contains digit
+M2,m2,Apple platforms & OS,yes,never_correct,exact_or_case_preserving,contains digit
+M3,m3,Apple platforms & OS,yes,never_correct,exact_or_case_preserving,contains digit
+M4,m4,Apple platforms & OS,yes,never_correct,exact_or_case_preserving,contains digit
+M5,m5,Apple platforms & OS,yes,never_correct,exact_or_case_preserving,contains digit
+Mac,mac,Apple platforms & OS,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Mac mini,mac mini,Apple platforms & OS,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Mac Studio,mac studio,Apple platforms & OS,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+MacBook,macbook,Apple platforms & OS,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+MacBook Air,macbook air,Apple platforms & OS,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+MacBook Pro,macbook pro,Apple platforms & OS,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+macOS,macos,Apple platforms & OS,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Notarization,notarization,Apple platforms & OS,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Notification Center,notification center,Apple platforms & OS,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Rosetta,rosetta,Apple platforms & OS,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Rosetta 2,rosetta 2,Apple platforms & OS,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase; contains digit
+Sandbox,sandbox,Apple platforms & OS,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Shortcuts,shortcuts,Apple platforms & OS,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Siri,siri,Apple platforms & OS,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Spotlight,spotlight,Apple platforms & OS,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Stage Manager,stage manager,Apple platforms & OS,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+TestFlight,testflight,Apple platforms & OS,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Touch ID,touch id,Apple platforms & OS,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+tvOS,tvos,Apple platforms & OS,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+visionOS,visionos,Apple platforms & OS,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+watchOS,watchos,Apple platforms & OS,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+.7z,.7z,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter; contains digit
+.app,.app,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter
+.bash,.bash,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter
+.c,.c,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter
+.cpp,.cpp,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter
+.css,.css,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter
+.csv,.csv,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter
+.db,.db,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter
+.dmg,.dmg,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter
+.dockerignore,.dockerignore,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter
+.env,.env,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter
+.fish,.fish,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter
+.gitignore,.gitignore,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter
+.go,.go,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter
+.gradle,.gradle,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter
+.gz,.gz,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter
+.h,.h,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter
+.heic,.heic,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter
+.hpp,.hpp,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter
+.html,.html,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter
+.ico,.ico,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter
+.ipa,.ipa,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter
+.java,.java,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter
+.jpeg,.jpeg,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter
+.jpg,.jpg,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter
+.js,.js,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter
+.json,.json,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter
+.jsx,.jsx,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter
+.kt,.kt,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter
+.kts,.kts,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter
+.log,.log,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter
+.m,.m,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter
+.m4a,.m4a,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter; contains digit
+.md,.md,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter
+.mdx,.mdx,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter
+.mm,.mm,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter
+.mov,.mov,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter
+.mp3,.mp3,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter; contains digit
+.mp4,.mp4,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter; contains digit
+.pdf,.pdf,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter
+.pkg,.pkg,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter
+.plist,.plist,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter
+.png,.png,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter
+.py,.py,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter
+.rb,.rb,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter
+.rs,.rs,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter
+.sh,.sh,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter
+.sql,.sql,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter
+.sqlite,.sqlite,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter
+.storyboard,.storyboard,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter
+.strings,.strings,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter
+.svg,.svg,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter
+.swift,.swift,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter
+.tar,.tar,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter
+.ts,.ts,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter
+.tsv,.tsv,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter
+.tsx,.tsx,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter
+.txt,.txt,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter
+.wav,.wav,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter
+.webp,.webp,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter
+.xcarchive,.xcarchive,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter
+.xcassets,.xcassets,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter
+.xcodeproj,.xcodeproj,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter
+.xcworkspace,.xcworkspace,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter
+.xib,.xib,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter
+.xml,.xml,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter
+.yaml,.yaml,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter
+.yml,.yml,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter
+.zip,.zip,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter
+.zsh,.zsh,File formats & extensions,yes,never_correct,exact_or_case_preserving,technical delimiter
+2FA,2fa,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,contains digit
+A Record,a record,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+AAAA,aaaa,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,acronym
+Amnezia,amnezia,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Bandwidth,bandwidth,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+BIMI,bimi,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,acronym
+BSSID,bssid,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,acronym
+CAA,caa,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,acronym
+CDN,cdn,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,acronym
+CGNAT,cgnat,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,acronym
+CIDR,cidr,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,acronym
+Clash,clash,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+CNAME,cname,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,acronym
+CVE,cve,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,acronym
+CVSS,cvss,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,acronym
+CWE,cwe,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,acronym
+DDoS,ddos,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+DKIM,dkim,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,acronym
+DMARC,dmarc,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,acronym
+DNS,dns,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,acronym
+DNSSEC,dnssec,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,acronym
+DoH,doh,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+DoT,dot,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+EDR,edr,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,acronym
+FIDO2,fido2,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,acronym; contains digit
+Firewall,firewall,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+FTP,ftp,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,acronym
+Gateway,gateway,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+HTTP,http,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,acronym
+HTTP/2,http/2,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,acronym; technical delimiter; contains digit
+HTTP/3,http/3,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,acronym; technical delimiter; contains digit
+HTTPS,https,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,acronym
+IKEv2,ikev2,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase; contains digit
+IMAP,imap,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,acronym
+IP Address,ip address,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+IPsec,ipsec,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+IPv4,ipv4,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase; contains digit
+IPv6,ipv6,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase; contains digit
+Jitter,jitter,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+JWT,jwt,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,acronym
+Kerberos,kerberos,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+LAN,lan,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,acronym
+Latency,latency,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+LDAP,ldap,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,acronym
+MAC Address,mac address,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+MFA,mfa,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,acronym
+MTU,mtu,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,acronym
+MX,mx,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,acronym
+NAT,nat,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,acronym
+NS,ns,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,acronym
+OAuth,oauth,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+OAuth2,oauth2,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase; contains digit
+OIDC,oidc,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,acronym
+OpenVPN,openvpn,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Packet Loss,packet loss,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Passkey,passkey,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Ping,ping,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+POP3,pop3,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,acronym; contains digit
+Proxy,proxy,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+PTR,ptr,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,acronym
+QUIC,quic,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,acronym
+Reality,reality,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Route,route,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Router,router,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+SAML,saml,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,acronym
+SFTP,sftp,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,acronym
+Shadowsocks,shadowsocks,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+SIEM,siem,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,acronym
+Sing-box,sing-box,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase; technical delimiter
+SMTP,smtp,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,acronym
+SOA,soa,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,acronym
+SOC,soc,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,acronym
+SOCKS5,socks5,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,acronym; contains digit
+SPF,spf,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,acronym
+SSH,ssh,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,acronym
+SSID,ssid,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,acronym
+SSL,ssl,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,acronym
+TCP,tcp,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,acronym
+Throughput,throughput,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+TLS,tls,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,acronym
+TOTP,totp,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,acronym
+Traceroute,traceroute,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Trojan,trojan,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+TXT,txt,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,acronym
+UDP,udp,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,acronym
+VLAN,vlan,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,acronym
+VLESS,vless,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,acronym
+VMess,vmess,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+VPN,vpn,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,acronym
+WAF,waf,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,acronym
+WAN,wan,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,acronym
+WebAuthn,webauthn,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+WireGuard,wireguard,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+WLAN,wlan,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,acronym
+XDR,xdr,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,acronym
+Xray,xray,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+YubiKey,yubikey,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Zero Trust,zero trust,"Networking, VPN & security",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+автодополнение,автодополнение,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+автозамена,автозамена,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+автоправка,автоправка,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+автосейв,автосейв,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+алерт,алерт,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+бейдж,бейдж,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+билд,билд,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+блэклист,блэклист,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+буфер,буфер,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+бэкап,бэкап,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+вайтлист,вайтлист,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+вкладка,вкладка,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+горячая клавиша,горячая клавиша,Russian UI / tech terms,yes,never_correct,exact_or_case_preserving,technical/UI whitelist
+диалог,диалог,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+доступ,доступ,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+доступность,доступность,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+жест,жест,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+задержка,задержка,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+иконка,иконка,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+интерфейс,интерфейс,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+инференс,инференс,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+исключение,исключение,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+канал,канал,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+кандидат,кандидат,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+карточка,карточка,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+клавиатура,клавиатура,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+клиент,клиент,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+кнопка,кнопка,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+кэш,кэш,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+лог,лог,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+локализация,локализация,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+маршрут,маршрут,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+меню,меню,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+метрика,метрика,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+модалка,модалка,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+модель,модель,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+окно,окно,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+панель,панель,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+переключатель,переключатель,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+песочница,песочница,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+пинг,пинг,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+подпись,подпись,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+подсказка,подсказка,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+поиск,поиск,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+поле,поле,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+поповер,поповер,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+порог,порог,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+потери,потери,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+права,права,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+провайдер,провайдер,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+прокси,прокси,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+профиль,профиль,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+разрешение,разрешение,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+раскладка,раскладка,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+резолвер,резолвер,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+релиз,релиз,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+сайдбар,сайдбар,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+сборка,сборка,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+свайп,свайп,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+светлая тема,светлая тема,Russian UI / tech terms,yes,never_correct,exact_or_case_preserving,technical/UI whitelist
+сервер,сервер,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+сертификат,сертификат,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+сетка,сетка,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+синхронизация,синхронизация,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+скоринг,скоринг,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+слайдер,слайдер,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+словарь,словарь,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+сортировка,сортировка,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+список,список,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+таблица,таблица,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+тап,тап,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+телеметрия,телеметрия,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+токен,токен,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+транслит,транслит,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+тулбар,тулбар,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+тумблер,тумблер,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+туннель,туннель,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+тёмная тема,тёмная тема,Russian UI / tech terms,yes,never_correct,exact_or_case_preserving,technical/UI whitelist
+уведомление,уведомление,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+фаервол,фаервол,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+фильтр,фильтр,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+фокус,фокус,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+ховер,ховер,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+частота,частота,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+чекбокс,чекбокс,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+чип,чип,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+шлюз,шлюз,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+шорткат,шорткат,Russian UI / tech terms,no,never_correct,exact_or_case_preserving,technical/UI whitelist
+Accessibility,accessibility,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Adaptive,adaptive,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Alert,alert,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Animation,animation,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+API,api,UI / UX terminology,yes,never_correct,exact_or_case_preserving,acronym
+Auto Layout,auto layout,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Autocomplete,autocomplete,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Autocorrect,autocorrect,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Autofill,autofill,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Autosave,autosave,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Badge,badge,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Baseline,baseline,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Blur,blur,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Breakpoint,breakpoint,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Button,button,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Card,card,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Checkbox,checkbox,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Chip,chip,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+CLI,cli,UI / UX terminology,yes,never_correct,exact_or_case_preserving,acronym
+Collection View,collection view,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Color Palette,color palette,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Command Palette,command palette,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Context Menu,context menu,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Copy,copy,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Corner Radius,corner radius,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Cut,cut,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Dark Mode,dark mode,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Design Token,design token,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Dialog,dialog,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Divider,divider,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Drag and Drop,drag and drop,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Drawer,drawer,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Drop Zone,drop zone,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Dynamic Type,dynamic type,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Easing,easing,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Elevation,elevation,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Empty State,empty state,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Focus,focus,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Focus Ring,focus ring,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+ForEach,foreach,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Form,form,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Gesture,gesture,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Glass,glass,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Grid,grid,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+GUI,gui,UI / UX terminology,yes,never_correct,exact_or_case_preserving,acronym
+Haptic,haptic,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+High Contrast,high contrast,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Hotkey,hotkey,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Hover,hover,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+HStack,hstack,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+HUD,hud,UI / UX terminology,yes,never_correct,exact_or_case_preserving,acronym
+I18n,i18n,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase; contains digit
+Icon,icon,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+IDE,ide,UI / UX terminology,yes,never_correct,exact_or_case_preserving,acronym
+Inspector,inspector,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Internationalization,internationalization,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Keyboard Shortcut,keyboard shortcut,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+L10n,l10n,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase; contains digit
+Label,label,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Layout,layout,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+LazyGrid,lazygrid,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+LazyHStack,lazyhstack,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+LazyVStack,lazyvstack,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Light Mode,light mode,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+List,list,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Localization,localization,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Long Press,long press,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+LTR,ltr,UI / UX terminology,yes,never_correct,exact_or_case_preserving,acronym
+Material,material,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Menu Bar,menu bar,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Microinteraction,microinteraction,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Modal,modal,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Navigation Bar,navigation bar,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Navigation Stack,navigation stack,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+NavigationSplitView,navigationsplitview,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Onboarding,onboarding,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Opacity,opacity,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Overlay,overlay,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Padding,padding,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Panel,panel,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Paste,paste,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Picker,picker,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Pinch,pinch,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Placeholder,placeholder,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Popover,popover,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Preferences,preferences,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Progress View,progress view,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Radio Button,radio button,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Redo,redo,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Reduce Motion,reduce motion,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Responsive,responsive,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+RTL,rtl,UI / UX terminology,yes,never_correct,exact_or_case_preserving,acronym
+Safe Area,safe area,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Scene,scene,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+ScrollView,scrollview,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+SDK,sdk,UI / UX terminology,yes,never_correct,exact_or_case_preserving,acronym
+Search Bar,search bar,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+SearchField,searchfield,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Segmented Control,segmented control,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Select All,select all,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Settings,settings,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Shadow,shadow,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Sheet,sheet,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Sidebar,sidebar,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Skeleton,skeleton,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Slider,slider,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Smart Paste,smart paste,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Snackbar,snackbar,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Spacer,spacer,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Spacing,spacing,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Spinner,spinner,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Split View,split view,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Status Bar,status bar,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Stepper,stepper,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Subview,subview,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Swipe,swipe,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Switch,switch,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Tab Bar,tab bar,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Table,table,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+TabView,tabview,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Tap,tap,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+TextField,textfield,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+TextView,textview,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Tile,tile,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Toast,toast,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Toggle,toggle,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Token,token,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Toolbar,toolbar,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Tooltip,tooltip,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Transition,transition,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+TUI,tui,UI / UX terminology,yes,never_correct,exact_or_case_preserving,acronym
+Typography,typography,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+UI,ui,UI / UX terminology,yes,never_correct,exact_or_case_preserving,acronym
+Undo,undo,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+UX,ux,UI / UX terminology,yes,never_correct,exact_or_case_preserving,acronym
+Vibrancy,vibrancy,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+View,view,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+VoiceOver,voiceover,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+VStack,vstack,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+WebView,webview,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Window,window,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Zoom,zoom,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+ZStack,zstack,UI / UX terminology,yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Angular,angular,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Ansible,ansible,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Apache,apache,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+AWS,aws,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,acronym
+Azure,azure,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Bootstrap,bootstrap,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Bun,bun,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Caddy,caddy,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+ClickHouse,clickhouse,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Cloudflare,cloudflare,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+CSS,css,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,acronym
+CSV,csv,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,acronym
+Deno,deno,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Django,django,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Docker,docker,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+ElasticSearch,elasticsearch,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+ESBuild,esbuild,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Express,express,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+FastAPI,fastapi,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Firebase,firebase,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Flask,flask,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+GCP,gcp,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,acronym
+Grafana,grafana,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+GraphQL,graphql,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+gRPC,grpc,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Helm,helm,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+HTML,html,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,acronym
+JavaScript,javascript,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+JSON,json,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,acronym
+k8s,k8s,"Web, backend & storage",no,never_correct,exact_or_case_preserving,contains digit
+Kibana,kibana,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Kubernetes,kubernetes,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Laravel,laravel,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Logstash,logstash,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+MariaDB,mariadb,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Markdown,markdown,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+MDX,mdx,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,acronym
+MinIO,minio,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+MongoDB,mongodb,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+MySQL,mysql,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Nagios,nagios,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Netlify,netlify,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Next.js,next.js,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase; technical delimiter
+Nginx,nginx,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Node.js,node.js,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase; technical delimiter
+npm,npm,"Web, backend & storage",no,never_correct,exact_or_case_preserving,technical/UI whitelist
+Nuxt,nuxt,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+OpenSearch,opensearch,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+OpenTelemetry,opentelemetry,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+OTel,otel,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+pnpm,pnpm,"Web, backend & storage",no,never_correct,exact_or_case_preserving,technical/UI whitelist
+Podman,podman,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Postgres,postgres,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+PostgreSQL,postgresql,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Prometheus,prometheus,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Rails,rails,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+React,react,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Redis,redis,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+REST,rest,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,acronym
+Rollup,rollup,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Ruby on Rails,ruby on rails,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+S3,s3,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,contains digit
+Sentry,sentry,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Spring,spring,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+SQLite,sqlite,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Supabase,supabase,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Svelte,svelte,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Tailwind,tailwind,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Terraform,terraform,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Traefik,traefik,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+TypeScript,typescript,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Vercel,vercel,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Vite,vite,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Vue,vue,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+WASM,wasm,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,acronym
+WebAssembly,webassembly,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Webpack,webpack,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+WebRTC,webrtc,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+WebSocket,websocket,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+XML,xml,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,acronym
+YAML,yaml,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,acronym
+yarn,yarn,"Web, backend & storage",no,never_correct,exact_or_case_preserving,technical/UI whitelist
+Zabbix,zabbix,"Web, backend & storage",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+actor,actor,"Xcode, Swift & build tooling",no,never_correct,exact_or_case_preserving,technical/UI whitelist
+altool,altool,"Xcode, Swift & build tooling",no,never_correct,exact_or_case_preserving,technical/UI whitelist
+APNs,apns,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Asset Catalog,asset catalog,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+async,async,"Xcode, Swift & build tooling",no,never_correct,exact_or_case_preserving,technical/UI whitelist
+AsyncSequence,asyncsequence,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+await,await,"Xcode, Swift & build tooling",no,never_correct,exact_or_case_preserving,technical/UI whitelist
+Binding,binding,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Bitbucket,bitbucket,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Bundle ID,bundle id,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Canvas,canvas,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Carthage,carthage,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+CD,cd,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,acronym
+CI,ci,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,acronym
+CI/CD,ci/cd,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,acronym; technical delimiter
+Clang,clang,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+CMake,cmake,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Cocoa,cocoa,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Cocoa Touch,cocoa touch,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+CocoaPods,cocoapods,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Codable,codable,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+codesign,codesign,"Xcode, Swift & build tooling",no,never_correct,exact_or_case_preserving,technical/UI whitelist
+Coordinator,coordinator,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Dependency Injection,dependency injection,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+DerivedData,deriveddata,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Developer ID,developer id,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+DI,di,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,acronym
+DMG,dmg,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,acronym
+DocC,docc,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+dSYM,dsym,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Entitlements,entitlements,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+EnvironmentObject,environmentobject,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Equatable,equatable,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Fastlane,fastlane,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+git,git,"Xcode, Swift & build tooling",no,never_correct,exact_or_case_preserving,technical/UI whitelist
+GitHub,github,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+GitLab,gitlab,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Hashable,hashable,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Identifiable,identifiable,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Info.plist,info.plist,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase; technical delimiter
+Instruments,instruments,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Interface Builder,interface builder,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+IPA,ipa,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,acronym
+LLDB,lldb,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,acronym
+LLVM,llvm,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,acronym
+MainActor,mainactor,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Makefile,makefile,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+MVC,mvc,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,acronym
+MVI,mvi,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,acronym
+MVVM,mvvm,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,acronym
+Nib,nib,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+notarytool,notarytool,"Xcode, Swift & build tooling",no,never_correct,exact_or_case_preserving,technical/UI whitelist
+NSViewController,nsviewcontroller,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+ObjC,objc,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Objective-C,objective-c,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase; technical delimiter
+Observable,observable,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+ObservableObject,observableobject,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Package.swift,package.swift,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase; technical delimiter
+PKG,pkg,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,acronym
+PreviewProvider,previewprovider,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Previews,previews,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Project,project,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Provisioning Profile,provisioning profile,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Published,published,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Result,result,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Scheme,scheme,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Sendable,sendable,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Simulator,simulator,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Snapshot Test,snapshot test,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+SourceKit,sourcekit,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+SPM,spm,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,acronym
+StateObject,stateobject,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Storyboard,storyboard,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Swift,swift,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Swift Package Manager,swift package manager,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+SwiftFormat,swiftformat,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+SwiftLint,swiftlint,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+SwiftSyntax,swiftsyntax,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Target,target,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Task,task,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+TaskGroup,taskgroup,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Team ID,team id,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Test Plan,test plan,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Tuist,tuist,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+UI Test,ui test,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+UIViewController,uiviewcontroller,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Unit Test,unit test,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+ViewBuilder,viewbuilder,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+ViewController,viewcontroller,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+ViewModel,viewmodel,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+VIPER,viper,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,acronym
+Workspace,workspace,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+XCArchive,xcarchive,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+XCConfig,xcconfig,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+XCFramework,xcframework,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+Xcode,xcode,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+xcodebuild,xcodebuild,"Xcode, Swift & build tooling",no,never_correct,exact_or_case_preserving,technical/UI whitelist
+xcrun,xcrun,"Xcode, Swift & build tooling",no,never_correct,exact_or_case_preserving,technical/UI whitelist
+XCTest,xctest,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+XCUITest,xcuitest,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,mixedCase/PascalCase
+XIB,xib,"Xcode, Swift & build tooling",yes,never_correct,exact_or_case_preserving,acronym

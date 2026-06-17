@@ -17,6 +17,14 @@ enum KeyboardLanguage: String, CaseIterable, Codable, Identifiable, Sendable {
         }
     }
 
+    var systemImage: String {
+        switch self {
+        case .english: "a.circle"
+        case .russian: "character.bubble"
+        case .hebrew: "textformat"
+        }
+    }
+
     var menuGlyph: String {
         switch self {
         case .english: "A"
@@ -27,6 +35,17 @@ enum KeyboardLanguage: String, CaseIterable, Codable, Identifiable, Sendable {
 }
 
 final class InputSourceManager {
+    func currentInputSourceID() -> String {
+        guard
+            let source = TISCopyCurrentKeyboardInputSource()?.takeRetainedValue(),
+            let value = TISGetInputSourceProperty(source, kTISPropertyInputSourceID)
+        else {
+            return ""
+        }
+
+        return Unmanaged<CFString>.fromOpaque(value).takeUnretainedValue() as String
+    }
+
     func currentKeyboardLanguage() -> KeyboardLanguage {
         guard
             let source = TISCopyCurrentKeyboardInputSource()?.takeRetainedValue(),

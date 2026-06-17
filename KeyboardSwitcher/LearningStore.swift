@@ -8,6 +8,35 @@ struct LearnedCorrection: Codable, Equatable {
     var updatedAt: Date
 }
 
+struct SuppressedCorrection: Codable, Equatable {
+    let original: String
+    let replacement: String
+    var undoCount: Int
+    var updatedAt: Date
+    var expiresAt: Date?
+
+    var isPersistent: Bool {
+        expiresAt == nil
+    }
+
+    func isActive(at date: Date) -> Bool {
+        guard let expiresAt else { return true }
+        return expiresAt > date
+    }
+}
+
+struct LearningBackup: Codable, Equatable {
+    let version: Int
+    let exportedAt: Date
+    let learnedCorrections: [LearnedCorrection]
+    let suppressedCorrections: [SuppressedCorrection]
+}
+
+struct LearningImportResult: Equatable {
+    let importedLearnedCorrections: Int
+    let importedSuppressions: Int
+}
+
 final class LearningStore: @unchecked Sendable {
     static let shared = LearningStore()
 
@@ -16,7 +45,7 @@ final class LearningStore: @unchecked Sendable {
     private let suppressionsKey = "suppressedCorrections"
     private let lock = NSLock()
     private var preferences: [String: LearnedCorrection]
-    private var suppressions: Set<String>
+    private var suppressions: [String: SuppressedCorrection]
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
@@ -36,9 +65,16 @@ final class LearningStore: @unchecked Sendable {
         }
     }
 
-    func isSuppressed(original: String, replacement: String) -> Bool {
+    func isSuppressed(original: String, replacement: String, now: Date = Date()) -> Bool {
         lock.withLock {
-            suppressions.contains(Self.pairKey(original: original, replacement: replacement))
+            let key = Self.pairKey(original: original, replacement: replacement)
+            guard let suppression = suppressions[key] else { return false }
+            if suppression.isActive(at: now) {
+                return true
+            }
+            suppressions.removeValue(forKey: key)
+            save()
+            return false
         }
     }
 
@@ -65,20 +101,74 @@ final class LearningStore: @unchecked Sendable {
                 updatedAt: Date()
             )
             preferences[key] = correction
-            suppressions.remove(Self.pairKey(original: original, replacement: storedReplacement))
+            suppressions.removeValue(forKey: Self.pairKey(original: original, replacement: storedReplacement))
             save()
         }
     }
 
-    func suppress(original: String, replacement: String) {
+    func setPreference(original: String, replacement: String, language: KeyboardLanguage) {
+        let original = Self.normalized(original)
+        let normalizedReplacement = Self.normalized(replacement)
+        let storedReplacement = replacement.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !original.isEmpty, !storedReplacement.isEmpty, original != normalizedReplacement else { return }
+
+        lock.withLock {
+            preferences[Self.key(for: original)] = LearnedCorrection(
+                original: original,
+                replacement: storedReplacement,
+                language: language,
+                uses: preferences[Self.key(for: original)]?.uses ?? 0,
+                updatedAt: Date()
+            )
+            suppressions.removeValue(forKey: Self.pairKey(original: original, replacement: storedReplacement))
+            save()
+        }
+    }
+
+    func suppress(original: String, replacement: String, now: Date = Date()) {
         let original = Self.normalized(original)
         let replacement = Self.normalized(replacement)
         guard !original.isEmpty, !replacement.isEmpty else { return }
 
         lock.withLock {
+            let key = Self.pairKey(original: original, replacement: replacement)
+            let undoCount = (suppressions[key]?.undoCount ?? 0) + 1
+            let expiresAt = undoCount >= 3 ? nil : now.addingTimeInterval(24 * 60 * 60)
             preferences.removeValue(forKey: Self.key(for: original))
-            suppressions.insert(Self.pairKey(original: original, replacement: replacement))
+            suppressions[key] = SuppressedCorrection(
+                original: original,
+                replacement: replacement,
+                undoCount: undoCount,
+                updatedAt: now,
+                expiresAt: expiresAt
+            )
             save()
+        }
+    }
+
+    func suppressPersistently(original: String, replacement: String, now: Date = Date()) {
+        let original = Self.normalized(original)
+        let replacement = Self.normalized(replacement)
+        guard !original.isEmpty, !replacement.isEmpty else { return }
+
+        lock.withLock {
+            let key = Self.pairKey(original: original, replacement: replacement)
+            preferences.removeValue(forKey: Self.key(for: original))
+            suppressions[key] = SuppressedCorrection(
+                original: original,
+                replacement: replacement,
+                undoCount: max(suppressions[key]?.undoCount ?? 0, 3),
+                updatedAt: now,
+                expiresAt: nil
+            )
+            save()
+        }
+    }
+
+    func allSuppressions(now: Date = Date()) -> [SuppressedCorrection] {
+        lock.withLock {
+            purgeExpiredSuppressions(now: now)
+            return suppressions.values.sorted { $0.updatedAt > $1.updatedAt }
         }
     }
 
@@ -92,6 +182,17 @@ final class LearningStore: @unchecked Sendable {
         }
     }
 
+    func removeSuppression(original: String, replacement: String) {
+        let original = Self.normalized(original)
+        let replacement = Self.normalized(replacement)
+        guard !original.isEmpty, !replacement.isEmpty else { return }
+
+        lock.withLock {
+            suppressions.removeValue(forKey: Self.pairKey(original: original, replacement: replacement))
+            save()
+        }
+    }
+
     func reset() {
         lock.withLock {
             preferences.removeAll()
@@ -100,11 +201,89 @@ final class LearningStore: @unchecked Sendable {
         }
     }
 
+    func exportBackupData(now: Date = Date()) throws -> Data {
+        let backup = lock.withLock {
+            LearningBackup(
+                version: 1,
+                exportedAt: now,
+                learnedCorrections: preferences.values.sorted { $0.updatedAt > $1.updatedAt },
+                suppressedCorrections: suppressions.values.sorted { $0.updatedAt > $1.updatedAt }
+            )
+        }
+
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
+        return try encoder.encode(backup)
+    }
+
+    @discardableResult
+    func importBackupData(_ data: Data) throws -> LearningImportResult {
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        let backup = try decoder.decode(LearningBackup.self, from: data)
+
+        return lock.withLock {
+            var importedPreferences = 0
+            var importedSuppressions = 0
+
+            for correction in backup.learnedCorrections {
+                let original = Self.normalized(correction.original)
+                let replacement = correction.replacement.trimmingCharacters(in: .whitespacesAndNewlines)
+                guard !original.isEmpty,
+                      !replacement.isEmpty,
+                      original != Self.normalized(replacement) else {
+                    continue
+                }
+
+                let key = Self.key(for: original)
+                if shouldReplace(existingDate: preferences[key]?.updatedAt, importedDate: correction.updatedAt) {
+                    preferences[key] = LearnedCorrection(
+                        original: original,
+                        replacement: replacement,
+                        language: correction.language,
+                        uses: max(0, correction.uses),
+                        updatedAt: correction.updatedAt
+                    )
+                    suppressions.removeValue(forKey: Self.pairKey(original: original, replacement: replacement))
+                    importedPreferences += 1
+                }
+            }
+
+            for suppression in backup.suppressedCorrections {
+                let original = Self.normalized(suppression.original)
+                let replacement = Self.normalized(suppression.replacement)
+                guard !original.isEmpty, !replacement.isEmpty else {
+                    continue
+                }
+
+                let key = Self.pairKey(original: original, replacement: replacement)
+                if shouldReplace(existingDate: suppressions[key]?.updatedAt, importedDate: suppression.updatedAt) {
+                    preferences.removeValue(forKey: Self.key(for: original))
+                    suppressions[key] = SuppressedCorrection(
+                        original: original,
+                        replacement: replacement,
+                        undoCount: max(1, suppression.undoCount),
+                        updatedAt: suppression.updatedAt,
+                        expiresAt: suppression.expiresAt
+                    )
+                    importedSuppressions += 1
+                }
+            }
+
+            save()
+            return LearningImportResult(
+                importedLearnedCorrections: importedPreferences,
+                importedSuppressions: importedSuppressions
+            )
+        }
+    }
+
     private func save() {
         if let data = try? JSONEncoder().encode(preferences) {
             defaults.set(data, forKey: preferencesKey)
         }
-        if let data = try? JSONEncoder().encode(Array(suppressions).sorted()) {
+        if let data = try? JSONEncoder().encode(suppressions) {
             defaults.set(data, forKey: suppressionsKey)
         }
     }
@@ -117,12 +296,47 @@ final class LearningStore: @unchecked Sendable {
         return preferences
     }
 
-    private static func loadSuppressions(defaults: UserDefaults, key: String) -> Set<String> {
-        guard let data = defaults.data(forKey: key),
-              let suppressions = try? JSONDecoder().decode([String].self, from: data) else {
-            return []
+    private func purgeExpiredSuppressions(now: Date = Date()) {
+        let expiredKeys = suppressions
+            .filter { !$0.value.isActive(at: now) }
+            .map(\.key)
+        guard !expiredKeys.isEmpty else { return }
+
+        for key in expiredKeys {
+            suppressions.removeValue(forKey: key)
         }
-        return Set(suppressions)
+        save()
+    }
+
+    private static func loadSuppressions(defaults: UserDefaults, key: String) -> [String: SuppressedCorrection] {
+        guard let data = defaults.data(forKey: key) else {
+            return [:]
+        }
+
+        if let suppressions = try? JSONDecoder().decode([String: SuppressedCorrection].self, from: data) {
+            return suppressions
+        }
+
+        if let legacySuppressions = try? JSONDecoder().decode([String].self, from: data) {
+            let now = Date()
+            return Dictionary(uniqueKeysWithValues: legacySuppressions.map { key in
+                let parts = key.split(separator: "\u{1F}", maxSplits: 1).map(String.init)
+                let original = parts.first ?? key
+                let replacement = parts.dropFirst().first ?? ""
+                return (
+                    key,
+                    SuppressedCorrection(
+                        original: original,
+                        replacement: replacement,
+                        undoCount: 3,
+                        updatedAt: now,
+                        expiresAt: nil
+                    )
+                )
+            })
+        }
+
+        return [:]
     }
 
     private static func key(for original: String) -> String {
@@ -135,5 +349,10 @@ final class LearningStore: @unchecked Sendable {
 
     private static func normalized(_ text: String) -> String {
         text.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+    }
+
+    private func shouldReplace(existingDate: Date?, importedDate: Date) -> Bool {
+        guard let existingDate else { return true }
+        return importedDate >= existingDate
     }
 }

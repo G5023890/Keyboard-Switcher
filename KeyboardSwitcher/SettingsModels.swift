@@ -68,6 +68,72 @@ struct KeyboardMonitorPreferences: Equatable {
     }
 }
 
+enum AppBehaviorMode: String, CaseIterable, Identifiable, Hashable, Codable, Sendable {
+    case excluded
+    case strict
+    case normal
+    case textFocused
+
+    var id: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .excluded: "Excluded"
+        case .strict: "Strict"
+        case .normal: "Normal"
+        case .textFocused: "Text-focused"
+        }
+    }
+
+    var detail: String {
+        switch self {
+        case .excluded: "Never analyze or correct"
+        case .strict: "Only very clear corrections"
+        case .normal: "Balanced default behavior"
+        case .textFocused: "More helpful in writing apps"
+        }
+    }
+
+    var correctionProfile: CorrectionProfile {
+        switch self {
+        case .excluded:
+            CorrectionProfile(confidenceThresholdOffset: 0, minimumDeltaOverride: 1)
+        case .strict:
+            CorrectionProfile(confidenceThresholdOffset: 0.10, minimumDeltaOverride: 0.30)
+        case .normal:
+            CorrectionProfile(confidenceThresholdOffset: 0, minimumDeltaOverride: nil)
+        case .textFocused:
+            CorrectionProfile(confidenceThresholdOffset: -0.04, minimumDeltaOverride: 0.16)
+        }
+    }
+}
+
+struct CorrectionProfile: Equatable {
+    var confidenceThresholdOffset: Double
+    var minimumDeltaOverride: Double?
+
+    static let normal = CorrectionProfile(confidenceThresholdOffset: 0, minimumDeltaOverride: nil)
+
+    func tightened(with other: CorrectionProfile) -> CorrectionProfile {
+        let tightenedMinimumDelta: Double?
+        switch (minimumDeltaOverride, other.minimumDeltaOverride) {
+        case (.none, .none):
+            tightenedMinimumDelta = nil
+        case (.some(let lhs), .none):
+            tightenedMinimumDelta = lhs
+        case (.none, .some(let rhs)):
+            tightenedMinimumDelta = rhs
+        case (.some(let lhs), .some(let rhs)):
+            tightenedMinimumDelta = max(lhs, rhs)
+        }
+
+        return CorrectionProfile(
+            confidenceThresholdOffset: max(confidenceThresholdOffset, other.confidenceThresholdOffset),
+            minimumDeltaOverride: tightenedMinimumDelta
+        )
+    }
+}
+
 enum ExclusionPreset: String, CaseIterable, Identifiable, Hashable {
     case passwordManagers
     case developerTools
@@ -78,7 +144,7 @@ enum ExclusionPreset: String, CaseIterable, Identifiable, Hashable {
     var displayName: String {
         switch self {
         case .passwordManagers: "Password Managers"
-        case .developerTools: "Developer Tools"
+        case .developerTools: "Terminal & Shells"
         case .remoteDesktop: "Remote Desktop & Screen Sharing"
         }
     }
@@ -86,7 +152,7 @@ enum ExclusionPreset: String, CaseIterable, Identifiable, Hashable {
     var detail: String {
         switch self {
         case .passwordManagers: "1Password, Bitwarden, KeePassXC"
-        case .developerTools: "Terminal, iTerm, Xcode, Cursor, VS Code, Sublime Text"
+        case .developerTools: "Terminal, iTerm"
         case .remoteDesktop: "Screen Sharing, Microsoft Remote Desktop, AnyDesk"
         }
     }
@@ -103,12 +169,7 @@ enum ExclusionPreset: String, CaseIterable, Identifiable, Hashable {
         case .developerTools:
             return [
                 "com.apple.Terminal",
-                "com.googlecode.iterm2",
-                "com.apple.dt.Xcode",
-                "com.microsoft.VSCode",
-                "com.todesktop.230313mzl4w4u92",
-                "com.github.atom",
-                "com.sublimetext.4"
+                "com.googlecode.iterm2"
             ]
         case .remoteDesktop:
             return [

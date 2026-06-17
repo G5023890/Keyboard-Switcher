@@ -2,7 +2,7 @@
 
 Keyboard Switcher is a native macOS menu bar utility that corrects text typed with the wrong keyboard layout. It currently targets English, Russian, and Hebrew, runs locally, and keeps the app bundle small by using Apple system frameworks plus compact bundled word lists.
 
-Current release checkpoint: `v0.85 (1959.15.06.26)`.
+Current release checkpoint: `v0.88 (0903.1706.26)`.
 
 ## What It Does
 
@@ -16,7 +16,7 @@ Current release checkpoint: `v0.85 (1959.15.06.26)`.
 - Learns from manual Double Shift corrections and from Undo suppressions.
 - Handles selected short functional words such as Russian `и`, English `I`/`in`, and Hebrew `ו`/`של` with extra safeguards.
 - Avoids correction in excluded apps and unsafe text shapes such as URLs, emails, file paths, shell-like commands, and code-like tokens.
-- Uses local dictionaries, local spelling signals, compact scoring rules, and user learning. It does not send typed text to the internet.
+- Uses project-provided local dictionaries, local spelling signals, compact scoring rules, optional local Core ML shadow scoring, and user learning. It does not send typed text to the internet.
 
 ## Design
 
@@ -47,8 +47,20 @@ Candidates are scored using:
 - Technical casing rules for terms like `macOS`, `iOS`, `CoreML`, `SwiftUI`, and `Xcode`.
 - Local user learning.
 - Local suppressions after undo.
+- Optional local Core ML safety classification in shadow mode. The model records diagnostics and divergence against the rule-based scorer, but the rule/scoring pipeline remains the source of truth in this release.
 
 The app only applies a correction when the winner is clear enough. Low-confidence cases are left alone.
+
+## Local Intelligence
+
+`v0.88` adds the first local Core ML safety layer without changing the correction engine's authority.
+
+- `CorrectionSafetyClassifier.mlmodel` is bundled as a small local model.
+- The model runs only after a word-level decision point, such as a terminator, manual correction, or suggestion flow.
+- The model currently operates in shadow/reranker diagnostics mode: it reports `auto_correct`, `suggest_only`, or `do_nothing`, plus confidence, but does not override the deterministic safety rules.
+- Diagnostics show the last ML decision, confidence, text context, divergence from the rule fallback, and local training sample count.
+- Synthetic dataset and training helpers live in `scripts/generate_synthetic_dataset.py` and `scripts/train_correction_safety_model.swift`.
+- Training samples are stored locally and are used for development diagnostics; no typed text is sent to a network service.
 
 Recent short-word examples:
 
@@ -102,12 +114,20 @@ Bundled resources are kept small:
 
 - `KeyboardSwitcher/Resources/russian-frequency-50000.txt`
 - `KeyboardSwitcher/Resources/english-common-5000.txt`
+- `KeyboardSwitcher/Resources/short-ru-core-1-4.txt`
+- `KeyboardSwitcher/Resources/short-ru-extended-1-4.txt`
+- `KeyboardSwitcher/Resources/short-en-core-1-4.txt`
+- `KeyboardSwitcher/Resources/short-en-extended-1-4.txt`
+- `KeyboardSwitcher/Resources/technical-terms-ui.txt`
+- `KeyboardSwitcher/Resources/technical-terms-ui.csv`
+- `KeyboardSwitcher/Resources/technical-terms-ui-rules.csv`
+- `KeyboardSwitcher/Resources/CorrectionSafetyClassifier.mlmodel`
 - `KeyboardSwitcher/Resources/AppIcon.icns`
 - `KeyboardSwitcher/Resources/KeyboardSwitcherIcon_1024_whitebg.png`
 - `KeyboardSwitcher/Resources/switch_typewriter_shift.wav`
 - `KeyboardSwitcher/Resources/THIRD-PARTY-NOTICES.txt`
 
-The current installed app bundle is roughly 5 MB, comfortably below the 500 MB hard limit.
+The current installed app bundle is roughly 7 MB, comfortably below the 500 MB hard limit.
 
 ## Third-Party Notices
 
@@ -115,15 +135,19 @@ See `LICENSES/THIRD-PARTY-NOTICES.md` and the bundled `KeyboardSwitcher/Resource
 
 Summary:
 
-- Russian frequency data is derived from the University of Leeds Russian Internet Corpus and William Hingston's cleaned `hingston/russian` repository. The source data is distributed under Creative Commons Attribution 2.5.
-- English common-word data is derived from Michael Wehar's `Public-Domain-Word-Lists`, whose README describes `5000-more-common.txt` as public domain.
+- Current Russian and English scoring dictionaries are project-provided bundled resources maintained for Keyboard Switcher.
+- Short Russian and English 1-4 character word lists are project-generated resources created by the project owner with ChatGPT assistance.
+- Technical terms and technical-token rules are project-provided resources used to reduce false corrections around macOS, iOS, SwiftUI, Core ML, Xcode, APIs, filenames, and identifiers.
+- `CorrectionSafetyClassifier.mlmodel` is a project-generated local Core ML model trained from synthetic/project data for shadow safety diagnostics.
 - The app icon and switch sound are project-provided assets.
 
-Resources that were evaluated but are not bundled in `v0.85`:
+Resources that were evaluated or used as development references but are not bundled as current dictionaries in `v0.88`:
 
+- `wordfreq` 3.1.1 and `pymorphy3`, because the current Russian and English dictionaries have been replaced by project-provided resources.
 - `first20hours/google-10000-english`, because its license notice cautions against commercial use without licensing from the Linguistic Data Consortium.
 - `dwyl/english-words`, because the current app does not need a very large English word list.
-- `rspeer/wordfreq`, because the project currently avoids heavy Python/package data and keeps the macOS app compact.
+- `hingston/russian` and the University of Leeds Russian Internet Corpus frequency list, because the Russian frequency resource has been replaced.
+- `MichaelWehar/Public-Domain-Word-Lists`, because the English common-word resource has been replaced.
 
 ## Project License
 
@@ -161,7 +185,7 @@ DEVELOPER_DIR=/Applications/Xcode-beta.app/Contents/Developer \
   test
 ```
 
-Current checkpoint test status: 34 unit tests passing.
+Current checkpoint test status: 80 unit tests passing.
 
 ## Install Locally
 

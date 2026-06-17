@@ -1,8 +1,42 @@
+import CoreGraphics
 import Foundation
 
 struct KeyStroke: Equatable, Sendable {
     let keyCode: Int64
     let isShifted: Bool
+    let isCapsLocked: Bool
+    let modifierFlagsRawValue: UInt64
+    let characters: String
+    let charactersIgnoringModifiers: String
+    let inputSourceID: String
+    let inputLanguage: KeyboardLanguage?
+
+    init(
+        keyCode: Int64,
+        isShifted: Bool,
+        isCapsLocked: Bool = false,
+        modifierFlagsRawValue: UInt64 = 0,
+        characters: String = "",
+        charactersIgnoringModifiers: String = "",
+        inputSourceID: String = "",
+        inputLanguage: KeyboardLanguage? = nil
+    ) {
+        self.keyCode = keyCode
+        self.isShifted = isShifted
+        self.isCapsLocked = isCapsLocked
+        self.modifierFlagsRawValue = modifierFlagsRawValue
+        self.characters = characters
+        self.charactersIgnoringModifiers = charactersIgnoringModifiers
+        self.inputSourceID = inputSourceID
+        self.inputLanguage = inputLanguage
+    }
+
+    var hasNonReplayableModifiers: Bool {
+        let flags = CGEventFlags(rawValue: modifierFlagsRawValue)
+        return flags.contains(.maskCommand)
+            || flags.contains(.maskControl)
+            || flags.contains(.maskAlternate)
+    }
 }
 
 struct LayoutCandidate: Equatable {
@@ -24,11 +58,11 @@ enum LayoutEngine {
     static func character(for stroke: KeyStroke, language: KeyboardLanguage) -> String? {
         switch language {
         case .english:
-            english[stroke.keyCode]?[stroke.isShifted ? 1 : 0]
+            variant(from: english[stroke.keyCode], for: stroke)
         case .russian:
-            russian[stroke.keyCode]?[stroke.isShifted ? 1 : 0]
+            variant(from: russian[stroke.keyCode], for: stroke)
         case .hebrew:
-            hebrew[stroke.keyCode]?[stroke.isShifted ? 1 : 0]
+            variant(from: hebrew[stroke.keyCode], for: stroke)
         }
     }
 
@@ -37,6 +71,46 @@ enum LayoutEngine {
             guard let character = character(for: stroke, language: language) else { return false }
             return character.rangeOfCharacter(from: .letters) != nil
         } || character(for: stroke, language: currentLanguage) == "'"
+    }
+
+    static func technicalTokenSeparator(for stroke: KeyStroke, currentLanguage: KeyboardLanguage) -> String? {
+        guard
+            let currentCharacter = character(for: stroke, language: currentLanguage),
+            currentCharacter.rangeOfCharacter(from: .letters) == nil,
+            let englishCharacter = character(for: stroke, language: .english)
+        else {
+            return nil
+        }
+
+        let separators = CharacterSet(charactersIn: "/\\_@=:")
+        return englishCharacter.rangeOfCharacter(from: separators) != nil ? englishCharacter : nil
+    }
+
+    static func physicalReplaySummary(for strokes: [KeyStroke], limit: Int = 8) -> String {
+        guard !strokes.isEmpty else { return "Empty" }
+
+        return strokes.suffix(limit).map { stroke in
+            let flags = CGEventFlags(rawValue: stroke.modifierFlagsRawValue)
+            var parts = ["key:\(stroke.keyCode)"]
+            if stroke.isShifted { parts.append("shift") }
+            if stroke.isCapsLocked { parts.append("caps") }
+            if flags.contains(.maskAlternate) { parts.append("option") }
+            if flags.contains(.maskCommand) { parts.append("command") }
+            if flags.contains(.maskControl) { parts.append("control") }
+            if let inputLanguage = stroke.inputLanguage {
+                parts.append(inputLanguage.rawValue)
+            }
+            if !stroke.inputSourceID.isEmpty {
+                parts.append("source:\(stroke.inputSourceID)")
+            }
+            if !stroke.characters.isEmpty {
+                parts.append("chars:\(stroke.characters)")
+            }
+            if !stroke.charactersIgnoringModifiers.isEmpty {
+                parts.append("base:\(stroke.charactersIgnoringModifiers)")
+            }
+            return parts.joined(separator: " ")
+        }.joined(separator: " | ")
     }
 
     static func strokes(for text: String) -> [KeyStroke]? {
@@ -104,6 +178,24 @@ enum LayoutEngine {
         }
 
         return nil
+    }
+
+    private static func variant(from variants: [String]?, for stroke: KeyStroke) -> String? {
+        guard let variants else { return nil }
+        let lower = variants.first
+        let upper = variants.dropFirst().first
+        let usesLetterCase = lower?.rangeOfCharacter(from: .letters) != nil
+            && upper?.rangeOfCharacter(from: .letters) != nil
+            && lower != upper
+
+        let shouldUseShiftVariant = usesLetterCase
+            ? (stroke.isShifted != stroke.isCapsLocked)
+            : stroke.isShifted
+
+        if shouldUseShiftVariant, variants.count > 1 {
+            return variants[1]
+        }
+        return variants.first
     }
 
     private static func strokeForAnyLayout(character: String) -> KeyStroke? {

@@ -1,0 +1,792 @@
+A/B Test
+AB Test
+AI
+Analytics
+ASR
+Benchmark
+ChatGPT
+Checkpoint
+Claude
+CNN
+Context Window
+Core ML Tools
+Dataset
+Embedding
+Embeddings
+Eval
+FAISS
+Feature Flag
+Fine-tuning
+GAN
+Gemini
+GPT
+HNSW
+Inference
+JAX
+Keras
+Llama
+llama.cpp
+LLM
+LLMs
+LoRA
+LSTM
+Mistral
+ML
+MLX
+Model Card
+MoE
+NLG
+NLP
+NLU
+NumPy
+OCR
+Ollama
+ONNX
+OpenAI
+Pandas
+Privacy Manifest
+Prompt
+PyTorch
+QLoRA
+Quantization
+RAG
+RNN
+scikit-learn
+STT
+System Prompt
+Telemetry
+TensorFlow
+Tokenizer
+Transformer
+TTS
+VAE
+Vector DB
+Weights
+Whisper
+whisper.cpp
+Accelerate
+ActivityKit
+App Intents
+AppKit
+Apple Intelligence
+ARKit
+AVFoundation
+BackgroundTasks
+CarPlay
+CloudKit
+Combine
+Concurrency
+Core AI
+Core Animation
+Core Audio
+Core Bluetooth
+Core Data
+Core Graphics
+Core Image
+Core Location
+Core Media
+Core ML
+Core Motion
+Core Spotlight
+Core Text
+Core Video
+CoreAI
+CoreAnimation
+CoreAudio
+CoreBluetooth
+CoreData
+CoreGraphics
+CoreImage
+CoreLocation
+CoreMedia
+CoreML
+CoreMotion
+CoreSpotlight
+CoreText
+CoreVideo
+Create ML
+CreateML
+CryptoKit
+DeviceCheck
+Dynamic Island
+Foundation
+HealthKit
+HomeKit
+Intents
+IntentsUI
+Keychain Services
+Live Activities
+LocalAuthentication
+MapKit
+Metal
+MetalKit
+NaturalLanguage
+Network.framework
+NLLanguageRecognizer
+NSSpellChecker
+Observation
+PassKit
+PDFKit
+PencilKit
+PhotosUI
+PushKit
+QuickLook
+RealityKit
+San Francisco
+SceneKit
+Security.framework
+SF Pro
+SF Symbols
+Sign in with Apple
+SiriKit
+SpriteKit
+StoreKit
+SwiftUI
+TipKit
+UIKit
+URLSession
+UserNotifications
+Vision
+VisionKit
+WatchKit
+WebKit
+WidgetKit
+WKWebView
+AirDrop
+AirPlay
+AirPods
+AirPrint
+App Sandbox
+App Store
+App Store Connect
+Apple Silicon
+Apple Vision Pro
+Apple Watch
+Control Center
+Dock
+Face ID
+FaceTime
+FileVault
+Finder
+Gatekeeper
+HIG
+Human Interface Guidelines
+iCloud
+iCloud Drive
+iMac
+iOS
+iPad
+iPadOS
+iPhone
+Keychain
+Launchpad
+Liquid Glass
+M1
+M2
+M3
+M4
+M5
+Mac
+Mac mini
+Mac Studio
+MacBook
+MacBook Air
+MacBook Pro
+macOS
+Notarization
+Notification Center
+Rosetta
+Rosetta 2
+Sandbox
+Shortcuts
+Siri
+Spotlight
+Stage Manager
+TestFlight
+Touch ID
+tvOS
+visionOS
+watchOS
+.7z
+.app
+.bash
+.c
+.cpp
+.css
+.csv
+.db
+.dmg
+.dockerignore
+.env
+.fish
+.gitignore
+.go
+.gradle
+.gz
+.h
+.heic
+.hpp
+.html
+.ico
+.ipa
+.java
+.jpeg
+.jpg
+.js
+.json
+.jsx
+.kt
+.kts
+.log
+.m
+.m4a
+.md
+.mdx
+.mm
+.mov
+.mp3
+.mp4
+.pdf
+.pkg
+.plist
+.png
+.py
+.rb
+.rs
+.sh
+.sql
+.sqlite
+.storyboard
+.strings
+.svg
+.swift
+.tar
+.ts
+.tsv
+.tsx
+.txt
+.wav
+.webp
+.xcarchive
+.xcassets
+.xcodeproj
+.xcworkspace
+.xib
+.xml
+.yaml
+.yml
+.zip
+.zsh
+2FA
+A Record
+AAAA
+Amnezia
+Bandwidth
+BIMI
+BSSID
+CAA
+CDN
+CGNAT
+CIDR
+Clash
+CNAME
+CVE
+CVSS
+CWE
+DDoS
+DKIM
+DMARC
+DNS
+DNSSEC
+DoH
+DoT
+EDR
+FIDO2
+Firewall
+FTP
+Gateway
+HTTP
+HTTP/2
+HTTP/3
+HTTPS
+IKEv2
+IMAP
+IP Address
+IPsec
+IPv4
+IPv6
+Jitter
+JWT
+Kerberos
+LAN
+Latency
+LDAP
+MAC Address
+MFA
+MTU
+MX
+NAT
+NS
+OAuth
+OAuth2
+OIDC
+OpenVPN
+Packet Loss
+Passkey
+Ping
+POP3
+Proxy
+PTR
+QUIC
+Reality
+Route
+Router
+SAML
+SFTP
+Shadowsocks
+SIEM
+Sing-box
+SMTP
+SOA
+SOC
+SOCKS5
+SPF
+SSH
+SSID
+SSL
+TCP
+Throughput
+TLS
+TOTP
+Traceroute
+Trojan
+TXT
+UDP
+VLAN
+VLESS
+VMess
+VPN
+WAF
+WAN
+WebAuthn
+WireGuard
+WLAN
+XDR
+Xray
+YubiKey
+Zero Trust
+автодополнение
+автозамена
+автоправка
+автосейв
+алерт
+бейдж
+билд
+блэклист
+буфер
+бэкап
+вайтлист
+вкладка
+горячая клавиша
+диалог
+доступ
+доступность
+жест
+задержка
+иконка
+интерфейс
+инференс
+исключение
+канал
+кандидат
+карточка
+клавиатура
+клиент
+кнопка
+кэш
+лог
+локализация
+маршрут
+меню
+метрика
+модалка
+модель
+окно
+панель
+переключатель
+песочница
+пинг
+подпись
+подсказка
+поиск
+поле
+поповер
+порог
+потери
+права
+провайдер
+прокси
+профиль
+разрешение
+раскладка
+резолвер
+релиз
+сайдбар
+сборка
+свайп
+светлая тема
+сервер
+сертификат
+сетка
+синхронизация
+скоринг
+слайдер
+словарь
+сортировка
+список
+таблица
+тап
+телеметрия
+токен
+транслит
+тулбар
+тумблер
+туннель
+тёмная тема
+уведомление
+фаервол
+фильтр
+фокус
+ховер
+частота
+чекбокс
+чип
+шлюз
+шорткат
+Accessibility
+Adaptive
+Alert
+Animation
+API
+Auto Layout
+Autocomplete
+Autocorrect
+Autofill
+Autosave
+Badge
+Baseline
+Blur
+Breakpoint
+Button
+Card
+Checkbox
+Chip
+CLI
+Collection View
+Color Palette
+Command Palette
+Context Menu
+Copy
+Corner Radius
+Cut
+Dark Mode
+Design Token
+Dialog
+Divider
+Drag and Drop
+Drawer
+Drop Zone
+Dynamic Type
+Easing
+Elevation
+Empty State
+Focus
+Focus Ring
+ForEach
+Form
+Gesture
+Glass
+Grid
+GUI
+Haptic
+High Contrast
+Hotkey
+Hover
+HStack
+HUD
+I18n
+Icon
+IDE
+Inspector
+Internationalization
+Keyboard Shortcut
+L10n
+Label
+Layout
+LazyGrid
+LazyHStack
+LazyVStack
+Light Mode
+List
+Localization
+Long Press
+LTR
+Material
+Menu Bar
+Microinteraction
+Modal
+Navigation Bar
+Navigation Stack
+NavigationSplitView
+Onboarding
+Opacity
+Overlay
+Padding
+Panel
+Paste
+Picker
+Pinch
+Placeholder
+Popover
+Preferences
+Progress View
+Radio Button
+Redo
+Reduce Motion
+Responsive
+RTL
+Safe Area
+Scene
+ScrollView
+SDK
+Search Bar
+SearchField
+Segmented Control
+Select All
+Settings
+Shadow
+Sheet
+Sidebar
+Skeleton
+Slider
+Smart Paste
+Snackbar
+Spacer
+Spacing
+Spinner
+Split View
+Status Bar
+Stepper
+Subview
+Swipe
+Switch
+Tab Bar
+Table
+TabView
+Tap
+TextField
+TextView
+Tile
+Toast
+Toggle
+Token
+Toolbar
+Tooltip
+Transition
+TUI
+Typography
+UI
+Undo
+UX
+Vibrancy
+View
+VoiceOver
+VStack
+WebView
+Window
+Zoom
+ZStack
+Angular
+Ansible
+Apache
+AWS
+Azure
+Bootstrap
+Bun
+Caddy
+ClickHouse
+Cloudflare
+CSS
+CSV
+Deno
+Django
+Docker
+ElasticSearch
+ESBuild
+Express
+FastAPI
+Firebase
+Flask
+GCP
+Grafana
+GraphQL
+gRPC
+Helm
+HTML
+JavaScript
+JSON
+k8s
+Kibana
+Kubernetes
+Laravel
+Logstash
+MariaDB
+Markdown
+MDX
+MinIO
+MongoDB
+MySQL
+Nagios
+Netlify
+Next.js
+Nginx
+Node.js
+npm
+Nuxt
+OpenSearch
+OpenTelemetry
+OTel
+pnpm
+Podman
+Postgres
+PostgreSQL
+Prometheus
+Rails
+React
+Redis
+REST
+Rollup
+Ruby on Rails
+S3
+Sentry
+Spring
+SQLite
+Supabase
+Svelte
+Tailwind
+Terraform
+Traefik
+TypeScript
+Vercel
+Vite
+Vue
+WASM
+WebAssembly
+Webpack
+WebRTC
+WebSocket
+XML
+YAML
+yarn
+Zabbix
+actor
+altool
+APNs
+Asset Catalog
+async
+AsyncSequence
+await
+Binding
+Bitbucket
+Bundle ID
+Canvas
+Carthage
+CD
+CI
+CI/CD
+Clang
+CMake
+Cocoa
+Cocoa Touch
+CocoaPods
+Codable
+codesign
+Coordinator
+Dependency Injection
+DerivedData
+Developer ID
+DI
+DMG
+DocC
+dSYM
+Entitlements
+EnvironmentObject
+Equatable
+Fastlane
+git
+GitHub
+GitLab
+Hashable
+Identifiable
+Info.plist
+Instruments
+Interface Builder
+IPA
+LLDB
+LLVM
+MainActor
+Makefile
+MVC
+MVI
+MVVM
+Nib
+notarytool
+NSViewController
+ObjC
+Objective-C
+Observable
+ObservableObject
+Package.swift
+PKG
+PreviewProvider
+Previews
+Project
+Provisioning Profile
+Published
+Result
+Scheme
+Sendable
+Simulator
+Snapshot Test
+SourceKit
+SPM
+StateObject
+Storyboard
+Swift
+Swift Package Manager
+SwiftFormat
+SwiftLint
+SwiftSyntax
+Target
+Task
+TaskGroup
+Team ID
+Test Plan
+Tuist
+UI Test
+UIViewController
+Unit Test
+ViewBuilder
+ViewController
+ViewModel
+VIPER
+Workspace
+XCArchive
+XCConfig
+XCFramework
+Xcode
+xcodebuild
+xcrun
+XCTest
+XCUITest
+XIB
