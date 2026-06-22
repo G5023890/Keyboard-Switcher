@@ -21,27 +21,25 @@
 		1A00010C0000000000000001 /* GeneratedIconFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A00000C0000000000000001 /* GeneratedIconFactory.swift */; };
 		1A00010D0000000000000001 /* UndoManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A00000D0000000000000001 /* UndoManager.swift */; };
 		1A00010E0000000000000001 /* KeyboardSwitcherCoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A00000E0000000000000001 /* KeyboardSwitcherCoreTests.swift */; };
-		1A00010F0000000000000001 /* russian-frequency-50000.txt in Resources */ = {isa = PBXBuildFile; fileRef = 1A0000120000000000000001 /* russian-frequency-50000.txt */; };
 		1A0001100000000000000001 /* THIRD-PARTY-NOTICES.txt in Resources */ = {isa = PBXBuildFile; fileRef = 1A0000130000000000000001 /* THIRD-PARTY-NOTICES.txt */; };
-		1A0001110000000000000001 /* english-common-5000.txt in Resources */ = {isa = PBXBuildFile; fileRef = 1A0000140000000000000001 /* english-common-5000.txt */; };
 		1A0001120000000000000001 /* LearningStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0000150000000000000001 /* LearningStore.swift */; };
 		1A0001130000000000000001 /* IconProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0000160000000000000001 /* IconProvider.swift */; };
 		1A0001140000000000000001 /* AppIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = 1A0000170000000000000001 /* AppIcon.icns */; };
 		1A0001150000000000000001 /* KeyboardSwitcherIcon_1024_whitebg.png in Resources */ = {isa = PBXBuildFile; fileRef = 1A0000180000000000000001 /* KeyboardSwitcherIcon_1024_whitebg.png */; };
 		1A0001160000000000000001 /* SoundPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0000190000000000000001 /* SoundPlayer.swift */; };
 		1A0001170000000000000001 /* switch_typewriter_shift.wav in Resources */ = {isa = PBXBuildFile; fileRef = 1A00001A0000000000000001 /* switch_typewriter_shift.wav */; };
+		1A00012A0000000000000001 /* switch_smart_flip.wav in Resources */ = {isa = PBXBuildFile; fileRef = 1A00002D0000000000000001 /* switch_smart_flip.wav */; };
 		1A0001180000000000000001 /* MenuBarIconStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A00001B0000000000000001 /* MenuBarIconStyle.swift */; };
 		1A0001190000000000000001 /* SettingsModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A00001C0000000000000001 /* SettingsModels.swift */; };
 		1A00011A0000000000000001 /* FocusedInputContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A00001D0000000000000001 /* FocusedInputContext.swift */; };
-		1A00011B0000000000000001 /* short-ru-core-1-4.txt in Resources */ = {isa = PBXBuildFile; fileRef = 1A00001E0000000000000001 /* short-ru-core-1-4.txt */; };
-		1A00011C0000000000000001 /* short-ru-extended-1-4.txt in Resources */ = {isa = PBXBuildFile; fileRef = 1A00001F0000000000000001 /* short-ru-extended-1-4.txt */; };
-		1A00011D0000000000000001 /* short-en-core-1-4.txt in Resources */ = {isa = PBXBuildFile; fileRef = 1A0000200000000000000001 /* short-en-core-1-4.txt */; };
-		1A00011E0000000000000001 /* short-en-extended-1-4.txt in Resources */ = {isa = PBXBuildFile; fileRef = 1A0000210000000000000001 /* short-en-extended-1-4.txt */; };
-		1A00011F0000000000000001 /* technical-terms-ui.txt in Resources */ = {isa = PBXBuildFile; fileRef = 1A0000220000000000000001 /* technical-terms-ui.txt */; };
-		1A0001200000000000000001 /* technical-terms-ui.csv in Resources */ = {isa = PBXBuildFile; fileRef = 1A0000230000000000000001 /* technical-terms-ui.csv */; };
-		1A0001210000000000000001 /* technical-terms-ui-rules.csv in Resources */ = {isa = PBXBuildFile; fileRef = 1A0000240000000000000001 /* technical-terms-ui-rules.csv */; };
 		1A0001220000000000000001 /* CorrectionSafetyClassifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0000250000000000000001 /* CorrectionSafetyClassifier.swift */; };
 		1A0001230000000000000001 /* CorrectionSafetyClassifier.mlmodel in Resources */ = {isa = PBXBuildFile; fileRef = 1A0000260000000000000001 /* CorrectionSafetyClassifier.mlmodel */; };
+		1A0001240000000000000001 /* ru_auto_core_100k.tsv in Resources */ = {isa = PBXBuildFile; fileRef = 1A0000270000000000000001 /* ru_auto_core_100k.tsv */; };
+		1A0001250000000000000001 /* ru_manual_extended_300k.tsv in Resources */ = {isa = PBXBuildFile; fileRef = 1A0000280000000000000001 /* ru_manual_extended_300k.tsv */; };
+		1A0001260000000000000001 /* en_auto_core_50k.tsv in Resources */ = {isa = PBXBuildFile; fileRef = 1A0000290000000000000001 /* en_auto_core_50k.tsv */; };
+		1A0001270000000000000001 /* en_manual_extended_200k.tsv in Resources */ = {isa = PBXBuildFile; fileRef = 1A00002A0000000000000001 /* en_manual_extended_200k.tsv */; };
+		1A0001280000000000000001 /* short_words_auto_whitelist.tsv in Resources */ = {isa = PBXBuildFile; fileRef = 1A00002B0000000000000001 /* short_words_auto_whitelist.tsv */; };
+		1A0001290000000000000001 /* technical_never_correct.tsv in Resources */ = {isa = PBXBuildFile; fileRef = 1A00002C0000000000000001 /* technical_never_correct.tsv */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -72,27 +70,25 @@
 		1A00000F0000000000000001 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		1A0000100000000000000001 /* Keyboard Switcher.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Keyboard Switcher.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		1A0000110000000000000001 /* Keyboard SwitcherTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Keyboard SwitcherTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		1A0000120000000000000001 /* russian-frequency-50000.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Resources/russian-frequency-50000.txt"; sourceTree = "<group>"; };
 		1A0000130000000000000001 /* THIRD-PARTY-NOTICES.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Resources/THIRD-PARTY-NOTICES.txt"; sourceTree = "<group>"; };
-		1A0000140000000000000001 /* english-common-5000.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Resources/english-common-5000.txt"; sourceTree = "<group>"; };
 		1A0000150000000000000001 /* LearningStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LearningStore.swift; sourceTree = "<group>"; };
 		1A0000160000000000000001 /* IconProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconProvider.swift; sourceTree = "<group>"; };
 		1A0000170000000000000001 /* AppIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = "Resources/AppIcon.icns"; sourceTree = "<group>"; };
 		1A0000180000000000000001 /* KeyboardSwitcherIcon_1024_whitebg.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Resources/KeyboardSwitcherIcon_1024_whitebg.png"; sourceTree = "<group>"; };
 		1A0000190000000000000001 /* SoundPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundPlayer.swift; sourceTree = "<group>"; };
 		1A00001A0000000000000001 /* switch_typewriter_shift.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Resources/switch_typewriter_shift.wav"; sourceTree = "<group>"; };
+		1A00002D0000000000000001 /* switch_smart_flip.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Resources/switch_smart_flip.wav"; sourceTree = "<group>"; };
 		1A00001B0000000000000001 /* MenuBarIconStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarIconStyle.swift; sourceTree = "<group>"; };
 		1A00001C0000000000000001 /* SettingsModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsModels.swift; sourceTree = "<group>"; };
 		1A00001D0000000000000001 /* FocusedInputContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusedInputContext.swift; sourceTree = "<group>"; };
-		1A00001E0000000000000001 /* short-ru-core-1-4.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Resources/short-ru-core-1-4.txt"; sourceTree = "<group>"; };
-		1A00001F0000000000000001 /* short-ru-extended-1-4.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Resources/short-ru-extended-1-4.txt"; sourceTree = "<group>"; };
-		1A0000200000000000000001 /* short-en-core-1-4.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Resources/short-en-core-1-4.txt"; sourceTree = "<group>"; };
-		1A0000210000000000000001 /* short-en-extended-1-4.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Resources/short-en-extended-1-4.txt"; sourceTree = "<group>"; };
-		1A0000220000000000000001 /* technical-terms-ui.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Resources/technical-terms-ui.txt"; sourceTree = "<group>"; };
-		1A0000230000000000000001 /* technical-terms-ui.csv */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Resources/technical-terms-ui.csv"; sourceTree = "<group>"; };
-		1A0000240000000000000001 /* technical-terms-ui-rules.csv */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Resources/technical-terms-ui-rules.csv"; sourceTree = "<group>"; };
 		1A0000250000000000000001 /* CorrectionSafetyClassifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CorrectionSafetyClassifier.swift; sourceTree = "<group>"; };
 		1A0000260000000000000001 /* CorrectionSafetyClassifier.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = "Resources/CorrectionSafetyClassifier.mlmodel"; sourceTree = "<group>"; };
+		1A0000270000000000000001 /* ru_auto_core_100k.tsv */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Resources/ru_auto_core_100k.tsv"; sourceTree = "<group>"; };
+		1A0000280000000000000001 /* ru_manual_extended_300k.tsv */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Resources/ru_manual_extended_300k.tsv"; sourceTree = "<group>"; };
+		1A0000290000000000000001 /* en_auto_core_50k.tsv */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Resources/en_auto_core_50k.tsv"; sourceTree = "<group>"; };
+		1A00002A0000000000000001 /* en_manual_extended_200k.tsv */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Resources/en_manual_extended_200k.tsv"; sourceTree = "<group>"; };
+		1A00002B0000000000000001 /* short_words_auto_whitelist.tsv */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Resources/short_words_auto_whitelist.tsv"; sourceTree = "<group>"; };
+		1A00002C0000000000000001 /* technical_never_correct.tsv */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Resources/technical_never_correct.tsv"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -134,19 +130,17 @@
 				1A00000C0000000000000001 /* GeneratedIconFactory.swift */,
 				1A00000D0000000000000001 /* UndoManager.swift */,
 				1A00000F0000000000000001 /* Info.plist */,
-				1A0000120000000000000001 /* russian-frequency-50000.txt */,
-				1A0000140000000000000001 /* english-common-5000.txt */,
-				1A00001E0000000000000001 /* short-ru-core-1-4.txt */,
-				1A00001F0000000000000001 /* short-ru-extended-1-4.txt */,
-				1A0000200000000000000001 /* short-en-core-1-4.txt */,
-				1A0000210000000000000001 /* short-en-extended-1-4.txt */,
-				1A0000220000000000000001 /* technical-terms-ui.txt */,
-				1A0000230000000000000001 /* technical-terms-ui.csv */,
-				1A0000240000000000000001 /* technical-terms-ui-rules.csv */,
 				1A0000260000000000000001 /* CorrectionSafetyClassifier.mlmodel */,
+				1A0000270000000000000001 /* ru_auto_core_100k.tsv */,
+				1A0000280000000000000001 /* ru_manual_extended_300k.tsv */,
+				1A0000290000000000000001 /* en_auto_core_50k.tsv */,
+				1A00002A0000000000000001 /* en_manual_extended_200k.tsv */,
+				1A00002B0000000000000001 /* short_words_auto_whitelist.tsv */,
+				1A00002C0000000000000001 /* technical_never_correct.tsv */,
 				1A0000170000000000000001 /* AppIcon.icns */,
 				1A0000180000000000000001 /* KeyboardSwitcherIcon_1024_whitebg.png */,
 				1A00001A0000000000000001 /* switch_typewriter_shift.wav */,
+				1A00002D0000000000000001 /* switch_smart_flip.wav */,
 				1A0000130000000000000001 /* THIRD-PARTY-NOTICES.txt */,
 			);
 			path = KeyboardSwitcher;
@@ -236,19 +230,17 @@
 
 /* Begin PBXResourcesBuildPhase section */
 		1A0008010000000000000001 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (
-				1A00010F0000000000000001 /* russian-frequency-50000.txt in Resources */,
-				1A0001110000000000000001 /* english-common-5000.txt in Resources */,
-				1A00011B0000000000000001 /* short-ru-core-1-4.txt in Resources */,
-				1A00011C0000000000000001 /* short-ru-extended-1-4.txt in Resources */,
-				1A00011D0000000000000001 /* short-en-core-1-4.txt in Resources */,
-				1A00011E0000000000000001 /* short-en-extended-1-4.txt in Resources */,
-				1A00011F0000000000000001 /* technical-terms-ui.txt in Resources */,
-				1A0001200000000000000001 /* technical-terms-ui.csv in Resources */,
-				1A0001210000000000000001 /* technical-terms-ui-rules.csv in Resources */,
 				1A0001230000000000000001 /* CorrectionSafetyClassifier.mlmodel in Resources */,
+				1A0001240000000000000001 /* ru_auto_core_100k.tsv in Resources */,
+				1A0001250000000000000001 /* ru_manual_extended_300k.tsv in Resources */,
+				1A0001260000000000000001 /* en_auto_core_50k.tsv in Resources */,
+				1A0001270000000000000001 /* en_manual_extended_200k.tsv in Resources */,
+				1A0001280000000000000001 /* short_words_auto_whitelist.tsv in Resources */,
+				1A0001290000000000000001 /* technical_never_correct.tsv in Resources */,
 				1A0001140000000000000001 /* AppIcon.icns in Resources */,
 				1A0001150000000000000001 /* KeyboardSwitcherIcon_1024_whitebg.png in Resources */,
 				1A0001170000000000000001 /* switch_typewriter_shift.wav in Resources */,
+				1A00012A0000000000000001 /* switch_smart_flip.wav in Resources */,
 				1A0001100000000000000001 /* THIRD-PARTY-NOTICES.txt in Resources */,
 			); runOnlyForDeploymentPostprocessing = 0; };
 		1A0008030000000000000001 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = ( ); runOnlyForDeploymentPostprocessing = 0; };

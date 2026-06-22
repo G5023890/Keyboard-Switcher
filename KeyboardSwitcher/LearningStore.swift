@@ -37,6 +37,139 @@ struct LearningImportResult: Equatable {
     let importedSuppressions: Int
 }
 
+struct LearnedCorrectionValidation: Equatable {
+    enum Severity: Equatable {
+        case valid
+        case blocked
+    }
+
+    let severity: Severity
+    let reasons: [String]
+
+    static let valid = LearnedCorrectionValidation(severity: .valid, reasons: [])
+
+    var canStore: Bool {
+        severity == .valid
+    }
+
+    var isSuspicious: Bool {
+        severity != .valid
+    }
+
+    var message: String {
+        reasons.joined(separator: " ")
+    }
+}
+
+enum LearnedCorrectionValidator {
+    private static let allowedReplacementPunctuation = CharacterSet(charactersIn: "'’")
+
+    static func validate(
+        original: String,
+        replacement: String,
+        language: KeyboardLanguage
+    ) -> LearnedCorrectionValidation {
+        let original = original.trimmingCharacters(in: .whitespacesAndNewlines)
+        let replacement = replacement.trimmingCharacters(in: .whitespacesAndNewlines)
+        var reasons: [String] = []
+
+        if original.isEmpty {
+            reasons.append("Typed form is empty.")
+        }
+        if replacement.isEmpty {
+            reasons.append("Replacement is empty.")
+        }
+        if normalized(original) == normalized(replacement), !original.isEmpty {
+            reasons.append("Typed form and replacement are the same.")
+        }
+        if original.rangeOfCharacter(from: .whitespacesAndNewlines) != nil {
+            reasons.append("Typed form must be one word.")
+        }
+        if replacement.rangeOfCharacter(from: .newlines) != nil {
+            reasons.append("Replacement must not contain line breaks.")
+        }
+
+        if !replacement.isEmpty, containsUnsafeReplacementScalar(replacement) {
+            reasons.append("Replacement contains punctuation or separators.")
+        }
+
+        if !replacement.isEmpty {
+            let detectedLanguage = LayoutEngine.detectScriptLanguage(for: replacement)
+            if detectedLanguage != language {
+                reasons.append("Replacement does not match \(language.displayName).")
+            }
+        }
+
+        if !original.isEmpty, !replacement.isEmpty, !isReplayConsistent(original: original, replacement: replacement, language: language) {
+            reasons.append("Typed form does not replay cleanly to the replacement.")
+        }
+
+        if reasons.isEmpty, !hasLexicalEvidence(replacement: replacement, language: language) {
+            reasons.append("Replacement is not recognized by the bundled dictionaries.")
+        }
+
+        guard reasons.isEmpty else {
+            return LearnedCorrectionValidation(severity: .blocked, reasons: reasons)
+        }
+        return .valid
+    }
+
+    static func validate(_ correction: LearnedCorrection) -> LearnedCorrectionValidation {
+        validate(original: correction.original, replacement: correction.replacement, language: correction.language)
+    }
+
+    private static func containsUnsafeReplacementScalar(_ text: String) -> Bool {
+        text.unicodeScalars.contains { scalar in
+            if CharacterSet.letters.contains(scalar) { return false }
+            if CharacterSet.whitespaces.contains(scalar) { return false }
+            if allowedReplacementPunctuation.contains(scalar) { return false }
+            return true
+        }
+    }
+
+    private static func isReplayConsistent(
+        original: String,
+        replacement: String,
+        language: KeyboardLanguage
+    ) -> Bool {
+        guard let strokes = LayoutEngine.mixedLayoutStrokes(for: original) else { return false }
+        let expected = normalizedForReplay(replacement)
+        return LayoutEngine
+            .candidates(for: strokes, enabledLanguages: [language])
+            .contains { normalizedForReplay($0.text) == expected }
+    }
+
+    private static func hasLexicalEvidence(replacement: String, language: KeyboardLanguage) -> Bool {
+        if language == .hebrew {
+            return true
+        }
+
+        let words = replacement
+            .split(whereSeparator: { $0.isWhitespace })
+            .map(String.init)
+
+        guard !words.isEmpty else { return false }
+        let classifier = TextClassifier()
+
+        return words.allSatisfy { word in
+            let candidate = LayoutCandidate(language: language, text: word)
+            return classifier.isCoreShortWord(word, language: language)
+                || classifier.hasManualLexicalEvidence(candidate)
+                || classifier.hasStrongLexicalEvidence(candidate)
+        }
+    }
+
+    private static func normalized(_ text: String) -> String {
+        normalizedForReplay(text)
+    }
+
+    private static func normalizedForReplay(_ text: String) -> String {
+        text.trimmingCharacters(in: .whitespacesAndNewlines)
+            .lowercased()
+            .replacingOccurrences(of: "ё", with: "е")
+    }
+}
+
 final class LearningStore: @unchecked Sendable {
     static let shared = LearningStore()
 
@@ -79,6 +212,10 @@ final class LearningStore: @unchecked Sendable {
     }
 
     func recordPreference(original: String, replacement: String, language: KeyboardLanguage) {
+        guard LearnedCorrectionValidator
+            .validate(original: original, replacement: replacement, language: language)
+            .canStore else { return }
+
         let original = Self.normalized(original)
         let normalizedReplacement = Self.normalized(replacement)
         let storedReplacement = replacement.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -107,6 +244,10 @@ final class LearningStore: @unchecked Sendable {
     }
 
     func setPreference(original: String, replacement: String, language: KeyboardLanguage) {
+        guard LearnedCorrectionValidator
+            .validate(original: original, replacement: replacement, language: language)
+            .canStore else { return }
+
         let original = Self.normalized(original)
         let normalizedReplacement = Self.normalized(replacement)
         let storedReplacement = replacement.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -232,7 +373,10 @@ final class LearningStore: @unchecked Sendable {
                 let replacement = correction.replacement.trimmingCharacters(in: .whitespacesAndNewlines)
                 guard !original.isEmpty,
                       !replacement.isEmpty,
-                      original != Self.normalized(replacement) else {
+                      original != Self.normalized(replacement),
+                      LearnedCorrectionValidator
+                          .validate(original: original, replacement: replacement, language: correction.language)
+                          .canStore else {
                     continue
                 }
 

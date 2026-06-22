@@ -54,6 +54,8 @@ enum CorrectionOriginFilter: String, CaseIterable, Identifiable, Hashable {
 struct KeyboardMonitorPreferences: Equatable {
     var switchInputSourceAfterCorrection = true
     var playSoundWhenLayoutCorrected = true
+    var playSoundForPossibleTypo = true
+    var correctSpellingMistakes = false
     var soundVolume = 0.75
     var playSoundOnlyForAutomaticCorrections = false
 
@@ -65,6 +67,14 @@ struct KeyboardMonitorPreferences: Equatable {
         guard playSoundWhenLayoutCorrected else { return false }
         guard !playSoundOnlyForAutomaticCorrections || origin == .automatic else { return false }
         return true
+    }
+
+    func shouldPlayPossibleTypoSound() -> Bool {
+        playSoundForPossibleTypo
+    }
+
+    func shouldCorrectSpellingMistakes() -> Bool {
+        correctSpellingMistakes
     }
 }
 

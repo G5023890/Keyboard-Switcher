@@ -1,10 +1,15 @@
 import AppKit
 import Foundation
-import NaturalLanguage
 
 struct CandidateScore: Equatable {
     let candidate: LayoutCandidate
     let score: Double
+}
+
+struct SpellingCorrection: Equatable {
+    let original: String
+    let replacement: String
+    let language: KeyboardLanguage
 }
 
 enum SafetyPreflight {
@@ -13,7 +18,8 @@ enum SafetyPreflight {
         guard !trimmed.isEmpty else { return nil }
 
         let lowercased = trimmed.lowercased()
-        if let technicalReason = TechnicalTermLexicon.protectionReason(for: trimmed) {
+        if let technicalReason = TechnicalTermLexicon.protectionReason(for: trimmed),
+           !(technicalReason == "technical delimiter token" && looksLikeLayoutPunctuationToken(trimmed)) {
             return technicalReason
         }
         if lowercased.contains("://") || lowercased.hasPrefix("www.") {
@@ -98,38 +104,52 @@ enum SafetyPreflight {
         guard commonSuffixes.contains(where: lowercased.hasSuffix) else { return false }
         return lowercased.range(of: #"[a-z0-9][a-z0-9-]*\.[a-z0-9][a-z0-9.-]*$"#, options: .regularExpression) != nil
     }
+
+    private static func looksLikeLayoutPunctuationToken(_ text: String) -> Bool {
+        guard text.rangeOfCharacter(from: .letters) != nil else { return false }
+        if text.rangeOfCharacter(from: CharacterSet(charactersIn: "/\\_@=")) != nil {
+            return false
+        }
+
+        let strongLayoutPunctuation = CharacterSet(charactersIn: ",;:'\"`‘’“”[]{}<>%^*")
+        if text.rangeOfCharacter(from: strongLayoutPunctuation) != nil {
+            return true
+        }
+
+        return text.hasPrefix(".") || text.hasSuffix(".")
+    }
 }
 
 final class TextClassifier {
-    private static let russianFrequencyWords = RankedWordList.load(
-        resourceName: "russian-frequency-50000",
-        extension: "txt",
+    private static let russianAutoWords = RankedWordList.load(
+        resourceName: "ru_auto_core_100k",
+        extension: "tsv",
         fallbackWords: []
     )
-    private static let englishCommonWords = RankedWordList.load(
-        resourceName: "english-common-5000",
-        extension: "txt",
+    private static let englishAutoWords = RankedWordList.load(
+        resourceName: "en_auto_core_50k",
+        extension: "tsv",
         fallbackWords: []
     )
-    private static let russianShortCoreWords = RankedWordList.load(
-        resourceName: "short-ru-core-1-4",
-        extension: "txt",
+    private static let russianManualWords = RankedWordList.load(
+        resourceName: "ru_manual_extended_300k",
+        extension: "tsv",
         fallbackWords: []
     )
-    private static let russianShortExtendedWords = RankedWordList.load(
-        resourceName: "short-ru-extended-1-4",
-        extension: "txt",
+    private static let englishManualWords = RankedWordList.load(
+        resourceName: "en_manual_extended_200k",
+        extension: "tsv",
         fallbackWords: []
     )
-    private static let englishShortCoreWords = RankedWordList.load(
-        resourceName: "short-en-core-1-4",
-        extension: "txt",
-        fallbackWords: []
+    private static let russianShortAutoWords = RankedWordList.loadShortWordWhitelist(
+        resourceName: "short_words_auto_whitelist",
+        extension: "tsv",
+        languageCode: "ru"
     )
-    private static let englishShortExtendedWords = RankedWordList.load(
-        resourceName: "short-en-extended-1-4",
-        extension: "txt",
-        fallbackWords: []
+    private static let englishShortAutoWords = RankedWordList.loadShortWordWhitelist(
+        resourceName: "short_words_auto_whitelist",
+        extension: "tsv",
+        languageCode: "en"
     )
     private static let builtInTechnicalTermsByNormalizedText: [String: String] = [
         "airplay": "AirPlay",
@@ -157,34 +177,14 @@ final class TextClassifier {
 
     private let spellChecker = NSSpellChecker.shared
 
-    private let frequentWords: [KeyboardLanguage: Set<String>] = [
-        .english: [
-            "a", "about", "after", "all", "also", "and", "are", "as", "at", "be", "because", "but",
-            "can", "day", "do", "for", "from", "good", "have", "hello", "how", "i", "if", "in",
-            "is", "it", "keyboard", "language", "not", "of", "on", "or", "switch", "test", "that",
-            "the", "this", "to", "was", "we", "what", "with", "word", "you"
-        ],
-        .russian: [
-            "а", "автоматически", "адрес", "без", "больше", "будет", "буду", "будем", "будут",
-            "бы", "было", "быстро", "в", "вам", "вас", "ваш", "верно", "весь", "вместе", "во",
-            "вопрос", "время", "все", "всегда", "всего", "вчера", "вы", "где", "главное", "год",
-            "да", "давай", "даже", "дальше", "два", "дела", "делать", "день", "для", "до",
-            "добрый", "должно", "дома", "его", "если", "есть", "еще", "жду", "же", "журнал", "завтра",
-            "здесь", "знаю", "и", "из", "или", "именно", "их", "к", "как", "какой", "когда",
-            "клавиатура", "кнопка", "код", "который", "куда", "лучше", "меню", "место", "мне",
-            "может", "можно", "мой", "мы", "на", "надо", "назад", "нам", "написать", "например",
-            "настроить", "не", "него", "нее", "нет", "нужно", "но", "новый", "обратно", "окно",
-            "он", "она", "они", "оно", "очень", "передача", "переключить", "плохо", "по",
-            "пока", "получилось", "почему", "правильно", "привет", "программа", "работает",
-            "раз", "раскладка", "режим", "рядом", "с", "сработало", "сейчас", "сегодня", "слово", "слова",
-            "сделать", "спасибо", "сразу", "так", "также", "там", "тебе", "текст", "теперь",
-            "тест", "то", "тоже", "только", "тут", "у", "уже", "хорошо", "хочу", "что",
-            "чтобы", "эхо", "это", "этот", "юлия", "я"
-        ],
-        .hebrew: [
-            "אני", "את", "אתה", "בוקר", "בית", "גם", "הוא", "היא", "היום", "זה", "טוב", "כן",
-            "לא", "לה", "מה", "מבחן", "מקלדת", "עברית", "עם", "שלום", "של", "תודה"
-        ]
+    private let hebrewBuiltInWords: Set<String> = [
+        "אני", "את", "אתה", "בוקר", "בית", "גם", "הוא", "היא", "היום", "זה", "טוב", "כן",
+        "לא", "לה", "מה", "מבחן", "מקלדת", "עברית", "עם", "שלום", "של", "תודה"
+    ]
+    private let russianSupplementalTokenWords: Set<String> = [
+        "двоеточиями",
+        "запятыми",
+        "пробела"
     ]
 
     private let ngrams: [KeyboardLanguage: Set<String>] = [
@@ -195,15 +195,14 @@ final class TextClassifier {
 
     func score(_ candidate: LayoutCandidate) -> CandidateScore {
         let normalized = candidate.text.lowercased()
-        guard !normalized.isEmpty else {
+        let lexical = lexicalToken(normalized)
+        guard !lexical.isEmpty else {
             return CandidateScore(candidate: candidate, score: 0)
         }
 
         var score = scriptScore(normalized, language: candidate.language)
-        score += dictionaryScore(normalized, language: candidate.language)
-        score += ngramScore(normalized, language: candidate.language)
-        score += naturalLanguageScore(normalized, language: candidate.language)
-        score += spellCheckerScore(candidate.text, language: candidate.language)
+        score += dictionaryScore(lexical, language: candidate.language)
+        score += ngramScore(lexical, language: candidate.language)
 
         if let safetyReason = correctionSafetyReason(for: normalized),
            safetyReason != "known technical term" {
@@ -214,7 +213,7 @@ final class TextClassifier {
     }
 
     func hasStrongLexicalEvidence(_ candidate: LayoutCandidate) -> Bool {
-        let normalized = candidate.text.lowercased()
+        let normalized = lexicalToken(candidate.text.lowercased())
         guard normalized.count >= 3 else { return false }
 
         if isCoreShortWord(normalized, language: candidate.language) {
@@ -225,33 +224,30 @@ final class TextClassifier {
             return true
         }
 
-        if candidate.language == .english, Self.englishCommonWords.contains(normalized) {
+        if candidate.language == .english, Self.englishAutoWords.contains(normalized) {
             return true
         }
 
-        if candidate.language == .russian, Self.russianFrequencyWords.contains(normalized) {
+        if candidate.language == .russian, Self.russianAutoWords.contains(normalized) {
             return true
         }
 
-        if isCorrectlySpelled(candidate.text, language: candidate.language) {
+        if candidate.language == .russian, russianSupplementalTokenWords.contains(normalized) {
             return true
         }
 
-        if frequentWords[candidate.language]?.contains(normalized) == true {
-            return true
-        }
-
-        let words = frequentWords[candidate.language] ?? []
-        return normalized.count >= 5 && words.contains { word in
-            word.count >= 5 && (word.hasPrefix(normalized) || normalized.hasPrefix(word))
-        }
+        return candidate.language == .hebrew && hebrewBuiltInWords.contains(normalized)
     }
 
     func hasManualLexicalEvidence(_ candidate: LayoutCandidate) -> Bool {
-        let normalized = candidate.text.lowercased()
+        let normalized = lexicalToken(candidate.text.lowercased())
         guard normalized.count >= 2 else { return false }
 
         if hasStrongLexicalEvidence(candidate) {
+            return true
+        }
+
+        if isManualDictionaryWord(normalized, language: candidate.language) {
             return true
         }
 
@@ -278,13 +274,72 @@ final class TextClassifier {
         language == .english && Self.preferredTechnicalSpelling(for: text.lowercased()) != nil
     }
 
+    func isSpellCheckerValid(_ text: String, language: KeyboardLanguage) -> Bool {
+        isCorrectlySpelled(text, language: language)
+    }
+
+    func spellingCorrection(for text: String, language: KeyboardLanguage) -> SpellingCorrection? {
+        let word = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        let normalized = word.lowercased()
+
+        guard word.count >= 4,
+              language != .hebrew,
+              !hasSuspiciousMixedCase(word),
+              correctionSafetyReason(for: word) == nil,
+              TechnicalTermLexicon.protectionReason(for: word) == nil,
+              !isCoreShortWord(normalized, language: language),
+              !isAutoDictionaryWord(normalized, language: language) else {
+            return nil
+        }
+
+        if let replacement = systemSpellingReplacement(for: word, language: language) {
+            return SpellingCorrection(
+                original: word,
+                replacement: preserveSimpleCasing(from: word, replacement: replacement),
+                language: language
+            )
+        }
+
+        if let replacement = dictionarySpellingReplacement(for: word, language: language) {
+            return SpellingCorrection(
+                original: word,
+                replacement: preserveSimpleCasing(from: word, replacement: replacement),
+                language: language
+            )
+        }
+
+        return nil
+    }
+
     func isCoreShortWord(_ text: String, language: KeyboardLanguage) -> Bool {
         let normalized = text.lowercased()
         switch language {
         case .english:
-            return Self.englishShortCoreWords.contains(normalized)
+            return Self.englishShortAutoWords.contains(normalized)
         case .russian:
-            return Self.russianShortCoreWords.contains(normalized)
+            return Self.russianShortAutoWords.contains(normalized)
+        case .hebrew:
+            return false
+        }
+    }
+
+    private func isAutoDictionaryWord(_ text: String, language: KeyboardLanguage) -> Bool {
+        switch language {
+        case .english:
+            return Self.englishAutoWords.contains(text)
+        case .russian:
+            return Self.russianAutoWords.contains(text)
+        case .hebrew:
+            return false
+        }
+    }
+
+    private func isManualDictionaryWord(_ text: String, language: KeyboardLanguage) -> Bool {
+        switch language {
+        case .english:
+            return Self.englishManualWords.contains(text)
+        case .russian:
+            return Self.russianManualWords.contains(text)
         case .hebrew:
             return false
         }
@@ -292,11 +347,12 @@ final class TextClassifier {
 
     func isExtendedShortWord(_ text: String, language: KeyboardLanguage) -> Bool {
         let normalized = text.lowercased()
+        guard (1...4).contains(normalized.count) else { return false }
         switch language {
         case .english:
-            return Self.englishShortExtendedWords.contains(normalized)
+            return Self.englishManualWords.contains(normalized) && !Self.englishShortAutoWords.contains(normalized)
         case .russian:
-            return Self.russianShortExtendedWords.contains(normalized)
+            return Self.russianManualWords.contains(normalized) && !Self.russianShortAutoWords.contains(normalized)
         case .hebrew:
             return false
         }
@@ -329,28 +385,27 @@ final class TextClassifier {
             return shortScore
         }
 
-        if language == .english, let score = Self.englishCommonWords.score(for: text) {
+        if language == .english, let score = Self.englishAutoWords.score(for: text) {
             return score
         }
 
-        if language == .russian, let score = Self.russianFrequencyWords.score(for: text) {
+        if language == .russian, let score = Self.russianAutoWords.score(for: text) {
             return score
         }
 
-        if frequentWords[language]?.contains(text) == true {
+        if language == .russian, russianSupplementalTokenWords.contains(text) {
+            return 0.54
+        }
+
+        if language == .hebrew, hebrewBuiltInWords.contains(text) {
             return 0.46
         }
 
-        if text.count <= 2 {
-            return 0
-        }
-
-        let words = frequentWords[language] ?? []
-        if words.contains(where: { word in word.hasPrefix(text) || text.hasPrefix(word) }) {
-            return 0.12
-        }
-
         return 0
+    }
+
+    private func lexicalToken(_ text: String) -> String {
+        text.trimmingCharacters(in: CharacterSet.punctuationCharacters.union(CharacterSet.symbols))
     }
 
     private func shortWordDictionaryScore(_ text: String, language: KeyboardLanguage) -> Double? {
@@ -358,18 +413,12 @@ final class TextClassifier {
 
         switch language {
         case .english:
-            if let score = Self.englishShortCoreWords.score(for: text) {
+            if let score = Self.englishShortAutoWords.score(for: text) {
                 return max(0.46, min(score + 0.08, 0.62))
-            }
-            if let score = Self.englishShortExtendedWords.score(for: text) {
-                return max(0.20, min(score * 0.55, 0.34))
             }
         case .russian:
-            if let score = Self.russianShortCoreWords.score(for: text) {
+            if let score = Self.russianShortAutoWords.score(for: text) {
                 return max(0.46, min(score + 0.08, 0.62))
-            }
-            if let score = Self.russianShortExtendedWords.score(for: text) {
-                return max(0.20, min(score * 0.55, 0.34))
             }
         case .hebrew:
             return nil
@@ -378,8 +427,68 @@ final class TextClassifier {
         return nil
     }
 
-    private func spellCheckerScore(_ text: String, language: KeyboardLanguage) -> Double {
-        isCorrectlySpelled(text, language: language) ? 0.12 : 0
+    private func systemSpellingReplacement(for word: String, language: KeyboardLanguage) -> String? {
+        guard let spellLanguage = spellCheckerLanguage(for: language),
+              !isCorrectlySpelled(word, language: language) else {
+            return nil
+        }
+
+        let nsWord = word as NSString
+        let range = NSRange(location: 0, length: nsWord.length)
+        var guesses = spellChecker.guesses(
+            forWordRange: range,
+            in: word,
+            language: spellLanguage,
+            inSpellDocumentWithTag: 0
+        ) ?? []
+        if let correction = spellChecker.correction(
+            forWordRange: range,
+            in: word,
+            language: spellLanguage,
+            inSpellDocumentWithTag: 0
+        ) {
+            guesses.insert(correction, at: 0)
+        }
+
+        let safeGuesses = guesses
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { isSafeSpellingGuess($0, original: word, language: language) }
+
+        guard let replacement = safeGuesses.first else { return nil }
+        let uniqueLowercased = Set(safeGuesses.prefix(3).map { $0.lowercased() })
+        guard uniqueLowercased.count == 1 || editDistance(word.lowercased(), replacement.lowercased()) <= 1 else {
+            return nil
+        }
+
+        return replacement
+    }
+
+    private func dictionarySpellingReplacement(for word: String, language: KeyboardLanguage) -> String? {
+        let normalized = word.lowercased().replacingOccurrences(of: "ё", with: "е")
+        guard normalized.count >= 5,
+              normalized.count <= 24,
+              normalized.rangeOfCharacter(from: CharacterSet.letters.inverted) == nil else {
+            return nil
+        }
+
+        let maxDistance = maxAllowedSpellingDistance(for: normalized)
+        let replacement: String?
+        switch language {
+        case .english:
+            replacement = Self.englishAutoWords.closestWord(to: normalized, maxDistance: maxDistance)
+        case .russian:
+            replacement = Self.russianAutoWords.closestWord(to: normalized, maxDistance: maxDistance)
+        case .hebrew:
+            replacement = nil
+        }
+
+        guard let replacement,
+              replacement != normalized,
+              scriptScore(replacement, language: language) >= 0.33 else {
+            return nil
+        }
+
+        return replacement
     }
 
     private func ngramScore(_ text: String, language: KeyboardLanguage) -> Double {
@@ -387,16 +496,6 @@ final class TextClassifier {
         guard text.count >= 3, !grams.isEmpty else { return 0 }
         let matches = grams.filter { text.contains($0) }.count
         return min(Double(matches) * 0.04, 0.16)
-    }
-
-    private func naturalLanguageScore(_ text: String, language: KeyboardLanguage) -> Double {
-        guard text.count >= 4 else { return 0 }
-
-        let recognizer = NLLanguageRecognizer()
-        recognizer.languageConstraints = [.english, .russian, .hebrew]
-        recognizer.processString(text)
-        let hypotheses = recognizer.languageHypotheses(withMaximum: 3)
-        return (hypotheses[nlLanguage(for: language)] ?? 0) * 0.14
     }
 
     private func isCorrectlySpelled(_ text: String, language: KeyboardLanguage) -> Bool {
@@ -415,6 +514,75 @@ final class TextClassifier {
         return misspelledRange.location == NSNotFound || misspelledRange.location >= nsRange.length
     }
 
+    private func isSafeSpellingGuess(_ guess: String, original: String, language: KeyboardLanguage) -> Bool {
+        let normalizedGuess = guess.lowercased()
+        let normalizedOriginal = original.lowercased()
+        guard !guess.isEmpty,
+              normalizedGuess != normalizedOriginal,
+              guess.rangeOfCharacter(from: CharacterSet.letters.inverted) == nil,
+              guess.count >= 4,
+              editDistance(normalizedOriginal, normalizedGuess) <= maxAllowedSpellingDistance(for: original),
+              scriptScore(normalizedGuess, language: language) >= 0.33,
+              isCorrectlySpelled(guess, language: language) else {
+            return false
+        }
+
+        if language == .english, Self.preferredTechnicalSpelling(for: normalizedGuess) != nil {
+            return false
+        }
+
+        return true
+    }
+
+    private func hasSuspiciousMixedCase(_ text: String) -> Bool {
+        let letters = text.filter { $0.isLetter }
+        guard letters.count >= 3 else { return false }
+        let hasLowercase = letters.contains { $0.isLowercase }
+        let hasUppercase = letters.contains { $0.isUppercase }
+        guard hasLowercase && hasUppercase else { return false }
+        return text.first?.isUppercase != true
+    }
+
+    private func maxAllowedSpellingDistance(for word: String) -> Int {
+        word.count <= 5 ? 1 : 2
+    }
+
+    private func preserveSimpleCasing(from original: String, replacement: String) -> String {
+        if original == original.uppercased() {
+            return replacement.uppercased()
+        }
+        if original.first?.isUppercase == true,
+           original.dropFirst() == original.dropFirst().lowercased() {
+            return replacement.prefix(1).uppercased() + replacement.dropFirst()
+        }
+        return replacement
+    }
+
+    private func editDistance(_ left: String, _ right: String) -> Int {
+        let a = Array(left)
+        let b = Array(right)
+        if a.isEmpty { return b.count }
+        if b.isEmpty { return a.count }
+
+        var previous = Array(0...b.count)
+        var current = Array(repeating: 0, count: b.count + 1)
+
+        for i in 1...a.count {
+            current[0] = i
+            for j in 1...b.count {
+                let cost = a[i - 1] == b[j - 1] ? 0 : 1
+                current[j] = min(
+                    previous[j] + 1,
+                    current[j - 1] + 1,
+                    previous[j - 1] + cost
+                )
+            }
+            swap(&previous, &current)
+        }
+
+        return previous[b.count]
+    }
+
     private func spellCheckerLanguage(for language: KeyboardLanguage) -> String? {
         let available = spellChecker.availableLanguages
         let prefixes: [String]
@@ -429,14 +597,6 @@ final class TextClassifier {
 
         return available.first { candidate in
             prefixes.contains { candidate.lowercased().hasPrefix($0) }
-        }
-    }
-
-    private func nlLanguage(for language: KeyboardLanguage) -> NLLanguage {
-        switch language {
-        case .english: .english
-        case .russian: .russian
-        case .hebrew: .hebrew
         }
     }
 
@@ -558,63 +718,75 @@ enum TechnicalTermLexicon {
     }
 
     private static func loadTermRecords() -> [TechnicalTermRecord] {
-        guard let contents = resourceContents(named: "technical-terms-ui", extension: "csv") else {
-            return loadTermsFromText()
+        if let records = loadNeverCorrectTSVRecords(), !records.isEmpty {
+            return records
+        }
+
+        return []
+    }
+
+    private static func loadNeverCorrectTSVRecords() -> [TechnicalTermRecord]? {
+        guard let contents = resourceContents(named: "technical_never_correct", extension: "tsv") else {
+            return nil
         }
 
         let records = contents
             .split(whereSeparator: \.isNewline)
             .dropFirst()
-            .map { parseCSVLine(String($0)) }
-            .filter { $0.count >= 7 }
-            .map { columns in
-                TechnicalTermRecord(
-                    term: columns[0],
-                    normalized: columns[1].lowercased(),
-                    category: columns[2],
-                    reason: columns[6]
+            .map { String($0).components(separatedBy: "\t") }
+            .filter { $0.count >= 6 }
+            .compactMap { columns -> TechnicalTermRecord? in
+                let term = columns[0].trimmingCharacters(in: .whitespacesAndNewlines)
+                let normalized = columns[1].trimmingCharacters(in: .whitespacesAndNewlines)
+                let category = columns[2].trimmingCharacters(in: .whitespacesAndNewlines)
+                let matchType = columns[3].trimmingCharacters(in: .whitespacesAndNewlines)
+                let reason = columns[5].trimmingCharacters(in: .whitespacesAndNewlines)
+                guard !term.isEmpty, matchType != "regex", !term.hasPrefix("<REGEX:") else { return nil }
+                return TechnicalTermRecord(
+                    term: term,
+                    normalized: normalized.isEmpty ? term.lowercased() : normalized.lowercased(),
+                    category: category.isEmpty ? "Technical" : category,
+                    reason: reason.isEmpty ? "known technical term" : reason
                 )
             }
 
-        return records.isEmpty ? loadTermsFromText() : records
-    }
-
-    private static func loadTermsFromText() -> [TechnicalTermRecord] {
-        guard let contents = resourceContents(named: "technical-terms-ui", extension: "txt") else { return [] }
-        return contents
-            .split(whereSeparator: \.isNewline)
-            .map { String($0).trimmingCharacters(in: .whitespacesAndNewlines) }
-            .filter { !$0.isEmpty }
-            .map {
-                TechnicalTermRecord(
-                    term: $0,
-                    normalized: $0.lowercased(),
-                    category: "Technical",
-                    reason: "known technical term"
-                )
-            }
+        return records
     }
 
     private static func loadRules() -> [TechnicalProtectionRule] {
-        guard let contents = resourceContents(named: "technical-terms-ui-rules", extension: "csv") else {
-            return []
+        if let rules = loadNeverCorrectTSVRules(), !rules.isEmpty {
+            return rules
         }
 
-        return contents
+        return []
+    }
+
+    private static func loadNeverCorrectTSVRules() -> [TechnicalProtectionRule]? {
+        guard let contents = resourceContents(named: "technical_never_correct", extension: "tsv") else {
+            return nil
+        }
+
+        let rules = contents
             .split(whereSeparator: \.isNewline)
             .dropFirst()
-            .map { parseCSVLine(String($0)) }
-            .compactMap { columns in
-                guard columns.count >= 6 else { return nil }
+            .map { String($0).components(separatedBy: "\t") }
+            .filter { $0.count >= 6 }
+            .compactMap { columns -> TechnicalProtectionRule? in
+                let term = columns[0].trimmingCharacters(in: .whitespacesAndNewlines)
+                let pattern = columns[1].trimmingCharacters(in: .whitespacesAndNewlines)
+                let matchType = columns[3].trimmingCharacters(in: .whitespacesAndNewlines)
+                let reason = columns[5].trimmingCharacters(in: .whitespacesAndNewlines)
+                guard matchType == "regex", !pattern.isEmpty else { return nil }
                 return TechnicalProtectionRule(
-                    id: columns[0],
-                    name: columns[1],
-                    pattern: columns[2],
-                    priority: Int(columns[4]) ?? 0,
-                    notes: columns[5]
+                    id: term.replacingOccurrences(of: "<REGEX:", with: "").replacingOccurrences(of: ">", with: ""),
+                    name: reason.isEmpty ? term : reason,
+                    pattern: pattern,
+                    priority: 90,
+                    notes: reason
                 )
             }
-            .sorted { $0.priority > $1.priority }
+
+        return rules.sorted { $0.priority > $1.priority }
     }
 
     private static func resourceContents(named resourceName: String, extension fileExtension: String) -> String? {
@@ -631,63 +803,154 @@ enum TechnicalTermLexicon {
             return contents
         }
 
+        let projectResourceURL = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+            .appendingPathComponent("KeyboardSwitcher")
+            .appendingPathComponent("Resources")
+            .appendingPathComponent("\(resourceName).\(fileExtension)")
+        if let contents = try? String(contentsOf: projectResourceURL, encoding: .utf8) {
+            return contents
+        }
+
         return nil
     }
 
-    private static func parseCSVLine(_ line: String) -> [String] {
-        var fields: [String] = []
-        var current = ""
-        var isQuoted = false
-        let characters = Array(line)
-        var index = 0
-
-        while index < characters.count {
-            let character = characters[index]
-            if character == "\"" {
-                if isQuoted, index + 1 < characters.count, characters[index + 1] == "\"" {
-                    current.append("\"")
-                    index += 1
-                } else {
-                    isQuoted.toggle()
-                }
-            } else if character == ",", !isQuoted {
-                fields.append(cleanCSVField(current))
-                current = ""
-            } else {
-                current.append(character)
-            }
-            index += 1
-        }
-
-        fields.append(cleanCSVField(current))
-        return fields
-    }
-
-    private static func cleanCSVField(_ value: String) -> String {
-        value.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines.union(CharacterSet(charactersIn: "\u{feff}")))
-    }
 }
 
 private struct RankedWordList {
     let ranks: [String: Int]
+    let explicitScores: [String: Double]
 
     var count: Int {
         ranks.count
     }
 
     func contains(_ word: String) -> Bool {
-        ranks[word] != nil
+        ranks[Self.normalize(word)] != nil
     }
 
     func score(for word: String) -> Double? {
-        guard let rank = ranks[word], count > 1 else { return nil }
+        let normalizedWord = Self.normalize(word)
+        if let explicitScore = explicitScores[normalizedWord] {
+            return 0.34 + max(0, min(explicitScore, 1)) * 0.24
+        }
+
+        guard let rank = ranks[normalizedWord], count > 1 else { return nil }
 
         let normalizedRank = log(Double(rank + 1)) / log(Double(count + 1))
         let frequencyWeight = max(0, 1 - normalizedRank)
         return 0.34 + frequencyWeight * 0.20
     }
 
-    static func load(resourceName: String, extension fileExtension: String, fallbackWords: [String]) -> RankedWordList {
+    func closestWord(to word: String, maxDistance: Int) -> String? {
+        let normalizedWord = Self.normalize(word)
+        guard normalizedWord.count >= 5,
+              maxDistance > 0,
+              let firstScalar = normalizedWord.unicodeScalars.first else {
+            return nil
+        }
+
+        var best: (word: String, distance: Int, rank: Int)?
+        for (candidate, rank) in ranks {
+            guard candidate.unicodeScalars.first == firstScalar,
+                  abs(candidate.count - normalizedWord.count) <= maxDistance else {
+                continue
+            }
+
+            let distance = Self.editDistance(normalizedWord, candidate, maxDistance: maxDistance)
+            guard distance > 0, distance <= maxDistance else { continue }
+
+            if let current = best {
+                if distance < current.distance || (distance == current.distance && rank < current.rank) {
+                    best = (candidate, distance, rank)
+                }
+            } else {
+                best = (candidate, distance, rank)
+            }
+        }
+
+        return best?.word
+    }
+
+    static func load(
+        resourceName: String,
+        extension fileExtension: String,
+        fallbackWords: [String]
+    ) -> RankedWordList {
+        if let contents = resourceContents(named: resourceName, extension: fileExtension) {
+            return parse(contents: contents, fileExtension: fileExtension)
+        }
+
+        return RankedWordList(
+            ranks: ranks(from: fallbackWords.map { normalize($0) }),
+            explicitScores: [:]
+        )
+    }
+
+    static func loadShortWordWhitelist(
+        resourceName: String,
+        extension fileExtension: String,
+        languageCode: String
+    ) -> RankedWordList {
+        if let contents = resourceContents(named: resourceName, extension: fileExtension) {
+            let entries = contents
+                .split(whereSeparator: \.isNewline)
+                .dropFirst()
+                .compactMap { line -> (word: String, rank: Int, score: Double)? in
+                    let columns = String(line).components(separatedBy: "\t")
+                    guard columns.count >= 6, columns[0] == languageCode else { return nil }
+                    let word = normalize(columns[1])
+                    guard !word.isEmpty else { return nil }
+                    return (
+                        word: word,
+                        rank: Int(columns[3]) ?? Int.max,
+                        score: Double(columns[4]) ?? 0
+                    )
+                }
+                .sorted { $0.rank < $1.rank }
+
+            if !entries.isEmpty {
+                return RankedWordList(
+                    ranks: ranks(from: entries.map(\.word)),
+                    explicitScores: scores(from: entries.map { ($0.word, $0.score) })
+                )
+            }
+        }
+
+        return RankedWordList(ranks: [:], explicitScores: [:])
+    }
+
+    private static func parse(contents: String, fileExtension: String) -> RankedWordList {
+        if fileExtension == "tsv" {
+            let entries = parseFrequencyTSV(contents)
+            if !entries.isEmpty {
+                return RankedWordList(
+                    ranks: ranks(from: entries.map(\.word)),
+                    explicitScores: scores(from: entries.map { ($0.word, $0.score) })
+                )
+            }
+        }
+
+        let words = contents
+            .split(whereSeparator: \.isNewline)
+            .map { normalize(String($0)) }
+            .filter { !$0.isEmpty }
+        return RankedWordList(ranks: ranks(from: words), explicitScores: [:])
+    }
+
+    private static func parseFrequencyTSV(_ contents: String) -> [(word: String, score: Double)] {
+        contents
+            .split(whereSeparator: \.isNewline)
+            .dropFirst()
+            .compactMap { line -> (word: String, score: Double)? in
+                let columns = String(line).components(separatedBy: "\t")
+                guard columns.count >= 5 else { return nil }
+                let word = normalize(columns[0])
+                guard !word.isEmpty else { return nil }
+                return (word, Double(columns[4]) ?? 0)
+            }
+    }
+
+    private static func resourceContents(named resourceName: String, extension fileExtension: String) -> String? {
         let bundles = [
             Bundle.main,
             Bundle(for: TextClassifier.self)
@@ -698,23 +961,73 @@ private struct RankedWordList {
                   let contents = try? String(contentsOf: url, encoding: .utf8) else {
                 continue
             }
-
-            let words = contents
-                .split(whereSeparator: \.isNewline)
-                .map { String($0).lowercased() }
-                .filter { !$0.isEmpty }
-
-                return RankedWordList(ranks: ranks(from: words))
-            }
-
-            return RankedWordList(ranks: ranks(from: fallbackWords.map { $0.lowercased() }))
+            return contents
         }
 
-        private static func ranks(from words: [String]) -> [String: Int] {
-            var ranks: [String: Int] = [:]
-            for (index, word) in words.enumerated() where ranks[word] == nil {
-                ranks[word] = index + 1
-            }
-            return ranks
+        let projectResourceURL = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+            .appendingPathComponent("KeyboardSwitcher")
+            .appendingPathComponent("Resources")
+            .appendingPathComponent("\(resourceName).\(fileExtension)")
+        if let contents = try? String(contentsOf: projectResourceURL, encoding: .utf8) {
+            return contents
         }
+
+        return nil
     }
+
+    private static func normalize(_ word: String) -> String {
+        word
+            .trimmingCharacters(in: CharacterSet.whitespacesAndNewlines.union(CharacterSet(charactersIn: "\u{feff}")))
+            .lowercased()
+            .replacingOccurrences(of: "ё", with: "е")
+    }
+
+    private static func ranks(from words: [String]) -> [String: Int] {
+        var ranks: [String: Int] = [:]
+        for (index, word) in words.enumerated() where ranks[word] == nil {
+            ranks[word] = index + 1
+        }
+        return ranks
+    }
+
+    private static func scores(from entries: [(String, Double)]) -> [String: Double] {
+        var scores: [String: Double] = [:]
+        for entry in entries where scores[entry.0] == nil {
+            scores[entry.0] = entry.1
+        }
+        return scores
+    }
+
+    private static func editDistance(_ left: String, _ right: String, maxDistance: Int) -> Int {
+        let a = Array(left)
+        let b = Array(right)
+        if abs(a.count - b.count) > maxDistance {
+            return maxDistance + 1
+        }
+        if a.isEmpty { return b.count }
+        if b.isEmpty { return a.count }
+
+        var previous = Array(0...b.count)
+        var current = Array(repeating: 0, count: b.count + 1)
+
+        for i in 1...a.count {
+            current[0] = i
+            var rowMinimum = current[0]
+            for j in 1...b.count {
+                let cost = a[i - 1] == b[j - 1] ? 0 : 1
+                current[j] = min(
+                    previous[j] + 1,
+                    current[j - 1] + 1,
+                    previous[j - 1] + cost
+                )
+                rowMinimum = min(rowMinimum, current[j])
+            }
+            if rowMinimum > maxDistance {
+                return maxDistance + 1
+            }
+            swap(&previous, &current)
+        }
+
+        return previous[b.count]
+    }
+}

@@ -25,22 +25,6 @@ struct KeyboardMonitorDiagnostics: Equatable {
     var trainingSampleCount = 0
 }
 
-struct PendingCorrectionSuggestion: Equatable {
-    let original: String
-    let terminator: String
-    let replacement: String
-    let language: KeyboardLanguage
-    let score: Double
-    let safetyFeatures: CorrectionSafetyFeatures?
-    let safetyPrediction: CorrectionSafetyPrediction?
-    let safetyFallbackPrediction: CorrectionSafetyPrediction?
-    let decisionReason: String
-
-    var displayText: String {
-        "\(original) -> \(replacement) (\(language.displayName), \(Int((score * 100).rounded()))%)"
-    }
-}
-
 private struct ManualCandidateCycleState {
     enum Source {
         case selection
@@ -105,7 +89,7 @@ final class KeyboardMonitor {
     private var lastShiftKeyDownAt: Date?
     private var isShiftCurrentlyDown = false
     private var pendingManualCorrectionAfterShiftRelease = false
-    private var pendingSuggestion: PendingCorrectionSuggestion?
+    private var lastFrontmostBundleIdentifier: String?
     private var manualCycleState: ManualCandidateCycleState? {
         didSet {
             updateManualCandidatePreview()
@@ -196,6 +180,12 @@ final class KeyboardMonitor {
         guard !isApplyingCorrection else { return false }
 
         let frontmostApp = NSWorkspace.shared.frontmostApplication
+        let frontmostBundleIdentifier = frontmostApp?.bundleIdentifier
+        if frontmostBundleIdentifier != lastFrontmostBundleIdentifier {
+            resetBuffer()
+            manualCycleState = nil
+            lastFrontmostBundleIdentifier = frontmostBundleIdentifier
+        }
         diagnostics.lastFrontmostApp = frontmostApp?.localizedName ?? frontmostApp?.bundleIdentifier ?? "Unknown app"
 
         guard !exclusionManager.isFrontmostAppExcluded else {
@@ -225,17 +215,17 @@ final class KeyboardMonitor {
 
         guard type == .keyDown else { return false }
 
-        if let handled = handlePendingSuggestionKey(keyCode: keyCode) {
-            return handled
-        }
-        clearPendingSuggestionIfNeeded()
-
         if let handled = handleManualCandidateKey(keyCode: keyCode) {
             return handled
         }
 
         if let terminator = wordTerminator(for: keyCode) {
             manualCycleState = nil
+            guard !typedText.isEmpty else {
+                diagnostics.lastDecision = "Space passed through: no buffered word"
+                resetBuffer()
+                return false
+            }
             guard automaticallyCorrectsTypedWords else {
                 diagnostics.lastDecision = "Automatic correction disabled"
                 resetBuffer()
@@ -253,6 +243,22 @@ final class KeyboardMonitor {
             diagnostics.lastBuffer = typedText
             diagnostics.lastPhysicalReplay = LayoutEngine.physicalReplaySummary(for: strokes)
             diagnostics.lastDecision = "Backspace"
+            return false
+        }
+
+        if keyCode == 117 {
+            manualCycleState = nil
+            diagnostics.lastDecision = "Forward delete: reset buffer"
+            resetBuffer()
+            return false
+        }
+
+        if isNavigationKey(keyCode) {
+            manualCycleState = nil
+            if !typedText.isEmpty {
+                diagnostics.lastDecision = "Navigation inside word: reset buffer"
+                resetBuffer()
+            }
             return false
         }
 
@@ -284,7 +290,7 @@ final class KeyboardMonitor {
             return false
         }
 
-        guard let character = LayoutEngine.character(for: stroke, language: currentLanguage), LayoutEngine.isWordCharacter(stroke: stroke, currentLanguage: currentLanguage) else {
+        guard let character = LayoutEngine.character(for: stroke, language: currentLanguage), LayoutEngine.isTokenCharacter(stroke: stroke, currentLanguage: currentLanguage) else {
             diagnostics.lastDecision = "Reset on non-letter key \(keyCode)"
             resetBuffer()
             return false
@@ -299,27 +305,6 @@ final class KeyboardMonitor {
         return false
     }
 
-    func acceptPendingSuggestion() {
-        applyPendingSuggestion()
-    }
-
-    func ignorePendingSuggestion() {
-        guard let pendingSuggestion else { return }
-        correctionEngine.recordIgnoredSuggestion(
-            original: pendingSuggestion.original,
-            replacement: pendingSuggestion.replacement
-        )
-        diagnostics.lastDecision = "Suggestion ignored"
-        diagnostics.lastCandidateInspector += "\nPreview: ignored by user"
-        recordTrainingSample(
-            outcome: .suggestionIgnored,
-            features: pendingSuggestion.safetyFeatures,
-            prediction: pendingSuggestion.safetyPrediction,
-            decisionReason: pendingSuggestion.decisionReason
-        )
-        clearPendingSuggestion()
-    }
-
     private func reenableEventTap(reason: String) {
         guard let eventTap else {
             start()
@@ -332,23 +317,27 @@ final class KeyboardMonitor {
     }
 
     private func finalizeCurrentWord(terminator: String) -> Bool {
+        finalizeWord(strokes: strokes, typedText: typedText, terminator: terminator)
+    }
+
+    private func finalizeWord(strokes activeStrokes: [KeyStroke], typedText activeTypedText: String, terminator: String) -> Bool {
         let appMode = exclusionManager.frontmostAppBehaviorMode
+        let frontmostBundleIdentifier = NSWorkspace.shared.frontmostApplication?.bundleIdentifier
         let inputContext = FocusedInputContextInspector.current()
         diagnostics.lastInputContext = inputContext.diagnosticDescription
 
         switch inputContext.correctionPolicy {
         case .block(let reason):
-            diagnostics.lastTypedWord = typedText
+            diagnostics.lastTypedWord = activeTypedText
             diagnostics.lastTerminator = terminatorLabel(terminator)
             diagnostics.lastDecision = "Skipped \(reason)"
             diagnostics.lastCandidateInspector = [
                 "Input Context",
-                "Typed: \(typedText.isEmpty ? "-" : typedText)",
+                "Typed: \(activeTypedText.isEmpty ? "-" : activeTypedText)",
                 "Context: \(inputContext.diagnosticDescription)",
-                "Physical replay: \(LayoutEngine.physicalReplaySummary(for: strokes))",
+                "Physical replay: \(LayoutEngine.physicalReplaySummary(for: activeStrokes))",
                 "Decision: blocked \(reason)"
             ].joined(separator: "\n")
-            clearPendingSuggestion()
             return false
         case .allow, .strict:
             break
@@ -370,14 +359,14 @@ final class KeyboardMonitor {
 
         let activeProfile = appMode.correctionProfile.tightened(with: inputProfile)
         let evaluation = correctionEngine.evaluate(
-            strokes: strokes,
-            typedText: typedText,
+            strokes: activeStrokes,
+            typedText: activeTypedText,
             allowsShortFunctionalWords: terminator == " ",
             profile: activeProfile,
             appMode: appMode,
             terminatorType: terminator == " " ? "space" : "punctuation"
         )
-        diagnostics.lastTypedWord = typedText
+        diagnostics.lastTypedWord = activeTypedText
         diagnostics.lastTerminator = terminatorLabel(terminator)
         diagnostics.lastCandidates = evaluation.candidateScores
             .map { "\($0.candidate.language.displayName): \($0.candidate.text) \(Int($0.score * 100))%" }
@@ -386,10 +375,10 @@ final class KeyboardMonitor {
             + "\nApp mode: \(appMode.displayName)"
             + "\nInput context: \(inputContext.diagnosticDescription)"
             + "\nInput policy: \(inputModeDescription)"
-            + "\nPhysical replay: \(LayoutEngine.physicalReplaySummary(for: strokes))"
+            + "\nPhysical replay: \(LayoutEngine.physicalReplaySummary(for: activeStrokes))"
         diagnostics.lastDecision = evaluation.reason
         diagnostics.lastSuggestion = evaluation.suggestion.map {
-            "\(typedText) -> \($0.replacement) (\($0.language.displayName), \(Int(($0.score * 100).rounded()))%)"
+            "\(activeTypedText) -> \($0.replacement) (\($0.language.displayName), \(Int(($0.score * 100).rounded()))%)"
         } ?? ""
         updateLocalIntelligenceDiagnostics(
             features: evaluation.safetyFeatures,
@@ -400,42 +389,60 @@ final class KeyboardMonitor {
 
         guard let decision = evaluation.decision else {
             if let suggestion = evaluation.suggestion {
-                pendingSuggestion = PendingCorrectionSuggestion(
-                    original: typedText,
-                    terminator: terminator,
-                    replacement: suggestion.replacement,
-                    language: suggestion.language,
-                    score: suggestion.score,
-                    safetyFeatures: evaluation.safetyFeatures,
-                    safetyPrediction: evaluation.safetyPrediction,
-                    safetyFallbackPrediction: evaluation.safetyFallbackPrediction,
-                    decisionReason: evaluation.reason
-                )
-                diagnostics.lastSuggestion = pendingSuggestion?.displayText ?? ""
-                diagnostics.lastDecision = "Suggestion pending"
+                diagnostics.lastSuggestion = "\(activeTypedText) -> \(suggestion.replacement) (\(suggestion.language.displayName), \(Int((suggestion.score * 100).rounded()))%)"
+                diagnostics.lastDecision = "Possible typo signaled"
+                if preferences.shouldPlayPossibleTypoSound() {
+                    soundPlayer.playPossibleTypo(volume: preferences.soundVolume * 0.55)
+                }
                 recordTrainingSample(
                     outcome: .suggested,
                     features: evaluation.safetyFeatures,
                     prediction: evaluation.safetyPrediction,
                     decisionReason: evaluation.reason
                 )
-                showAutomaticSuggestionHUD()
             } else {
-                clearPendingSuggestion()
+                if preferences.shouldCorrectSpellingMistakes(),
+                   terminator == " ",
+                   case .allow = inputContext.correctionPolicy,
+                   let spellingDecision = correctionEngine.spellingCorrection(
+                    for: activeTypedText,
+                    language: inputSourceManager.currentKeyboardLanguage(),
+                    appMode: appMode,
+                    terminatorType: "space"
+                   ) {
+                    applySpellingCorrection(
+                        spellingDecision,
+                        original: activeTypedText,
+                        terminator: terminator,
+                        inputContext: inputContext,
+                        appMode: appMode
+                    )
+                    diagnostics.lastCandidateInspector += "\nSpellchecker: corrected \(activeTypedText) -> \(spellingDecision.replacement)"
+                    return true
+                }
             }
             return false
         }
 
-        let original = typedText
+        let original = activeTypedText
         let replacement = decision.replacement + terminator
 
         isApplyingCorrection = true
-        correctionEngine.applyCorrection(
+        let didReplace = correctionEngine.applyCorrection(
             replacingPreviousCharacterCount: original.count,
             original: original + terminator,
             with: replacement,
-            language: decision.language
+            language: decision.language,
+            allowSyntheticFallback: Self.allowsSyntheticReplacementFallback(
+                bundleIdentifier: frontmostBundleIdentifier,
+                inputContext: inputContext
+            )
         )
+        guard didReplace else {
+            isApplyingCorrection = false
+            diagnostics.lastDecision = "Skipped replacement: focused text unavailable"
+            return false
+        }
         handlePostCorrection(language: decision.language, origin: .automatic)
         isApplyingCorrection = false
         diagnostics.lastCorrection = "\(original) -> \(replacement)"
@@ -450,73 +457,35 @@ final class KeyboardMonitor {
         return true
     }
 
-    private func handlePendingSuggestionKey(keyCode: Int64) -> Bool? {
-        guard pendingSuggestion != nil else { return nil }
-
-        switch keyCode {
-        case 36, 76:
-            applyPendingSuggestion()
-            return true
-        case 53:
-            ignorePendingSuggestion()
-            return true
-        default:
-            return nil
-        }
-    }
-
-    private func applyPendingSuggestion() {
-        guard let pendingSuggestion else { return }
-
-        let originalWithTerminator = pendingSuggestion.original + pendingSuggestion.terminator
-        let replacementWithTerminator = pendingSuggestion.replacement + pendingSuggestion.terminator
-
+    private func applySpellingCorrection(
+        _ decision: CorrectionDecision,
+        original: String,
+        terminator: String,
+        inputContext: FocusedInputContext,
+        appMode: AppBehaviorMode
+    ) {
+        let replacement = decision.replacement + terminator
         isApplyingCorrection = true
-        correctionEngine.applyCorrection(
-            replacingPreviousCharacterCount: originalWithTerminator.count,
-            original: originalWithTerminator,
-            with: replacementWithTerminator,
-            language: pendingSuggestion.language
+        let didReplace = correctionEngine.applyCorrection(
+            replacingPreviousCharacterCount: original.count,
+            original: original + terminator,
+            with: replacement,
+            language: decision.language,
+            allowSyntheticFallback: Self.allowsSyntheticReplacementFallback(
+                bundleIdentifier: NSWorkspace.shared.frontmostApplication?.bundleIdentifier,
+                inputContext: inputContext
+            )
         )
-        correctionEngine.recordAcceptedSuggestion(
-            original: pendingSuggestion.original,
-            replacement: pendingSuggestion.replacement,
-            language: pendingSuggestion.language
-        )
-        handlePostCorrection(language: pendingSuggestion.language, origin: .automatic)
+        guard didReplace else {
+            isApplyingCorrection = false
+            diagnostics.lastDecision = "Skipped spelling replacement: focused text unavailable"
+            return
+        }
+        handlePostCorrection(language: decision.language, origin: .automatic)
         isApplyingCorrection = false
-
-        diagnostics.lastCorrection = "\(pendingSuggestion.original) -> \(pendingSuggestion.replacement)"
-        diagnostics.lastDecision = "Suggestion accepted"
-        diagnostics.lastCandidateInspector += "\nPreview: accepted by user"
-        recordTrainingSample(
-            outcome: .suggestionAccepted,
-            features: pendingSuggestion.safetyFeatures,
-            prediction: pendingSuggestion.safetyPrediction,
-            decisionReason: pendingSuggestion.decisionReason
-        )
-        clearPendingSuggestion()
-    }
-
-    private func clearPendingSuggestionIfNeeded() {
-        guard pendingSuggestion != nil else { return }
-        diagnostics.lastDecision = "Suggestion dismissed by typing"
-        clearPendingSuggestion()
-    }
-
-    private func clearPendingSuggestion() {
-        pendingSuggestion = nil
+        diagnostics.lastCorrection = "\(original) -> \(decision.replacement)"
         diagnostics.lastSuggestion = ""
-        Task { @MainActor in
-            AutomaticSuggestionHUD.shared.hide()
-        }
-    }
-
-    private func showAutomaticSuggestionHUD() {
-        guard let pendingSuggestion else { return }
-        Task { @MainActor in
-            AutomaticSuggestionHUD.shared.show(suggestion: pendingSuggestion)
-        }
+        diagnostics.lastDecision = "Spelling corrected with macOS spellchecker"
     }
 
     private func handleFlagsChanged(keyCode: Int64, flags: CGEventFlags) -> Bool {
@@ -562,7 +531,8 @@ final class KeyboardMonitor {
             return true
         }
 
-        guard let selectedWord = TextReplacementPerformer.copyWordBeforeCursor(), !selectedWord.isEmpty else {
+        guard let selectedWord = TextReplacementPerformer.copySpaceTokenBeforeCursor() ?? TextReplacementPerformer.copyWordBeforeCursor(),
+              !selectedWord.isEmpty else {
             diagnostics.lastDecision = "Double Shift: no word before cursor"
             return true
         }
@@ -575,6 +545,7 @@ final class KeyboardMonitor {
             diagnostics.lastDecision = "Double Shift: no replacement for \(selectedWord)"
             diagnostics.lastCandidateInspector = "Manual Double Shift\nTyped: \(selectedWord)\nDecision: no replacement"
             manualCycleState = nil
+            TextReplacementPerformer.collapseSelectionToEnd()
             return true
         }
 
@@ -770,9 +741,6 @@ final class KeyboardMonitor {
     private func updateManualCandidatePreview() {
         guard let cycle = manualCycleState, cycle.candidates.count > 1 else {
             diagnostics.lastManualCandidatePreview = ""
-            Task { @MainActor in
-                ManualCandidateHUD.shared.hide(after: 4.0)
-            }
             return
         }
 
@@ -782,17 +750,6 @@ final class KeyboardMonitor {
                 return "\(option.index + 1). \(option.replacement) (\(option.language.displayName), \(option.scoreText), \(marker))"
             }
             .joined(separator: " | ")
-
-        let original = cycle.original
-        let options = cycle.options
-        let selectedIndex = cycle.index
-        Task { @MainActor in
-            ManualCandidateHUD.shared.show(
-                original: original,
-                options: options,
-                selectedIndex: selectedIndex
-            )
-        }
     }
 
     private func rememberManualCycle(original: String, replacement: String, candidates: [CorrectionDecision], source: ManualCandidateCycleState.Source) {
@@ -919,6 +876,19 @@ final class KeyboardMonitor {
         diagnostics.lastLayoutSwitch = didSwitch ? "Switched to \(language.displayName)" : "Could not switch to \(language.displayName)"
     }
 
+    static func allowsSyntheticReplacementFallback(bundleIdentifier: String?, inputContext: FocusedInputContext) -> Bool {
+        if bundleIdentifier == "com.apple.MobileSMS" {
+            return false
+        }
+
+        switch inputContext.kind {
+        case .secureTextField, .searchField, .comboBox, .unknown:
+            return false
+        case .textField, .textArea, .unavailable:
+            return true
+        }
+    }
+
     private func resetBuffer() {
         strokes.removeAll(keepingCapacity: true)
         typedText.removeAll(keepingCapacity: true)
@@ -930,8 +900,6 @@ final class KeyboardMonitor {
         switch keyCode {
         case 49:
             return " "
-        case 36, 48, 52:
-            return "\n"
         default:
             return nil
         }
@@ -952,6 +920,15 @@ final class KeyboardMonitor {
         keyCode == 56 || keyCode == 60
     }
 
+    private func isNavigationKey(_ keyCode: Int64) -> Bool {
+        switch keyCode {
+        case 115, 116, 119, 121, 123, 124, 125, 126:
+            return true
+        default:
+            return false
+        }
+    }
+
     private func eventCharacters(for event: CGEvent) -> String {
         let maxLength = 8
         var actualLength = 0
@@ -968,255 +945,5 @@ final class KeyboardMonitor {
     private func eventCharactersIgnoringModifiers(keyCode: Int64, currentLanguage: KeyboardLanguage) -> String {
         let unmodifiedStroke = KeyStroke(keyCode: keyCode, isShifted: false)
         return LayoutEngine.character(for: unmodifiedStroke, language: currentLanguage) ?? ""
-    }
-}
-
-@MainActor
-private final class ManualCandidateHUD {
-    static let shared = ManualCandidateHUD()
-
-    private var panel: NSPanel?
-    private var hideWorkItem: DispatchWorkItem?
-
-    func show(original: String, options: [ManualCandidateOption], selectedIndex: Int) {
-        hideWorkItem?.cancel()
-        let content = ManualCandidateHUDView(
-            original: original,
-            options: options,
-            selectedIndex: selectedIndex
-        )
-        let hostingView = NSHostingView(rootView: content)
-        hostingView.frame = NSRect(x: 0, y: 0, width: 320, height: Self.height(for: options.count))
-
-        let panel = self.panel ?? self.makePanel()
-        panel.contentView = hostingView
-        panel.setContentSize(hostingView.frame.size)
-        self.position(panel: panel, size: hostingView.frame.size)
-        panel.orderFrontRegardless()
-        self.panel = panel
-        hide(after: 12.0)
-    }
-
-    func hide(after delay: TimeInterval = 0) {
-        hideWorkItem?.cancel()
-
-        guard delay > 0 else {
-            self.panel?.orderOut(nil)
-            return
-        }
-
-        let workItem = DispatchWorkItem { [weak self] in
-            self?.panel?.orderOut(nil)
-        }
-        hideWorkItem = workItem
-        DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: workItem)
-    }
-
-    private func makePanel() -> NSPanel {
-        let panel = NSPanel(
-            contentRect: NSRect(x: 0, y: 0, width: 320, height: 160),
-            styleMask: [.borderless, .nonactivatingPanel],
-            backing: .buffered,
-            defer: false
-        )
-        panel.isOpaque = false
-        panel.backgroundColor = .clear
-        panel.hasShadow = true
-        panel.level = .floating
-        panel.ignoresMouseEvents = true
-        panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .transient]
-        return panel
-    }
-
-    private func position(panel: NSPanel, size: CGSize) {
-        let mouseLocation = NSEvent.mouseLocation
-        let screenFrame = NSScreen.screens
-            .first(where: { $0.frame.contains(mouseLocation) })?
-            .visibleFrame ?? NSScreen.main?.visibleFrame ?? .zero
-        let x = min(max(mouseLocation.x + 14, screenFrame.minX + 12), screenFrame.maxX - size.width - 12)
-        let y = min(max(mouseLocation.y - size.height - 14, screenFrame.minY + 12), screenFrame.maxY - size.height - 12)
-        panel.setFrameOrigin(NSPoint(x: x, y: y))
-    }
-
-    private static func height(for optionCount: Int) -> CGFloat {
-        CGFloat(76 + min(optionCount, 4) * 34)
-    }
-}
-
-private struct ManualCandidateHUDView: View {
-    let original: String
-    let options: [ManualCandidateOption]
-    let selectedIndex: Int
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack {
-                Text("Manual candidates")
-                    .font(.system(size: 13, weight: .semibold))
-                Spacer()
-                Text("Shift×2/1-4 select · Esc cancel")
-                    .font(.system(size: 11, weight: .medium))
-                    .foregroundStyle(.secondary)
-            }
-
-            Text(original)
-                .font(.system(size: 12, weight: .regular, design: .monospaced))
-                .foregroundStyle(.secondary)
-                .lineLimit(1)
-
-            VStack(spacing: 5) {
-                ForEach(options.prefix(4)) { option in
-                    HStack(spacing: 8) {
-                        Text("\(option.index + 1)")
-                            .font(.system(size: 11, weight: .bold, design: .rounded))
-                            .foregroundStyle(option.isSelected ? .white : .secondary)
-                            .frame(width: 18, height: 18)
-                            .background(option.isSelected ? Color.accentColor : Color.secondary.opacity(0.14))
-                            .clipShape(Circle())
-
-                        Text(option.replacement)
-                            .font(.system(size: 13, weight: option.isSelected ? .semibold : .regular))
-                            .lineLimit(1)
-
-                        Spacer(minLength: 8)
-
-                        Text(option.language.displayName)
-                            .font(.system(size: 11, weight: .medium))
-                            .foregroundStyle(.secondary)
-
-                        Text(option.scoreText)
-                            .font(.system(size: 11, weight: .medium, design: .monospaced))
-                            .foregroundStyle(.secondary)
-                    }
-                    .padding(.horizontal, 8)
-                    .frame(height: 28)
-                    .background(option.isSelected ? Color.accentColor.opacity(0.14) : Color.clear)
-                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-                }
-            }
-        }
-        .padding(12)
-        .frame(width: 320)
-        .background(.regularMaterial)
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-        .overlay {
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .strokeBorder(Color.primary.opacity(0.08), lineWidth: 1)
-        }
-    }
-}
-
-@MainActor
-private final class AutomaticSuggestionHUD {
-    static let shared = AutomaticSuggestionHUD()
-
-    private var panel: NSPanel?
-    private var hideWorkItem: DispatchWorkItem?
-
-    func show(suggestion: PendingCorrectionSuggestion) {
-        hideWorkItem?.cancel()
-        let content = AutomaticSuggestionHUDView(suggestion: suggestion)
-        let hostingView = NSHostingView(rootView: content)
-        hostingView.frame = NSRect(x: 0, y: 0, width: 340, height: 128)
-
-        let panel = self.panel ?? self.makePanel()
-        panel.contentView = hostingView
-        panel.setContentSize(hostingView.frame.size)
-        self.position(panel: panel, size: hostingView.frame.size)
-        panel.orderFrontRegardless()
-        self.panel = panel
-        hide(after: 10.0)
-    }
-
-    func hide(after delay: TimeInterval = 0) {
-        hideWorkItem?.cancel()
-
-        guard delay > 0 else {
-            panel?.orderOut(nil)
-            return
-        }
-
-        let workItem = DispatchWorkItem { [weak self] in
-            self?.panel?.orderOut(nil)
-        }
-        hideWorkItem = workItem
-        DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: workItem)
-    }
-
-    private func makePanel() -> NSPanel {
-        let panel = NSPanel(
-            contentRect: NSRect(x: 0, y: 0, width: 340, height: 128),
-            styleMask: [.borderless, .nonactivatingPanel],
-            backing: .buffered,
-            defer: false
-        )
-        panel.isOpaque = false
-        panel.backgroundColor = .clear
-        panel.hasShadow = true
-        panel.level = .floating
-        panel.ignoresMouseEvents = true
-        panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .transient]
-        return panel
-    }
-
-    private func position(panel: NSPanel, size: CGSize) {
-        let mouseLocation = NSEvent.mouseLocation
-        let screenFrame = NSScreen.screens
-            .first(where: { $0.frame.contains(mouseLocation) })?
-            .visibleFrame ?? NSScreen.main?.visibleFrame ?? .zero
-        let x = min(max(mouseLocation.x + 14, screenFrame.minX + 12), screenFrame.maxX - size.width - 12)
-        let y = min(max(mouseLocation.y - size.height - 14, screenFrame.minY + 12), screenFrame.maxY - size.height - 12)
-        panel.setFrameOrigin(NSPoint(x: x, y: y))
-    }
-}
-
-private struct AutomaticSuggestionHUDView: View {
-    let suggestion: PendingCorrectionSuggestion
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack {
-                Label("Correction Preview", systemImage: "wand.and.stars")
-                    .font(.system(size: 13, weight: .semibold))
-                Spacer()
-                Text("Enter accept · Esc ignore")
-                    .font(.system(size: 11, weight: .medium))
-                    .foregroundStyle(.secondary)
-            }
-
-            HStack(spacing: 8) {
-                Text(suggestion.original)
-                    .font(.system(size: 14, weight: .medium, design: .monospaced))
-                    .lineLimit(1)
-
-                Image(systemName: "arrow.right")
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundStyle(.secondary)
-
-                Text(suggestion.replacement)
-                    .font(.system(size: 14, weight: .semibold))
-                    .lineLimit(1)
-            }
-
-            HStack(spacing: 8) {
-                Text(suggestion.language.displayName)
-                    .font(.system(size: 11, weight: .medium))
-                    .foregroundStyle(.secondary)
-
-                Text("\(Int((suggestion.score * 100).rounded()))% confidence")
-                    .font(.system(size: 11, weight: .medium, design: .monospaced))
-                    .foregroundStyle(.secondary)
-
-                Spacer()
-            }
-        }
-        .padding(12)
-        .frame(width: 340)
-        .background(.regularMaterial)
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-        .overlay {
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .strokeBorder(Color.primary.opacity(0.08), lineWidth: 1)
-        }
     }
 }

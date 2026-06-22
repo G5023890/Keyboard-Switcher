@@ -1,0 +1,805 @@
+term	normalized_or_pattern	category	match_type	action	reason
+<REGEX:camelCase>	.*[a-z][A-Z].*	pattern	regex	never_correct	camelCase token
+<REGEX:PascalCase>	^[A-Z][a-z]+(?:[A-Z][A-Za-z0-9]*)+$	pattern	regex	never_correct	PascalCase/class-like token
+<REGEX:ALL_CAPS_ABBR>	^[A-Z]{2,}$	pattern	regex	never_correct	acronym/constant
+<REGEX:has_digit>	.*\d.*	pattern	regex	never_correct	version/build/model token
+<REGEX:file_extension>	^\.[A-Za-z0-9]{1,8}$	pattern	regex	never_correct	file extension
+<REGEX:path_like>	.*[\\/].*	pattern	regex	never_correct	path-like token
+<REGEX:bundle_id>	^[A-Za-z][A-Za-z0-9-]*(\.[A-Za-z0-9-]+){2,}$	pattern	regex	never_correct	reverse-DNS/bundle id/domain-like
+<REGEX:url_or_scheme>	^[A-Za-z][A-Za-z0-9+.-]*://	pattern	regex	never_correct	URL/scheme
+<REGEX:email>	^[^\s@]+@[^\s@]+\.[^\s@]+$	pattern	regex	never_correct	email address
+<REGEX:handle_or_hashtag>	^[@#][\w.-]+$	pattern	regex	never_correct	handle/hashtag
+<REGEX:snake_case>	.*_[A-Za-z0-9]+.*	pattern	regex	never_correct	snake_case/code identifier
+<REGEX:kebab_or_flag>	.*-[A-Za-z0-9]+.*	pattern	regex	never_correct	kebab-case/CLI flag
+A/B Test	a/b test	AI / ML / data	exact_or_case_preserving	never_correct	mixedCase/PascalCase; technical delimiter
+AB Test	ab test	AI / ML / data	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+AI	ai	AI / ML / data	exact_or_case_preserving	never_correct	acronym
+Analytics	analytics	AI / ML / data	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+ASR	asr	AI / ML / data	exact_or_case_preserving	never_correct	acronym
+Benchmark	benchmark	AI / ML / data	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+ChatGPT	chatgpt	AI / ML / data	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Checkpoint	checkpoint	AI / ML / data	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Claude	claude	AI / ML / data	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+CNN	cnn	AI / ML / data	exact_or_case_preserving	never_correct	acronym
+Context Window	context window	AI / ML / data	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Core ML Tools	core ml tools	AI / ML / data	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Dataset	dataset	AI / ML / data	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Embedding	embedding	AI / ML / data	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Embeddings	embeddings	AI / ML / data	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Eval	eval	AI / ML / data	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+FAISS	faiss	AI / ML / data	exact_or_case_preserving	never_correct	acronym
+Feature Flag	feature flag	AI / ML / data	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Fine-tuning	fine-tuning	AI / ML / data	exact_or_case_preserving	never_correct	mixedCase/PascalCase; technical delimiter
+GAN	gan	AI / ML / data	exact_or_case_preserving	never_correct	acronym
+Gemini	gemini	AI / ML / data	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+GPT	gpt	AI / ML / data	exact_or_case_preserving	never_correct	acronym
+HNSW	hnsw	AI / ML / data	exact_or_case_preserving	never_correct	acronym
+Inference	inference	AI / ML / data	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+JAX	jax	AI / ML / data	exact_or_case_preserving	never_correct	acronym
+Keras	keras	AI / ML / data	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Llama	llama	AI / ML / data	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+llama.cpp	llama.cpp	AI / ML / data	exact_or_case_preserving	never_correct	technical delimiter
+LLM	llm	AI / ML / data	exact_or_case_preserving	never_correct	acronym
+LLMs	llms	AI / ML / data	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+LoRA	lora	AI / ML / data	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+LSTM	lstm	AI / ML / data	exact_or_case_preserving	never_correct	acronym
+Mistral	mistral	AI / ML / data	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+ML	ml	AI / ML / data	exact_or_case_preserving	never_correct	acronym
+MLX	mlx	AI / ML / data	exact_or_case_preserving	never_correct	acronym
+Model Card	model card	AI / ML / data	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+MoE	moe	AI / ML / data	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+NLG	nlg	AI / ML / data	exact_or_case_preserving	never_correct	acronym
+NLP	nlp	AI / ML / data	exact_or_case_preserving	never_correct	acronym
+NLU	nlu	AI / ML / data	exact_or_case_preserving	never_correct	acronym
+NumPy	numpy	AI / ML / data	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+OCR	ocr	AI / ML / data	exact_or_case_preserving	never_correct	acronym
+Ollama	ollama	AI / ML / data	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+ONNX	onnx	AI / ML / data	exact_or_case_preserving	never_correct	acronym
+OpenAI	openai	AI / ML / data	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Pandas	pandas	AI / ML / data	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Privacy Manifest	privacy manifest	AI / ML / data	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Prompt	prompt	AI / ML / data	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+PyTorch	pytorch	AI / ML / data	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+QLoRA	qlora	AI / ML / data	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Quantization	quantization	AI / ML / data	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+RAG	rag	AI / ML / data	exact_or_case_preserving	never_correct	acronym
+RNN	rnn	AI / ML / data	exact_or_case_preserving	never_correct	acronym
+scikit-learn	scikit-learn	AI / ML / data	exact_or_case_preserving	never_correct	technical delimiter
+STT	stt	AI / ML / data	exact_or_case_preserving	never_correct	acronym
+System Prompt	system prompt	AI / ML / data	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Telemetry	telemetry	AI / ML / data	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+TensorFlow	tensorflow	AI / ML / data	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Tokenizer	tokenizer	AI / ML / data	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Transformer	transformer	AI / ML / data	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+TTS	tts	AI / ML / data	exact_or_case_preserving	never_correct	acronym
+VAE	vae	AI / ML / data	exact_or_case_preserving	never_correct	acronym
+Vector DB	vector db	AI / ML / data	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Weights	weights	AI / ML / data	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Whisper	whisper	AI / ML / data	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+whisper.cpp	whisper.cpp	AI / ML / data	exact_or_case_preserving	never_correct	technical delimiter
+Accelerate	accelerate	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+ActivityKit	activitykit	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+App Intents	app intents	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+AppKit	appkit	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Apple Intelligence	apple intelligence	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+ARKit	arkit	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+AVFoundation	avfoundation	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+BackgroundTasks	backgroundtasks	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+CarPlay	carplay	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+CloudKit	cloudkit	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Combine	combine	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Concurrency	concurrency	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Core AI	core ai	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Core Animation	core animation	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Core Audio	core audio	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Core Bluetooth	core bluetooth	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Core Data	core data	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Core Graphics	core graphics	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Core Image	core image	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Core Location	core location	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Core Media	core media	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Core ML	core ml	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Core Motion	core motion	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Core Spotlight	core spotlight	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Core Text	core text	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Core Video	core video	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+CoreAI	coreai	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+CoreAnimation	coreanimation	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+CoreAudio	coreaudio	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+CoreBluetooth	corebluetooth	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+CoreData	coredata	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+CoreGraphics	coregraphics	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+CoreImage	coreimage	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+CoreLocation	corelocation	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+CoreMedia	coremedia	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+CoreML	coreml	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+CoreMotion	coremotion	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+CoreSpotlight	corespotlight	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+CoreText	coretext	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+CoreVideo	corevideo	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Create ML	create ml	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+CreateML	createml	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+CryptoKit	cryptokit	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+DeviceCheck	devicecheck	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Dynamic Island	dynamic island	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Foundation	foundation	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+HealthKit	healthkit	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+HomeKit	homekit	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Intents	intents	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+IntentsUI	intentsui	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Keychain Services	keychain services	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Live Activities	live activities	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+LocalAuthentication	localauthentication	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+MapKit	mapkit	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Metal	metal	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+MetalKit	metalkit	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+NaturalLanguage	naturallanguage	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Network.framework	network.framework	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase; technical delimiter
+NLLanguageRecognizer	nllanguagerecognizer	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+NSSpellChecker	nsspellchecker	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Observation	observation	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+PassKit	passkit	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+PDFKit	pdfkit	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+PencilKit	pencilkit	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+PhotosUI	photosui	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+PushKit	pushkit	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+QuickLook	quicklook	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+RealityKit	realitykit	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+San Francisco	san francisco	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+SceneKit	scenekit	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Security.framework	security.framework	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase; technical delimiter
+SF Pro	sf pro	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+SF Symbols	sf symbols	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Sign in with Apple	sign in with apple	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+SiriKit	sirikit	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+SpriteKit	spritekit	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+StoreKit	storekit	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+SwiftUI	swiftui	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+TipKit	tipkit	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+UIKit	uikit	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+URLSession	urlsession	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+UserNotifications	usernotifications	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Vision	vision	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+VisionKit	visionkit	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+WatchKit	watchkit	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+WebKit	webkit	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+WidgetKit	widgetkit	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+WKWebView	wkwebview	Apple frameworks & APIs	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+AirDrop	airdrop	Apple platforms & OS	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+AirPlay	airplay	Apple platforms & OS	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+AirPods	airpods	Apple platforms & OS	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+AirPrint	airprint	Apple platforms & OS	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+App Sandbox	app sandbox	Apple platforms & OS	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+App Store	app store	Apple platforms & OS	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+App Store Connect	app store connect	Apple platforms & OS	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Apple Silicon	apple silicon	Apple platforms & OS	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Apple Vision Pro	apple vision pro	Apple platforms & OS	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Apple Watch	apple watch	Apple platforms & OS	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Control Center	control center	Apple platforms & OS	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Dock	dock	Apple platforms & OS	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Face ID	face id	Apple platforms & OS	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+FaceTime	facetime	Apple platforms & OS	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+FileVault	filevault	Apple platforms & OS	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Finder	finder	Apple platforms & OS	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Gatekeeper	gatekeeper	Apple platforms & OS	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+HIG	hig	Apple platforms & OS	exact_or_case_preserving	never_correct	acronym
+Human Interface Guidelines	human interface guidelines	Apple platforms & OS	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+iCloud	icloud	Apple platforms & OS	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+iCloud Drive	icloud drive	Apple platforms & OS	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+iMac	imac	Apple platforms & OS	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+iOS	ios	Apple platforms & OS	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+iPad	ipad	Apple platforms & OS	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+iPadOS	ipados	Apple platforms & OS	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+iPhone	iphone	Apple platforms & OS	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Keychain	keychain	Apple platforms & OS	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Launchpad	launchpad	Apple platforms & OS	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Liquid Glass	liquid glass	Apple platforms & OS	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+M1	m1	Apple platforms & OS	exact_or_case_preserving	never_correct	contains digit
+M2	m2	Apple platforms & OS	exact_or_case_preserving	never_correct	contains digit
+M3	m3	Apple platforms & OS	exact_or_case_preserving	never_correct	contains digit
+M4	m4	Apple platforms & OS	exact_or_case_preserving	never_correct	contains digit
+M5	m5	Apple platforms & OS	exact_or_case_preserving	never_correct	contains digit
+Mac	mac	Apple platforms & OS	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Mac mini	mac mini	Apple platforms & OS	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Mac Studio	mac studio	Apple platforms & OS	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+MacBook	macbook	Apple platforms & OS	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+MacBook Air	macbook air	Apple platforms & OS	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+MacBook Pro	macbook pro	Apple platforms & OS	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+macOS	macos	Apple platforms & OS	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Notarization	notarization	Apple platforms & OS	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Notification Center	notification center	Apple platforms & OS	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Rosetta	rosetta	Apple platforms & OS	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Rosetta 2	rosetta 2	Apple platforms & OS	exact_or_case_preserving	never_correct	mixedCase/PascalCase; contains digit
+Sandbox	sandbox	Apple platforms & OS	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Shortcuts	shortcuts	Apple platforms & OS	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Siri	siri	Apple platforms & OS	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Spotlight	spotlight	Apple platforms & OS	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Stage Manager	stage manager	Apple platforms & OS	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+TestFlight	testflight	Apple platforms & OS	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Touch ID	touch id	Apple platforms & OS	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+tvOS	tvos	Apple platforms & OS	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+visionOS	visionos	Apple platforms & OS	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+watchOS	watchos	Apple platforms & OS	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+.7z	.7z	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter; contains digit
+.app	.app	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter
+.bash	.bash	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter
+.c	.c	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter
+.cpp	.cpp	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter
+.css	.css	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter
+.csv	.csv	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter
+.db	.db	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter
+.dmg	.dmg	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter
+.dockerignore	.dockerignore	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter
+.env	.env	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter
+.fish	.fish	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter
+.gitignore	.gitignore	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter
+.go	.go	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter
+.gradle	.gradle	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter
+.gz	.gz	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter
+.h	.h	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter
+.heic	.heic	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter
+.hpp	.hpp	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter
+.html	.html	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter
+.ico	.ico	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter
+.ipa	.ipa	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter
+.java	.java	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter
+.jpeg	.jpeg	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter
+.jpg	.jpg	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter
+.js	.js	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter
+.json	.json	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter
+.jsx	.jsx	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter
+.kt	.kt	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter
+.kts	.kts	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter
+.log	.log	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter
+.m	.m	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter
+.m4a	.m4a	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter; contains digit
+.md	.md	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter
+.mdx	.mdx	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter
+.mm	.mm	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter
+.mov	.mov	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter
+.mp3	.mp3	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter; contains digit
+.mp4	.mp4	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter; contains digit
+.pdf	.pdf	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter
+.pkg	.pkg	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter
+.plist	.plist	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter
+.png	.png	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter
+.py	.py	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter
+.rb	.rb	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter
+.rs	.rs	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter
+.sh	.sh	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter
+.sql	.sql	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter
+.sqlite	.sqlite	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter
+.storyboard	.storyboard	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter
+.strings	.strings	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter
+.svg	.svg	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter
+.swift	.swift	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter
+.tar	.tar	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter
+.ts	.ts	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter
+.tsv	.tsv	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter
+.tsx	.tsx	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter
+.txt	.txt	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter
+.wav	.wav	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter
+.webp	.webp	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter
+.xcarchive	.xcarchive	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter
+.xcassets	.xcassets	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter
+.xcodeproj	.xcodeproj	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter
+.xcworkspace	.xcworkspace	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter
+.xib	.xib	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter
+.xml	.xml	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter
+.yaml	.yaml	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter
+.yml	.yml	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter
+.zip	.zip	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter
+.zsh	.zsh	File formats & extensions	exact_or_case_preserving	never_correct	technical delimiter
+2FA	2fa	Networking, VPN & security	exact_or_case_preserving	never_correct	contains digit
+A Record	a record	Networking, VPN & security	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+AAAA	aaaa	Networking, VPN & security	exact_or_case_preserving	never_correct	acronym
+Amnezia	amnezia	Networking, VPN & security	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Bandwidth	bandwidth	Networking, VPN & security	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+BIMI	bimi	Networking, VPN & security	exact_or_case_preserving	never_correct	acronym
+BSSID	bssid	Networking, VPN & security	exact_or_case_preserving	never_correct	acronym
+CAA	caa	Networking, VPN & security	exact_or_case_preserving	never_correct	acronym
+CDN	cdn	Networking, VPN & security	exact_or_case_preserving	never_correct	acronym
+CGNAT	cgnat	Networking, VPN & security	exact_or_case_preserving	never_correct	acronym
+CIDR	cidr	Networking, VPN & security	exact_or_case_preserving	never_correct	acronym
+Clash	clash	Networking, VPN & security	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+CNAME	cname	Networking, VPN & security	exact_or_case_preserving	never_correct	acronym
+CVE	cve	Networking, VPN & security	exact_or_case_preserving	never_correct	acronym
+CVSS	cvss	Networking, VPN & security	exact_or_case_preserving	never_correct	acronym
+CWE	cwe	Networking, VPN & security	exact_or_case_preserving	never_correct	acronym
+DDoS	ddos	Networking, VPN & security	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+DKIM	dkim	Networking, VPN & security	exact_or_case_preserving	never_correct	acronym
+DMARC	dmarc	Networking, VPN & security	exact_or_case_preserving	never_correct	acronym
+DNS	dns	Networking, VPN & security	exact_or_case_preserving	never_correct	acronym
+DNSSEC	dnssec	Networking, VPN & security	exact_or_case_preserving	never_correct	acronym
+DoH	doh	Networking, VPN & security	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+DoT	dot	Networking, VPN & security	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+EDR	edr	Networking, VPN & security	exact_or_case_preserving	never_correct	acronym
+FIDO2	fido2	Networking, VPN & security	exact_or_case_preserving	never_correct	acronym; contains digit
+Firewall	firewall	Networking, VPN & security	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+FTP	ftp	Networking, VPN & security	exact_or_case_preserving	never_correct	acronym
+Gateway	gateway	Networking, VPN & security	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+HTTP	http	Networking, VPN & security	exact_or_case_preserving	never_correct	acronym
+HTTP/2	http/2	Networking, VPN & security	exact_or_case_preserving	never_correct	acronym; technical delimiter; contains digit
+HTTP/3	http/3	Networking, VPN & security	exact_or_case_preserving	never_correct	acronym; technical delimiter; contains digit
+HTTPS	https	Networking, VPN & security	exact_or_case_preserving	never_correct	acronym
+IKEv2	ikev2	Networking, VPN & security	exact_or_case_preserving	never_correct	mixedCase/PascalCase; contains digit
+IMAP	imap	Networking, VPN & security	exact_or_case_preserving	never_correct	acronym
+IP Address	ip address	Networking, VPN & security	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+IPsec	ipsec	Networking, VPN & security	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+IPv4	ipv4	Networking, VPN & security	exact_or_case_preserving	never_correct	mixedCase/PascalCase; contains digit
+IPv6	ipv6	Networking, VPN & security	exact_or_case_preserving	never_correct	mixedCase/PascalCase; contains digit
+Jitter	jitter	Networking, VPN & security	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+JWT	jwt	Networking, VPN & security	exact_or_case_preserving	never_correct	acronym
+Kerberos	kerberos	Networking, VPN & security	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+LAN	lan	Networking, VPN & security	exact_or_case_preserving	never_correct	acronym
+Latency	latency	Networking, VPN & security	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+LDAP	ldap	Networking, VPN & security	exact_or_case_preserving	never_correct	acronym
+MAC Address	mac address	Networking, VPN & security	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+MFA	mfa	Networking, VPN & security	exact_or_case_preserving	never_correct	acronym
+MTU	mtu	Networking, VPN & security	exact_or_case_preserving	never_correct	acronym
+MX	mx	Networking, VPN & security	exact_or_case_preserving	never_correct	acronym
+NAT	nat	Networking, VPN & security	exact_or_case_preserving	never_correct	acronym
+NS	ns	Networking, VPN & security	exact_or_case_preserving	never_correct	acronym
+OAuth	oauth	Networking, VPN & security	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+OAuth2	oauth2	Networking, VPN & security	exact_or_case_preserving	never_correct	mixedCase/PascalCase; contains digit
+OIDC	oidc	Networking, VPN & security	exact_or_case_preserving	never_correct	acronym
+OpenVPN	openvpn	Networking, VPN & security	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Packet Loss	packet loss	Networking, VPN & security	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Passkey	passkey	Networking, VPN & security	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Ping	ping	Networking, VPN & security	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+POP3	pop3	Networking, VPN & security	exact_or_case_preserving	never_correct	acronym; contains digit
+Proxy	proxy	Networking, VPN & security	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+PTR	ptr	Networking, VPN & security	exact_or_case_preserving	never_correct	acronym
+QUIC	quic	Networking, VPN & security	exact_or_case_preserving	never_correct	acronym
+Reality	reality	Networking, VPN & security	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Route	route	Networking, VPN & security	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Router	router	Networking, VPN & security	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+SAML	saml	Networking, VPN & security	exact_or_case_preserving	never_correct	acronym
+SFTP	sftp	Networking, VPN & security	exact_or_case_preserving	never_correct	acronym
+Shadowsocks	shadowsocks	Networking, VPN & security	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+SIEM	siem	Networking, VPN & security	exact_or_case_preserving	never_correct	acronym
+Sing-box	sing-box	Networking, VPN & security	exact_or_case_preserving	never_correct	mixedCase/PascalCase; technical delimiter
+SMTP	smtp	Networking, VPN & security	exact_or_case_preserving	never_correct	acronym
+SOA	soa	Networking, VPN & security	exact_or_case_preserving	never_correct	acronym
+SOC	soc	Networking, VPN & security	exact_or_case_preserving	never_correct	acronym
+SOCKS5	socks5	Networking, VPN & security	exact_or_case_preserving	never_correct	acronym; contains digit
+SPF	spf	Networking, VPN & security	exact_or_case_preserving	never_correct	acronym
+SSH	ssh	Networking, VPN & security	exact_or_case_preserving	never_correct	acronym
+SSID	ssid	Networking, VPN & security	exact_or_case_preserving	never_correct	acronym
+SSL	ssl	Networking, VPN & security	exact_or_case_preserving	never_correct	acronym
+TCP	tcp	Networking, VPN & security	exact_or_case_preserving	never_correct	acronym
+Throughput	throughput	Networking, VPN & security	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+TLS	tls	Networking, VPN & security	exact_or_case_preserving	never_correct	acronym
+TOTP	totp	Networking, VPN & security	exact_or_case_preserving	never_correct	acronym
+Traceroute	traceroute	Networking, VPN & security	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Trojan	trojan	Networking, VPN & security	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+TXT	txt	Networking, VPN & security	exact_or_case_preserving	never_correct	acronym
+UDP	udp	Networking, VPN & security	exact_or_case_preserving	never_correct	acronym
+VLAN	vlan	Networking, VPN & security	exact_or_case_preserving	never_correct	acronym
+VLESS	vless	Networking, VPN & security	exact_or_case_preserving	never_correct	acronym
+VMess	vmess	Networking, VPN & security	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+VPN	vpn	Networking, VPN & security	exact_or_case_preserving	never_correct	acronym
+WAF	waf	Networking, VPN & security	exact_or_case_preserving	never_correct	acronym
+WAN	wan	Networking, VPN & security	exact_or_case_preserving	never_correct	acronym
+WebAuthn	webauthn	Networking, VPN & security	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+WireGuard	wireguard	Networking, VPN & security	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+WLAN	wlan	Networking, VPN & security	exact_or_case_preserving	never_correct	acronym
+XDR	xdr	Networking, VPN & security	exact_or_case_preserving	never_correct	acronym
+Xray	xray	Networking, VPN & security	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+YubiKey	yubikey	Networking, VPN & security	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Zero Trust	zero trust	Networking, VPN & security	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+автодополнение	автодополнение	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+автозамена	автозамена	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+автоправка	автоправка	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+автосейв	автосейв	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+алерт	алерт	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+бейдж	бейдж	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+билд	билд	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+блэклист	блэклист	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+буфер	буфер	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+бэкап	бэкап	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+вайтлист	вайтлист	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+вкладка	вкладка	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+горячая клавиша	горячая клавиша	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+диалог	диалог	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+доступ	доступ	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+доступность	доступность	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+жест	жест	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+задержка	задержка	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+иконка	иконка	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+интерфейс	интерфейс	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+инференс	инференс	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+исключение	исключение	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+канал	канал	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+кандидат	кандидат	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+карточка	карточка	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+клавиатура	клавиатура	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+клиент	клиент	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+кнопка	кнопка	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+кэш	кэш	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+лог	лог	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+локализация	локализация	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+маршрут	маршрут	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+меню	меню	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+метрика	метрика	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+модалка	модалка	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+модель	модель	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+окно	окно	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+панель	панель	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+переключатель	переключатель	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+песочница	песочница	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+пинг	пинг	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+подпись	подпись	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+подсказка	подсказка	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+поиск	поиск	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+поле	поле	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+поповер	поповер	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+порог	порог	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+потери	потери	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+права	права	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+провайдер	провайдер	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+прокси	прокси	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+профиль	профиль	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+разрешение	разрешение	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+раскладка	раскладка	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+резолвер	резолвер	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+релиз	релиз	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+сайдбар	сайдбар	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+сборка	сборка	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+свайп	свайп	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+светлая тема	светлая тема	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+сервер	сервер	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+сертификат	сертификат	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+сетка	сетка	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+синхронизация	синхронизация	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+скоринг	скоринг	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+слайдер	слайдер	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+словарь	словарь	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+сортировка	сортировка	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+список	список	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+таблица	таблица	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+тап	тап	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+телеметрия	телеметрия	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+токен	токен	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+транслит	транслит	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+тулбар	тулбар	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+тумблер	тумблер	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+туннель	туннель	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+тёмная тема	тёмная тема	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+уведомление	уведомление	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+фаервол	фаервол	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+фильтр	фильтр	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+фокус	фокус	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+ховер	ховер	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+частота	частота	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+чекбокс	чекбокс	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+чип	чип	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+шлюз	шлюз	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+шорткат	шорткат	Russian UI / tech terms	exact_or_case_preserving	never_correct	technical/UI whitelist
+Accessibility	accessibility	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Adaptive	adaptive	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Alert	alert	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Animation	animation	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+API	api	UI / UX terminology	exact_or_case_preserving	never_correct	acronym
+Auto Layout	auto layout	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Autocomplete	autocomplete	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Autocorrect	autocorrect	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Autofill	autofill	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Autosave	autosave	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Badge	badge	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Baseline	baseline	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Blur	blur	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Breakpoint	breakpoint	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Button	button	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Card	card	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Checkbox	checkbox	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Chip	chip	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+CLI	cli	UI / UX terminology	exact_or_case_preserving	never_correct	acronym
+Collection View	collection view	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Color Palette	color palette	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Command Palette	command palette	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Context Menu	context menu	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Copy	copy	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Corner Radius	corner radius	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Cut	cut	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Dark Mode	dark mode	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Design Token	design token	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Dialog	dialog	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Divider	divider	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Drag and Drop	drag and drop	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Drawer	drawer	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Drop Zone	drop zone	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Dynamic Type	dynamic type	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Easing	easing	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Elevation	elevation	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Empty State	empty state	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Focus	focus	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Focus Ring	focus ring	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+ForEach	foreach	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Form	form	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Gesture	gesture	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Glass	glass	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Grid	grid	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+GUI	gui	UI / UX terminology	exact_or_case_preserving	never_correct	acronym
+Haptic	haptic	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+High Contrast	high contrast	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Hotkey	hotkey	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Hover	hover	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+HStack	hstack	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+HUD	hud	UI / UX terminology	exact_or_case_preserving	never_correct	acronym
+I18n	i18n	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase; contains digit
+Icon	icon	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+IDE	ide	UI / UX terminology	exact_or_case_preserving	never_correct	acronym
+Inspector	inspector	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Internationalization	internationalization	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Keyboard Shortcut	keyboard shortcut	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+L10n	l10n	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase; contains digit
+Label	label	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Layout	layout	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+LazyGrid	lazygrid	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+LazyHStack	lazyhstack	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+LazyVStack	lazyvstack	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Light Mode	light mode	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+List	list	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Localization	localization	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Long Press	long press	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+LTR	ltr	UI / UX terminology	exact_or_case_preserving	never_correct	acronym
+Material	material	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Menu Bar	menu bar	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Microinteraction	microinteraction	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Modal	modal	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Navigation Bar	navigation bar	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Navigation Stack	navigation stack	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+NavigationSplitView	navigationsplitview	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Onboarding	onboarding	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Opacity	opacity	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Overlay	overlay	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Padding	padding	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Panel	panel	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Paste	paste	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Picker	picker	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Pinch	pinch	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Placeholder	placeholder	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Popover	popover	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Preferences	preferences	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Progress View	progress view	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Radio Button	radio button	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Redo	redo	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Reduce Motion	reduce motion	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Responsive	responsive	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+RTL	rtl	UI / UX terminology	exact_or_case_preserving	never_correct	acronym
+Safe Area	safe area	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Scene	scene	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+ScrollView	scrollview	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+SDK	sdk	UI / UX terminology	exact_or_case_preserving	never_correct	acronym
+Search Bar	search bar	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+SearchField	searchfield	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Segmented Control	segmented control	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Select All	select all	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Settings	settings	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Shadow	shadow	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Sheet	sheet	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Sidebar	sidebar	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Skeleton	skeleton	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Slider	slider	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Smart Paste	smart paste	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Snackbar	snackbar	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Spacer	spacer	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Spacing	spacing	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Spinner	spinner	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Split View	split view	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Status Bar	status bar	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Stepper	stepper	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Subview	subview	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Swipe	swipe	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Switch	switch	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Tab Bar	tab bar	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Table	table	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+TabView	tabview	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Tap	tap	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+TextField	textfield	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+TextView	textview	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Tile	tile	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Toast	toast	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Toggle	toggle	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Token	token	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Toolbar	toolbar	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Tooltip	tooltip	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Transition	transition	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+TUI	tui	UI / UX terminology	exact_or_case_preserving	never_correct	acronym
+Typography	typography	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+UI	ui	UI / UX terminology	exact_or_case_preserving	never_correct	acronym
+Undo	undo	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+UX	ux	UI / UX terminology	exact_or_case_preserving	never_correct	acronym
+Vibrancy	vibrancy	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+View	view	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+VoiceOver	voiceover	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+VStack	vstack	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+WebView	webview	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Window	window	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Zoom	zoom	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+ZStack	zstack	UI / UX terminology	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Angular	angular	Web, backend & storage	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Ansible	ansible	Web, backend & storage	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Apache	apache	Web, backend & storage	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+AWS	aws	Web, backend & storage	exact_or_case_preserving	never_correct	acronym
+Azure	azure	Web, backend & storage	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Bootstrap	bootstrap	Web, backend & storage	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Bun	bun	Web, backend & storage	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Caddy	caddy	Web, backend & storage	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+ClickHouse	clickhouse	Web, backend & storage	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Cloudflare	cloudflare	Web, backend & storage	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+CSS	css	Web, backend & storage	exact_or_case_preserving	never_correct	acronym
+CSV	csv	Web, backend & storage	exact_or_case_preserving	never_correct	acronym
+Deno	deno	Web, backend & storage	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Django	django	Web, backend & storage	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Docker	docker	Web, backend & storage	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+ElasticSearch	elasticsearch	Web, backend & storage	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+ESBuild	esbuild	Web, backend & storage	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Express	express	Web, backend & storage	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+FastAPI	fastapi	Web, backend & storage	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Firebase	firebase	Web, backend & storage	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Flask	flask	Web, backend & storage	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+GCP	gcp	Web, backend & storage	exact_or_case_preserving	never_correct	acronym
+Grafana	grafana	Web, backend & storage	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+GraphQL	graphql	Web, backend & storage	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+gRPC	grpc	Web, backend & storage	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Helm	helm	Web, backend & storage	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+HTML	html	Web, backend & storage	exact_or_case_preserving	never_correct	acronym
+JavaScript	javascript	Web, backend & storage	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+JSON	json	Web, backend & storage	exact_or_case_preserving	never_correct	acronym
+k8s	k8s	Web, backend & storage	exact_or_case_preserving	never_correct	contains digit
+Kibana	kibana	Web, backend & storage	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Kubernetes	kubernetes	Web, backend & storage	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Laravel	laravel	Web, backend & storage	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Logstash	logstash	Web, backend & storage	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+MariaDB	mariadb	Web, backend & storage	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Markdown	markdown	Web, backend & storage	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+MDX	mdx	Web, backend & storage	exact_or_case_preserving	never_correct	acronym
+MinIO	minio	Web, backend & storage	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+MongoDB	mongodb	Web, backend & storage	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+MySQL	mysql	Web, backend & storage	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Nagios	nagios	Web, backend & storage	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Netlify	netlify	Web, backend & storage	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Next.js	next.js	Web, backend & storage	exact_or_case_preserving	never_correct	mixedCase/PascalCase; technical delimiter
+Nginx	nginx	Web, backend & storage	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Node.js	node.js	Web, backend & storage	exact_or_case_preserving	never_correct	mixedCase/PascalCase; technical delimiter
+npm	npm	Web, backend & storage	exact_or_case_preserving	never_correct	technical/UI whitelist
+Nuxt	nuxt	Web, backend & storage	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+OpenSearch	opensearch	Web, backend & storage	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+OpenTelemetry	opentelemetry	Web, backend & storage	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+OTel	otel	Web, backend & storage	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+pnpm	pnpm	Web, backend & storage	exact_or_case_preserving	never_correct	technical/UI whitelist
+Podman	podman	Web, backend & storage	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Postgres	postgres	Web, backend & storage	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+PostgreSQL	postgresql	Web, backend & storage	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Prometheus	prometheus	Web, backend & storage	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Rails	rails	Web, backend & storage	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+React	react	Web, backend & storage	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Redis	redis	Web, backend & storage	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+REST	rest	Web, backend & storage	exact_or_case_preserving	never_correct	acronym
+Rollup	rollup	Web, backend & storage	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Ruby on Rails	ruby on rails	Web, backend & storage	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+S3	s3	Web, backend & storage	exact_or_case_preserving	never_correct	contains digit
+Sentry	sentry	Web, backend & storage	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Spring	spring	Web, backend & storage	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+SQLite	sqlite	Web, backend & storage	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Supabase	supabase	Web, backend & storage	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Svelte	svelte	Web, backend & storage	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Tailwind	tailwind	Web, backend & storage	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Terraform	terraform	Web, backend & storage	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Traefik	traefik	Web, backend & storage	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+TypeScript	typescript	Web, backend & storage	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Vercel	vercel	Web, backend & storage	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Vite	vite	Web, backend & storage	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Vue	vue	Web, backend & storage	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+WASM	wasm	Web, backend & storage	exact_or_case_preserving	never_correct	acronym
+WebAssembly	webassembly	Web, backend & storage	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Webpack	webpack	Web, backend & storage	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+WebRTC	webrtc	Web, backend & storage	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+WebSocket	websocket	Web, backend & storage	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+XML	xml	Web, backend & storage	exact_or_case_preserving	never_correct	acronym
+YAML	yaml	Web, backend & storage	exact_or_case_preserving	never_correct	acronym
+yarn	yarn	Web, backend & storage	exact_or_case_preserving	never_correct	technical/UI whitelist
+Zabbix	zabbix	Web, backend & storage	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+actor	actor	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	technical/UI whitelist
+altool	altool	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	technical/UI whitelist
+APNs	apns	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Asset Catalog	asset catalog	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+async	async	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	technical/UI whitelist
+AsyncSequence	asyncsequence	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+await	await	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	technical/UI whitelist
+Binding	binding	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Bitbucket	bitbucket	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Bundle ID	bundle id	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Canvas	canvas	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Carthage	carthage	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+CD	cd	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	acronym
+CI	ci	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	acronym
+CI/CD	ci/cd	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	acronym; technical delimiter
+Clang	clang	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+CMake	cmake	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Cocoa	cocoa	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Cocoa Touch	cocoa touch	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+CocoaPods	cocoapods	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Codable	codable	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+codesign	codesign	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	technical/UI whitelist
+Coordinator	coordinator	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Dependency Injection	dependency injection	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+DerivedData	deriveddata	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Developer ID	developer id	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+DI	di	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	acronym
+DMG	dmg	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	acronym
+DocC	docc	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+dSYM	dsym	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Entitlements	entitlements	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+EnvironmentObject	environmentobject	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Equatable	equatable	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Fastlane	fastlane	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+git	git	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	technical/UI whitelist
+GitHub	github	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+GitLab	gitlab	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Hashable	hashable	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Identifiable	identifiable	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Info.plist	info.plist	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase; technical delimiter
+Instruments	instruments	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Interface Builder	interface builder	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+IPA	ipa	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	acronym
+LLDB	lldb	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	acronym
+LLVM	llvm	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	acronym
+MainActor	mainactor	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Makefile	makefile	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+MVC	mvc	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	acronym
+MVI	mvi	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	acronym
+MVVM	mvvm	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	acronym
+Nib	nib	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+notarytool	notarytool	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	technical/UI whitelist
+NSViewController	nsviewcontroller	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+ObjC	objc	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Objective-C	objective-c	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase; technical delimiter
+Observable	observable	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+ObservableObject	observableobject	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Package.swift	package.swift	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase; technical delimiter
+PKG	pkg	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	acronym
+PreviewProvider	previewprovider	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Previews	previews	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Project	project	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Provisioning Profile	provisioning profile	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Published	published	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Result	result	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Scheme	scheme	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Sendable	sendable	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Simulator	simulator	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Snapshot Test	snapshot test	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+SourceKit	sourcekit	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+SPM	spm	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	acronym
+StateObject	stateobject	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Storyboard	storyboard	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Swift	swift	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Swift Package Manager	swift package manager	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+SwiftFormat	swiftformat	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+SwiftLint	swiftlint	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+SwiftSyntax	swiftsyntax	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Target	target	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Task	task	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+TaskGroup	taskgroup	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Team ID	team id	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Test Plan	test plan	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Tuist	tuist	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+UI Test	ui test	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+UIViewController	uiviewcontroller	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Unit Test	unit test	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+ViewBuilder	viewbuilder	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+ViewController	viewcontroller	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+ViewModel	viewmodel	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+VIPER	viper	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	acronym
+Workspace	workspace	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+XCArchive	xcarchive	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+XCConfig	xcconfig	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+XCFramework	xcframework	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+Xcode	xcode	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+xcodebuild	xcodebuild	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	technical/UI whitelist
+xcrun	xcrun	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	technical/UI whitelist
+XCTest	xctest	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+XCUITest	xcuitest	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	mixedCase/PascalCase
+XIB	xib	Xcode, Swift & build tooling	exact_or_case_preserving	never_correct	acronym

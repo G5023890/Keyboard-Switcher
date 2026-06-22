@@ -63,9 +63,11 @@ struct SettingsView: View {
     @Environment(\.colorScheme) private var colorScheme
     @SceneStorage("settings.selectedSection") private var selectedSectionID = SettingsSection.general.rawValue
     @State private var showsCustomDictionary = false
+    @State private var showsDetectionPriorityEditor = false
     @State private var showsAdvancedCorrection = false
     @State private var showsOnboarding = false
     @State private var appSearchText = ""
+    @State private var diagnosticsStatusMessage = ""
 
     private var selectedSection: SettingsSection {
         get { SettingsSection(rawValue: selectedSectionID) ?? .general }
@@ -90,6 +92,10 @@ struct SettingsView: View {
         .frame(minWidth: 920, idealWidth: 980, minHeight: 680, idealHeight: 720)
         .sheet(isPresented: $showsCustomDictionary) {
             CustomDictionarySheet()
+                .environmentObject(appState)
+        }
+        .sheet(isPresented: $showsDetectionPriorityEditor) {
+            DetectionPriorityEditorSheet()
                 .environmentObject(appState)
         }
         .sheet(isPresented: $showsOnboarding) {
@@ -187,8 +193,9 @@ struct SettingsView: View {
             }
 
             SettingsCard("Detection & Learning") {
-                SettingsButtonRow("Detection Priority", value: "English ↔ Russian ↔ Hebrew", buttonTitle: "Edit...") {}
-                    .disabledRow("The current priority is optimized for the bundled dictionaries.")
+                SettingsButtonRow("Detection Priority", value: detectionPriorityText, buttonTitle: "Edit...") {
+                    showsDetectionPriorityEditor = true
+                }
                 SettingsToggleRow("Use custom words", isOn: .constant(true))
                 SettingsToggleRow("Learn from manual corrections", isOn: $appState.learnsFromManualCorrections)
                 SettingsButtonRow("Manage Custom Dictionary...", buttonTitle: "Open") {
@@ -197,6 +204,12 @@ struct SettingsView: View {
                 SettingsToggleRow("Local intelligence", subtitle: "Improves safety for mixed-language and technical text.", isOn: .constant(true))
             }
         }
+    }
+
+    private var detectionPriorityText: String {
+        appState.detectionPriority
+            .map(\.displayName)
+            .joined(separator: " ↔ ")
     }
 
     private var correctionSection: some View {
@@ -238,12 +251,15 @@ struct SettingsView: View {
                 SettingsToggleRow("Do not correct URLs, emails, and file paths", isOn: .constant(true))
                 SettingsToggleRow("Use strict rules for short words", isOn: .constant(true))
                 SettingsToggleRow("Require Space for automatic short-word correction", isOn: .constant(true))
+                SettingsToggleRow("Correct spelling mistakes after Space", subtitle: "Uses macOS spellchecker only when layout correction does nothing.", isOn: $appState.correctSpellingMistakes)
             }
 
             SettingsCard("Feedback") {
                 SettingsToggleRow("Show subtle visual confirmation", isOn: .constant(true))
                 SettingsToggleRow("Play sound when layout is corrected", isOn: $appState.playSoundWhenLayoutCorrected)
-                SettingsToggleRow("Show suggestion instead of correcting medium-confidence cases", isOn: .constant(true))
+                SettingsToggleRow("Play sound for possible typo", subtitle: "Medium-confidence cases are signaled without popup suggestions.", isOn: $appState.playSoundForPossibleTypo)
+                SettingsToggleRow("Show correction suggestions", isOn: .constant(false))
+                    .disabledRow("Popup suggestions are disabled in this build.")
             }
         }
     }
@@ -349,13 +365,15 @@ struct SettingsView: View {
         VStack(spacing: SettingsDesign.spacing.page) {
             SettingsCard("Sound Feedback") {
                 SettingsToggleRow("Play sound when layout is corrected", isOn: $appState.playSoundWhenLayoutCorrected)
+                SettingsToggleRow("Play sound for possible typo", subtitle: "Uses Smart Flip for medium-confidence cases.", isOn: $appState.playSoundForPossibleTypo)
                 SettingsToggleRow("Play sound only for automatic corrections", isOn: $appState.playSoundOnlyForAutomaticCorrections)
                 SettingsToggleRow("Do not play sound for short-word corrections", isOn: .constant(false))
             }
 
             SettingsCard("Sound Style") {
-                SoundStyleRow(title: "Smart Flip", subtitle: "Modern, soft, recommended", isSelected: false, isEnabled: false) {}
-                    .disabledRow("This sound will be available after the asset is bundled.")
+                SoundStyleRow(title: "Smart Flip", subtitle: "Possible typo signal", isSelected: true, isEnabled: true) {
+                    appState.playPossibleTypoSoundPreview()
+                }
                 SoundStyleRow(title: "Typewriter Shift", subtitle: "Mechanical keyboard-like click", isSelected: true, isEnabled: true) {
                     appState.playSoundPreview()
                 }
@@ -474,20 +492,50 @@ struct SettingsView: View {
             }
 
             SettingsCard("Actions") {
-                HStack(spacing: 10) {
-                    Button("Copy Diagnostic Report") {
-                        NSPasteboard.general.clearContents()
-                        NSPasteboard.general.setString(appState.diagnosticReport(), forType: .string)
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack(spacing: 10) {
+                        Button("Copy Diagnostic Report") {
+                            NSPasteboard.general.clearContents()
+                            NSPasteboard.general.setString(appState.diagnosticReport(), forType: .string)
+                            diagnosticsStatusMessage = "Diagnostic report copied."
+                        }
+                        Button("Export Training Samples...") {
+                            exportTrainingSamples()
+                        }
+                        .disabled(appState.diagnostics.trainingSampleCount == 0)
+                        .help("Exports local correction features and outcomes for offline Core ML training. Typed text is not exported.")
+                        Button("Open Logs Folder") {}
+                            .disabled(true)
+                            .help("Logs folder integration is planned for a later build.")
+                        Button("Reset Learning Data") {
+                            appState.resetLearningData()
+                            diagnosticsStatusMessage = "Learning data reset."
+                        }
+                        Spacer()
                     }
-                    Button("Open Logs Folder") {}
-                        .disabled(true)
-                        .help("Logs folder integration is planned for a later build.")
-                    Button("Reset Learning Data") {
-                        appState.resetLearningData()
+                    if !diagnosticsStatusMessage.isEmpty {
+                        Text(diagnosticsStatusMessage)
+                            .font(.system(size: 12))
+                            .foregroundStyle(.secondary)
                     }
-                    Spacer()
                 }
             }
+        }
+    }
+
+    private func exportTrainingSamples() {
+        let panel = NSSavePanel()
+        panel.allowedContentTypes = [UTType(filenameExtension: "jsonl") ?? .json]
+        panel.canCreateDirectories = true
+        panel.nameFieldStringValue = "KeyboardSwitcher-TrainingSamples-\(Self.fileDateFormatter.string(from: Date())).jsonl"
+
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+
+        do {
+            try appState.exportTrainingSamples(to: url)
+            diagnosticsStatusMessage = "Training samples exported."
+        } catch {
+            diagnosticsStatusMessage = "Export failed: \(error.localizedDescription)"
         }
     }
 
@@ -530,6 +578,12 @@ struct SettingsView: View {
             }
         }
     }
+
+    private static let fileDateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd-HHmm"
+        return formatter
+    }()
 }
 
 struct OnboardingView: View {
@@ -1452,6 +1506,97 @@ private struct CandidateRow: View {
     }
 }
 
+private struct DetectionPriorityEditorSheet: View {
+    @EnvironmentObject private var appState: AppState
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.colorScheme) private var colorScheme
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Detection Priority")
+                        .font(.system(size: 24, weight: .semibold))
+                    Text("Choose which language wins first when candidates are very close.")
+                        .font(.system(size: 13))
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+                Button("Done") {
+                    dismiss()
+                }
+                .keyboardShortcut(.defaultAction)
+            }
+
+            VStack(spacing: 10) {
+                ForEach(Array(appState.detectionPriority.enumerated()), id: \.element.id) { index, language in
+                    priorityRow(language: language, index: index)
+                }
+            }
+
+            HStack {
+                Button("Reset to Default") {
+                    appState.resetDetectionPriority()
+                }
+                Spacer()
+                Text("Default: English ↔ Russian ↔ Hebrew")
+                    .font(.system(size: 12.5))
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .padding(24)
+        .frame(width: 520, height: 390)
+    }
+
+    private func priorityRow(language: KeyboardLanguage, index: Int) -> some View {
+        HStack(spacing: 12) {
+            Text("\(index + 1)")
+                .font(.system(size: 13, weight: .semibold, design: .rounded))
+                .foregroundStyle(.secondary)
+                .frame(width: 24)
+            Text(language.flagGlyph)
+                .font(.system(size: 24))
+                .frame(width: 34)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(language.displayName)
+                    .font(.system(size: 14.5, weight: .semibold))
+                Text(languagePriorityDescription(language))
+                    .font(.system(size: 12.5))
+                    .foregroundStyle(.secondary)
+            }
+            Spacer()
+            HStack(spacing: 6) {
+                Button {
+                    appState.moveDetectionLanguage(language, direction: -1)
+                } label: {
+                    Image(systemName: "chevron.up")
+                }
+                .disabled(index == 0)
+                Button {
+                    appState.moveDetectionLanguage(language, direction: 1)
+                } label: {
+                    Image(systemName: "chevron.down")
+                }
+                .disabled(index == appState.detectionPriority.count - 1)
+            }
+            .buttonStyle(.bordered)
+        }
+        .padding(12)
+        .background(SettingsDesign.rowBackground(for: colorScheme), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+    }
+
+    private func languagePriorityDescription(_ language: KeyboardLanguage) -> String {
+        switch language {
+        case .english:
+            "Prefer English first in close EN/RU/HE ties."
+        case .russian:
+            "Prefer Russian first in close EN/RU/HE ties."
+        case .hebrew:
+            "Prefer Hebrew first in close EN/RU/HE ties."
+        }
+    }
+}
+
 private struct CustomDictionarySheet: View {
     @EnvironmentObject private var appState: AppState
     @Environment(\.dismiss) private var dismiss
@@ -1538,6 +1683,7 @@ private struct CustomDictionarySheet: View {
     private var alwaysCorrectContent: some View {
         VStack(alignment: .leading, spacing: 14) {
             addAlwaysCorrectCard
+            suspiciousAlwaysCorrectCard
             dictionaryList(
                 emptyTitle: "No Always Correct Rules",
                 emptySystemImage: "text.badge.checkmark",
@@ -1599,12 +1745,47 @@ private struct CustomDictionarySheet: View {
                 }
                 .disabled(!canAddAlwaysRule)
             }
+            if !alwaysOriginal.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                || !alwaysReplacement.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                Text(alwaysRuleValidation.canStore ? "Rule is valid for layout learning." : alwaysRuleValidation.message)
+                    .font(.system(size: 12))
+                    .foregroundStyle(alwaysRuleValidation.canStore ? Color.secondary : Color.red)
+            }
             Text("These rules are local and override future layout decisions for the typed form.")
                 .font(.system(size: 12))
                 .foregroundStyle(.secondary)
         }
         .padding(14)
         .background(SettingsDesign.cardBackground(for: colorScheme), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+    }
+
+    @ViewBuilder
+    private var suspiciousAlwaysCorrectCard: some View {
+        let suspicious = suspiciousLearnedCorrections
+        if !suspicious.isEmpty {
+            HStack(spacing: 12) {
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(.orange)
+                    .frame(width: 32, height: 32)
+                    .background(Color.orange.opacity(0.14), in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("\(suspicious.count) suspicious always-correct rules")
+                        .font(.system(size: 13.5, weight: .semibold))
+                    Text("These rules contain unsafe punctuation, do not replay cleanly, or are missing from the bundled dictionaries.")
+                        .font(.system(size: 12))
+                        .foregroundStyle(.secondary)
+                        .lineLimit(2)
+                }
+                Spacer()
+                Button("Remove Suspicious", role: .destructive) {
+                    appState.removeLearnedCorrections(suspicious)
+                    dictionaryStatusMessage = "Removed \(suspicious.count) suspicious always-correct rules."
+                }
+            }
+            .padding(12)
+            .background(Color.orange.opacity(colorScheme == .dark ? 0.18 : 0.12), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        }
     }
 
     private var addNeverCorrectCard: some View {
@@ -1752,6 +1933,12 @@ private struct CustomDictionarySheet: View {
         }
     }
 
+    private var suspiciousLearnedCorrections: [LearnedCorrection] {
+        appState.learnedCorrections().filter {
+            LearnedCorrectionValidator.validate($0).isSuspicious
+        }
+    }
+
     private var filteredSuppressedCorrections: [SuppressedCorrection] {
         let suppressions = appState.suppressedCorrections()
         guard !normalizedSearch.isEmpty else { return suppressions }
@@ -1805,9 +1992,15 @@ private struct CustomDictionarySheet: View {
     }
 
     private var canAddAlwaysRule: Bool {
-        let original = alwaysOriginal.trimmingCharacters(in: .whitespacesAndNewlines)
-        let replacement = alwaysReplacement.trimmingCharacters(in: .whitespacesAndNewlines)
-        return !original.isEmpty && !replacement.isEmpty && original.caseInsensitiveCompare(replacement) != .orderedSame
+        alwaysRuleValidation.canStore
+    }
+
+    private var alwaysRuleValidation: LearnedCorrectionValidation {
+        LearnedCorrectionValidator.validate(
+            original: alwaysOriginal,
+            replacement: alwaysReplacement,
+            language: alwaysLanguage
+        )
     }
 
     private var canAddNeverRule: Bool {
@@ -1865,10 +2058,12 @@ private struct LearnedCorrectionRow: View {
     let remove: () -> Void
 
     var body: some View {
+        let validation = LearnedCorrectionValidator.validate(correction)
         DictionaryRuleRow(
             systemImage: correction.language.systemImage,
             title: "\(correction.original) → \(correction.replacement)",
             subtitle: "\(correction.language.displayName) · \(correction.uses) uses · updated \(Self.relativeDateFormatter.localizedString(for: correction.updatedAt, relativeTo: Date()))",
+            warning: validation.isSuspicious ? validation.message : nil,
             actionTitle: "Remove",
             action: remove
         )
@@ -1890,6 +2085,7 @@ private struct SuppressedCorrectionRow: View {
             systemImage: correction.isPersistent ? "hand.raised.fill" : "clock.arrow.circlepath",
             title: "\(correction.original) → \(correction.replacement)",
             subtitle: detail,
+            warning: nil,
             actionTitle: "Remove",
             action: remove
         )
@@ -2117,10 +2313,10 @@ private struct ShortWordDictionaryResource: Identifiable {
         return words.filter { $0.localizedCaseInsensitiveContains(normalized) }
     }
 
-    static let russianCore = make(language: .russian, tier: .core, resourceName: "short-ru-core-1-4")
-    static let russianExtended = make(language: .russian, tier: .extended, resourceName: "short-ru-extended-1-4")
-    static let englishCore = make(language: .english, tier: .core, resourceName: "short-en-core-1-4")
-    static let englishExtended = make(language: .english, tier: .extended, resourceName: "short-en-extended-1-4")
+    static let russianCore = make(language: .russian, tier: .core, resourceName: "short_words_auto_whitelist")
+    static let russianExtended = make(language: .russian, tier: .extended, resourceName: "ru_manual_extended_300k")
+    static let englishCore = make(language: .english, tier: .core, resourceName: "short_words_auto_whitelist")
+    static let englishExtended = make(language: .english, tier: .extended, resourceName: "en_manual_extended_200k")
 
     static let all: [ShortWordDictionaryResource] = [
         russianCore,
@@ -2135,26 +2331,45 @@ private struct ShortWordDictionaryResource: Identifiable {
             language: language,
             tier: tier,
             resourceName: resourceName,
-            words: loadWords(resourceName: resourceName)
+            words: loadWords(resourceName: resourceName, language: language, tier: tier)
         )
     }
 
-    private static func loadWords(resourceName: String) -> [String] {
+    private static func loadWords(resourceName: String, language: KeyboardLanguage, tier: Tier) -> [String] {
         let bundles = [
             Bundle.main,
             Bundle(for: AppDelegate.self)
         ]
 
         for bundle in bundles {
-            guard let url = bundle.url(forResource: resourceName, withExtension: "txt"),
+            guard let url = bundle.url(forResource: resourceName, withExtension: "tsv"),
                   let contents = try? String(contentsOf: url, encoding: .utf8) else {
                 continue
             }
 
-            return contents
-                .split(whereSeparator: \.isNewline)
-                .map { String($0).trimmingCharacters(in: .whitespacesAndNewlines) }
-                .filter { !$0.isEmpty }
+            let languageCode = language == .russian ? "ru" : "en"
+            switch resourceName {
+            case "short_words_auto_whitelist":
+                return contents
+                    .split(whereSeparator: \.isNewline)
+                    .dropFirst()
+                    .compactMap { line -> String? in
+                        let columns = String(line).components(separatedBy: "\t")
+                        guard columns.count >= 2, columns[0] == languageCode else { return nil }
+                        return columns[1].trimmingCharacters(in: .whitespacesAndNewlines)
+                    }
+                    .filter { !$0.isEmpty }
+            default:
+                return contents
+                    .split(whereSeparator: \.isNewline)
+                    .dropFirst()
+                    .compactMap { line -> String? in
+                        let word = String(line).components(separatedBy: "\t").first?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+                        guard (1...4).contains(word.count) else { return nil }
+                        return word
+                    }
+                    .filter { !$0.isEmpty }
+            }
         }
 
         return []
@@ -2166,6 +2381,7 @@ private struct DictionaryRuleRow: View {
     let systemImage: String
     let title: String
     let subtitle: String
+    let warning: String?
     let actionTitle: String
     let action: () -> Void
 
@@ -2185,6 +2401,12 @@ private struct DictionaryRuleRow: View {
                     .font(.system(size: 12))
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
+                if let warning {
+                    Label(warning, systemImage: "exclamationmark.triangle.fill")
+                        .font(.system(size: 11.5))
+                        .foregroundStyle(.orange)
+                        .lineLimit(2)
+                }
             }
             Spacer()
             Button(actionTitle, role: .destructive, action: action)

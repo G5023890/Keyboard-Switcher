@@ -66,11 +66,22 @@ enum LayoutEngine {
         }
     }
 
-    static func isWordCharacter(stroke: KeyStroke, currentLanguage: KeyboardLanguage) -> Bool {
+    static func isTokenCharacter(stroke: KeyStroke, currentLanguage: KeyboardLanguage) -> Bool {
         KeyboardLanguage.allCases.contains { language in
             guard let character = character(for: stroke, language: language) else { return false }
             return character.rangeOfCharacter(from: .letters) != nil
-        } || character(for: stroke, language: currentLanguage) == "'"
+        } || tokenPunctuationCharacter(for: stroke, currentLanguage: currentLanguage) != nil
+    }
+
+    static func tokenPunctuationCharacter(for stroke: KeyStroke, currentLanguage: KeyboardLanguage) -> String? {
+        guard let character = character(for: stroke, language: currentLanguage),
+              character.rangeOfCharacter(from: .letters) == nil,
+              character.rangeOfCharacter(from: .whitespacesAndNewlines) == nil else {
+            return nil
+        }
+
+        let tokenPunctuation = CharacterSet(charactersIn: ".,;:'\"`‘’“”!?()[]{}<>%^*")
+        return character.rangeOfCharacter(from: tokenPunctuation) != nil ? character : nil
     }
 
     static func technicalTokenSeparator(for stroke: KeyStroke, currentLanguage: KeyboardLanguage) -> String? {
@@ -199,7 +210,15 @@ enum LayoutEngine {
     }
 
     private static func strokeForAnyLayout(character: String) -> KeyStroke? {
-        if ",.;'[]".contains(character), let stroke = stroke(for: character, language: .english) {
+        if character == "‘" || character == "’" {
+            return stroke(for: "'", language: .english)
+        }
+
+        if character == "“" || character == "”" {
+            return stroke(for: "\"", language: .english)
+        }
+
+        if ".,;:'\"`[]{}<>%^*".contains(character), let stroke = stroke(for: character, language: .english) {
             return stroke
         }
 
@@ -225,7 +244,9 @@ enum LayoutEngine {
         16: ["y", "Y"], 17: ["t", "T"], 31: ["o", "O"], 32: ["u", "U"], 34: ["i", "I"],
         35: ["p", "P"], 37: ["l", "L"], 38: ["j", "J"], 40: ["k", "K"], 45: ["n", "N"],
         33: ["[", "{"], 30: ["]", "}"], 41: [";", ":"], 39: ["'", "\""], 42: ["\\", "|"],
-        43: [",", "<"], 47: [".", ">"], 44: ["/", "?"], 50: ["`", "~"], 46: ["m", "M"]
+        43: [",", "<"], 47: [".", ">"], 44: ["/", "?"], 50: ["`", "~"], 46: ["m", "M"],
+        18: ["1", "!"], 19: ["2", "@"], 20: ["3", "#"], 21: ["4", "$"], 23: ["5", "%"],
+        22: ["6", "^"], 26: ["7", "&"], 28: ["8", "*"], 25: ["9", "("], 29: ["0", ")"]
     ]
 
     private static let russian: [Int64: [String]] = [
@@ -235,7 +256,9 @@ enum LayoutEngine {
         16: ["н", "Н"], 17: ["е", "Е"], 31: ["щ", "Щ"], 32: ["г", "Г"], 34: ["ш", "Ш"],
         35: ["з", "З"], 37: ["д", "Д"], 38: ["о", "О"], 40: ["л", "Л"], 45: ["т", "Т"],
         33: ["х", "Х"], 30: ["ъ", "Ъ"], 41: ["ж", "Ж"], 39: ["э", "Э"], 42: ["ё", "Ё"],
-        43: ["б", "Б"], 47: ["ю", "Ю"], 44: [".", ","], 50: ["ё", "Ё"], 46: ["ь", "Ь"]
+        43: ["б", "Б"], 47: ["ю", "Ю"], 44: [".", ","], 50: ["ё", "Ё"], 46: ["ь", "Ь"],
+        18: ["1", "!"], 19: ["2", "\""], 20: ["3", "№"], 21: ["4", ";"], 23: ["5", ":"],
+        22: ["6", ","], 26: ["7", "."], 28: ["8", ";"], 25: ["9", "("], 29: ["0", ")"]
     ]
 
     private static let hebrew: [Int64: [String]] = [

@@ -11,7 +11,8 @@ final class ExclusionManager {
         "org.keepassxc.keepassxc",
         "com.apple.ScreenSharing",
         "com.microsoft.rdc.macos",
-        "com.philandro.anydesk"
+        "com.philandro.anydesk",
+        "com.apple.finder"
     ]
 
     static let defaultStrictBundleIdentifiers: Set<String> = [
@@ -22,7 +23,6 @@ final class ExclusionManager {
         "com.sublimetext.4",
         "com.apple.Siri",
         "com.apple.Spotlight",
-        "com.apple.finder",
         "com.apple.systempreferences",
         "com.apple.systemsettings"
     ]
@@ -65,7 +65,7 @@ final class ExclusionManager {
             return false
         }
 
-        return excludedBundleIdentifiers.contains(bundleIdentifier)
+        return behaviorMode(for: bundleIdentifier) == .excluded
     }
 
     var frontmostAppBehaviorMode: AppBehaviorMode {

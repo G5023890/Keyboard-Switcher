@@ -94,37 +94,6 @@ private struct MenuBarContent: View {
             Text("Current layout: \(appState.currentLanguage.displayName)")
                 .foregroundStyle(.secondary)
 
-            if !appState.diagnostics.lastSuggestion.isEmpty {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("Suggestion: \(appState.diagnostics.lastSuggestion)")
-                        .foregroundStyle(.secondary)
-                        .lineLimit(2)
-                    HStack {
-                        Button("Accept") {
-                            appState.acceptPendingSuggestion()
-                        }
-                        .keyboardShortcut(.return, modifiers: [])
-                        Button("Ignore") {
-                            appState.ignorePendingSuggestion()
-                        }
-                        .keyboardShortcut(.escape, modifiers: [])
-                    }
-                }
-            }
-
-            if !appState.diagnostics.lastManualCandidatePreview.isEmpty {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Manual candidates")
-                        .font(.subheadline.weight(.semibold))
-                    Text(appState.diagnostics.lastManualCandidatePreview)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(4)
-                    Text("Press Double Shift again to choose the next candidate.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-            }
-
             Divider()
 
             Toggle("Enable Keyboard Switcher", isOn: $appState.isKeyboardSwitcherEnabled)

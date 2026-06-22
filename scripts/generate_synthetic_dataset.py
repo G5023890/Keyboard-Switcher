@@ -65,9 +65,26 @@ def read_words(path, limit=None):
     words = []
     with path.open("r", encoding="utf-8") as handle:
         for line in handle:
-            word = line.strip().split(",")[0].strip().lower()
-            if not word or word.startswith("#"):
+            columns = line.strip().split("\t")
+            word = columns[0].strip().lower()
+            if not word or word in {"word", "lang"} or word.startswith("#"):
                 continue
+            if not word_alpha(word):
+                continue
+            words.append(word)
+            if limit and len(words) >= limit:
+                break
+    return words
+
+
+def read_short_whitelist(path, language, limit=None):
+    words = []
+    with path.open("r", encoding="utf-8") as handle:
+        for line in handle:
+            columns = line.strip().split("\t")
+            if len(columns) < 2 or columns[0] != language:
+                continue
+            word = columns[1].strip().lower()
             if not word_alpha(word):
                 continue
             words.append(word)
@@ -305,10 +322,10 @@ def suppressed_short_word_samples(rng):
 
 def load_word_sources(limit_per_source):
     return {
-        "en_core": read_words(RESOURCES / "short-en-core-1-4.txt", limit_per_source),
-        "en_common": read_words(RESOURCES / "english-common-5000.txt", limit_per_source),
-        "ru_core": read_words(RESOURCES / "short-ru-core-1-4.txt", limit_per_source),
-        "ru_freq": read_words(RESOURCES / "russian-frequency-50000.txt", limit_per_source),
+        "en_core": read_short_whitelist(RESOURCES / "short_words_auto_whitelist.tsv", "en", limit_per_source),
+        "en_common": read_words(RESOURCES / "en_auto_core_50k.tsv", limit_per_source),
+        "ru_core": read_short_whitelist(RESOURCES / "short_words_auto_whitelist.tsv", "ru", limit_per_source),
+        "ru_freq": read_words(RESOURCES / "ru_auto_core_100k.tsv", limit_per_source),
         "he": HEBREW_WORDS,
     }
 

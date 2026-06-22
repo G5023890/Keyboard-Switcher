@@ -124,6 +124,19 @@ final class KeyboardSwitcherCoreTests: XCTestCase {
         XCTAssertEqual(FocusedInputContextInspector.kind(role: "AXButton", subrole: ""), .unknown)
     }
 
+    func testMessagesDoesNotUseSyntheticReplacementFallback() {
+        let textArea = FocusedInputContext(kind: .textArea, role: "AXTextArea", subrole: "")
+        let unavailable = FocusedInputContext.unavailable
+
+        XCTAssertFalse(KeyboardMonitor.allowsSyntheticReplacementFallback(bundleIdentifier: "com.apple.MobileSMS", inputContext: textArea))
+        XCTAssertFalse(KeyboardMonitor.allowsSyntheticReplacementFallback(bundleIdentifier: "com.apple.MobileSMS", inputContext: unavailable))
+        XCTAssertTrue(KeyboardMonitor.allowsSyntheticReplacementFallback(bundleIdentifier: "com.apple.TextEdit", inputContext: textArea))
+        XCTAssertFalse(KeyboardMonitor.allowsSyntheticReplacementFallback(
+            bundleIdentifier: "com.apple.TextEdit",
+            inputContext: FocusedInputContext(kind: .searchField, role: "AXTextField", subrole: "AXSearchField")
+        ))
+    }
+
     func testExclusionManagerResolvesBehaviorModes() {
         let manager = ExclusionManager(excludedBundleIdentifiers: ["com.apple.Terminal"])
         manager.appBehaviorModes["com.apple.Terminal"] = .normal
@@ -135,6 +148,7 @@ final class KeyboardSwitcherCoreTests: XCTestCase {
         XCTAssertEqual(ExclusionManager.defaultBehaviorMode(for: "com.apple.dt.Xcode"), .strict)
         XCTAssertEqual(ExclusionManager.defaultBehaviorMode(for: "com.todesktop.230313mzl4w4u92"), .strict)
         XCTAssertEqual(ExclusionManager.defaultBehaviorMode(for: "com.apple.Siri"), .strict)
+        XCTAssertEqual(ExclusionManager.defaultBehaviorMode(for: "com.apple.finder"), .excluded)
         XCTAssertEqual(ExclusionManager.defaultBehaviorMode(for: "com.apple.Notes"), .textFocused)
         XCTAssertEqual(ExclusionManager.defaultBehaviorMode(for: "com.unknown.App"), .normal)
     }
@@ -144,9 +158,17 @@ final class KeyboardSwitcherCoreTests: XCTestCase {
         XCTAssertTrue(preferences.shouldSwitchInputSource())
         XCTAssertTrue(preferences.shouldPlaySound(origin: .automatic))
         XCTAssertTrue(preferences.shouldPlaySound(origin: .manual))
+        XCTAssertTrue(preferences.shouldPlayPossibleTypoSound())
+        XCTAssertFalse(preferences.shouldCorrectSpellingMistakes())
 
         preferences.switchInputSourceAfterCorrection = false
         XCTAssertFalse(preferences.shouldSwitchInputSource())
+
+        preferences.playSoundForPossibleTypo = false
+        XCTAssertFalse(preferences.shouldPlayPossibleTypoSound())
+
+        preferences.correctSpellingMistakes = true
+        XCTAssertTrue(preferences.shouldCorrectSpellingMistakes())
 
         preferences.playSoundWhenLayoutCorrected = false
         XCTAssertFalse(preferences.shouldPlaySound(origin: .automatic))
@@ -193,6 +215,24 @@ final class KeyboardSwitcherCoreTests: XCTestCase {
 
         XCTAssertTrue(candidates.contains(LayoutCandidate(language: .english, text: "ghbdtn")))
         XCTAssertTrue(candidates.contains(LayoutCandidate(language: .russian, text: "привет")))
+    }
+
+    func testCorrectRussianWordIsNotCorrectedInRussianLayout() {
+        let undo = CorrectionUndoManager()
+        let engine = CorrectionEngine(undoController: undo, learningStore: isolatedLearningStore())
+        engine.confidenceThreshold = 0.62
+        let typed = "отправить"
+        let strokes = LayoutEngine.strokes(for: typed, language: .russian) ?? []
+
+        let evaluation = engine.evaluate(
+            strokes: strokes,
+            typedText: typed,
+            profile: AppBehaviorMode.textFocused.correctionProfile,
+            appMode: .textFocused,
+            terminatorType: "space"
+        )
+
+        XCTAssertNil(evaluation.decision, evaluation.diagnosticSummary)
     }
 
     func testRussianCandidateForKak() {
@@ -344,6 +384,92 @@ final class KeyboardSwitcherCoreTests: XCTestCase {
         let decision = engine.decision(for: strokes, typedText: "ghbdtn")
         XCTAssertEqual(decision?.replacement, "привет")
         XCTAssertEqual(decision?.language, .russian)
+    }
+
+    func testCorrectedTypoBeforeSpaceCanStillUseBufferedWord() {
+        let undo = CorrectionUndoManager()
+        let engine = CorrectionEngine(undoController: undo, learningStore: isolatedLearningStore())
+        engine.confidenceThreshold = 0.35
+
+        let visibleWordAfterUserFixesTypo = "ghbdtn"
+        let strokes = LayoutEngine.mixedLayoutStrokes(for: visibleWordAfterUserFixesTypo) ?? []
+        let evaluation = engine.evaluate(strokes: strokes, typedText: visibleWordAfterUserFixesTypo, terminatorType: "space")
+
+        XCTAssertEqual(evaluation.decision?.replacement, "привет")
+        XCTAssertEqual(evaluation.decision?.language, .russian)
+    }
+
+    func testRussianLayoutTypedEnglishTranslateCanCorrectAfterSpace() {
+        let undo = CorrectionUndoManager()
+        let engine = CorrectionEngine(undoController: undo, learningStore: isolatedLearningStore())
+        engine.confidenceThreshold = 0.35
+
+        let strokes = LayoutEngine.strokes(for: "translate", language: .english) ?? []
+        let typedInRussianLayout = LayoutEngine.candidates(for: strokes, enabledLanguages: [.russian])
+            .first { $0.language == .russian }?.text ?? ""
+        let evaluation = engine.evaluate(strokes: strokes, typedText: typedInRussianLayout, terminatorType: "space")
+
+        XCTAssertEqual(typedInRussianLayout, "екфтыдфеу")
+        XCTAssertEqual(evaluation.decision?.replacement, "translate")
+        XCTAssertEqual(evaluation.decision?.language, .english)
+    }
+
+    func testWrongLayoutRussianWordWithTypoCanUseSpellChecker() throws {
+        let undo = CorrectionUndoManager()
+        let engine = CorrectionEngine(undoController: undo, learningStore: isolatedLearningStore())
+        engine.confidenceThreshold = 0.62
+        let typed = "vtltwbycrbq"
+        let strokes = LayoutEngine.strokes(for: typed, language: .english) ?? []
+        let evaluation = engine.evaluate(strokes: strokes, typedText: typed, terminatorType: "space")
+
+        guard evaluation.decision != nil else {
+            throw XCTSkip("macOS Russian spellchecker did not provide a correction for медецинский in this environment")
+        }
+
+        XCTAssertEqual(evaluation.decision?.replacement, "медицинский")
+        XCTAssertEqual(evaluation.decision?.language, .russian)
+        XCTAssertEqual(evaluation.reason, "Corrected layout candidate spelling")
+    }
+
+    func testMisspelledLayoutCandidateDoesNotAutocorrectWithoutSpellcheckerRepair() {
+        let classifier = TextClassifier()
+        let candidate = LayoutCandidate(language: .russian, text: "медецинский")
+
+        XCTAssertFalse(classifier.hasStrongLexicalEvidence(candidate))
+    }
+
+    func testUnsafeAlternateCandidateDoesNotBlockSafeSpellingAssistedCandidate() throws {
+        let undo = CorrectionUndoManager()
+        let engine = CorrectionEngine(undoController: undo, learningStore: isolatedLearningStore())
+        engine.confidenceThreshold = 0.62
+        let typed = "vtltwbycrbq"
+        let strokes = LayoutEngine.strokes(for: typed, language: .english) ?? []
+
+        XCTAssertNil(SafetyPreflight.blockReason(for: typed))
+
+        let rawCandidates = LayoutEngine.candidates(for: strokes, enabledLanguages: Set(KeyboardLanguage.allCases))
+            .filter { $0.text != typed }
+        XCTAssertTrue(rawCandidates.contains { TextClassifier().correctionSafetyReason(for: $0.text) != nil })
+
+        let evaluation = engine.evaluate(strokes: strokes, typedText: typed, terminatorType: "space")
+        guard evaluation.decision != nil else {
+            throw XCTSkip("macOS Russian spellchecker did not provide a correction for медецинский in this environment")
+        }
+
+        XCTAssertEqual(evaluation.decision?.replacement, "медицинский")
+        XCTAssertEqual(evaluation.reason, "Corrected layout candidate spelling")
+    }
+
+    func testEditedRussianWordSnapshotDoesNotOvercorrectValidRussianWord() {
+        let undo = CorrectionUndoManager()
+        let engine = CorrectionEngine(undoController: undo, learningStore: isolatedLearningStore())
+        engine.confidenceThreshold = 0.35
+
+        let visibleWordAfterUserFixesTypo = "проверки"
+        let strokes = LayoutEngine.mixedLayoutStrokes(for: visibleWordAfterUserFixesTypo) ?? []
+        let evaluation = engine.evaluate(strokes: strokes, typedText: visibleWordAfterUserFixesTypo, terminatorType: "space")
+
+        XCTAssertNil(evaluation.decision)
     }
 
     func testEvaluationExplainsPrivet() {
@@ -575,10 +701,10 @@ final class KeyboardSwitcherCoreTests: XCTestCase {
         let engine = CorrectionEngine(undoController: undo, learningStore: learningStore)
         engine.confidenceThreshold = 0.99
 
-        engine.recordManualCorrection(original: "zzzz", replacement: "привет")
-        let strokes = LayoutEngine.strokes(for: "zzzz", language: .english) ?? []
+        engine.recordManualCorrection(original: "ghbdtn", replacement: "привет")
+        let strokes = LayoutEngine.strokes(for: "ghbdtn", language: .english) ?? []
 
-        let evaluation = engine.evaluate(strokes: strokes, typedText: "zzzz")
+        let evaluation = engine.evaluate(strokes: strokes, typedText: "ghbdtn")
         XCTAssertEqual(evaluation.reason, "Learned correction")
         XCTAssertEqual(evaluation.decision?.replacement, "привет")
         XCTAssertEqual(evaluation.decision?.language, .russian)
@@ -730,6 +856,37 @@ final class KeyboardSwitcherCoreTests: XCTestCase {
         XCTAssertNil(learningStore.preference(for: "ghbdtn"))
     }
 
+    func testLearnedCorrectionValidatorRejectsTrailingPunctuationReplacement() {
+        let validation = LearnedCorrectionValidator.validate(
+            original: "gjubvf/",
+            replacement: "погима.",
+            language: .russian
+        )
+
+        XCTAssertFalse(validation.canStore)
+        XCTAssertTrue(validation.message.contains("punctuation"))
+    }
+
+    func testLearningStoreSkipsInvalidLearnedCorrections() {
+        let learningStore = isolatedLearningStore()
+
+        learningStore.recordPreference(original: "gjubvf/", replacement: "погима.", language: .russian)
+
+        XCTAssertNil(learningStore.preference(for: "gjubvf/"))
+    }
+
+    func testLearnedCorrectionValidatorAllowsRussianPunctuationKeyWords() {
+        let learningStore = isolatedLearningStore()
+
+        learningStore.recordPreference(original: "gjybvf.", replacement: "понимаю", language: .russian)
+        learningStore.recordPreference(original: ";t", replacement: "же", language: .russian)
+        learningStore.recordPreference(original: "ev", replacement: "ум", language: .russian)
+
+        XCTAssertEqual(learningStore.preference(for: "gjybvf.")?.replacement, "понимаю")
+        XCTAssertEqual(learningStore.preference(for: ";t")?.replacement, "же")
+        XCTAssertEqual(learningStore.preference(for: "ev")?.replacement, "ум")
+    }
+
     func testExplicitSuppressionIsPersistent() {
         let learningStore = isolatedLearningStore()
         let now = Date(timeIntervalSince1970: 1_800_000_000)
@@ -764,11 +921,11 @@ final class KeyboardSwitcherCoreTests: XCTestCase {
 
         source.setPreference(original: "ghbdtn", replacement: "привет", language: .russian)
         let data = try source.exportBackupData(now: oldDate)
-        destination.setPreference(original: "ghbdtn", replacement: "здравствуйте", language: .russian)
+        destination.setPreference(original: "ghbdtn", replacement: "Привет", language: .russian)
 
         _ = try destination.importBackupData(data)
 
-        XCTAssertEqual(destination.preference(for: "ghbdtn")?.replacement, "здравствуйте")
+        XCTAssertEqual(destination.preference(for: "ghbdtn")?.replacement, "Привет")
     }
 
     func testPrivacyMetricsStoreKeepsOnlyAggregateCorrectionData() {
@@ -822,7 +979,131 @@ final class KeyboardSwitcherCoreTests: XCTestCase {
         XCTAssertEqual(engine.manualReplacement(for: ";урнал")?.replacement, "журнал")
         XCTAssertEqual(engine.manualReplacement(for: ".лия")?.replacement, "юлия")
         XCTAssertEqual(engine.manualReplacement(for: "'то")?.replacement, "это")
+        XCTAssertEqual(engine.manualReplacement(for: "‘то")?.replacement, "это")
         XCTAssertEqual(engine.manualReplacement(for: "[орошо")?.replacement, "хорошо")
+    }
+
+    func testRussianLetterPunctuationKeysReplayLowercaseAndShiftedVariants() {
+        let lowercaseStrokes = LayoutEngine.strokes(for: "[];'\\,.", language: .english) ?? []
+        let uppercaseStrokes = LayoutEngine.strokes(for: "{}:\"|<>", language: .english) ?? []
+
+        XCTAssertTrue(LayoutEngine.candidates(for: lowercaseStrokes, enabledLanguages: [.russian]).contains(
+            LayoutCandidate(language: .russian, text: "хъжэёбю")
+        ))
+        XCTAssertTrue(LayoutEngine.candidates(for: uppercaseStrokes, enabledLanguages: [.russian]).contains(
+            LayoutCandidate(language: .russian, text: "ХЪЖЭЁБЮ")
+        ))
+    }
+
+    func testAutomaticCorrectionKeepsRussianLetterPunctuationKeyInsideWord() {
+        let undo = CorrectionUndoManager()
+        let engine = CorrectionEngine(undoController: undo, learningStore: isolatedLearningStore())
+        engine.confidenceThreshold = 0.62
+
+        let typed = "djpvj;yj"
+        let strokes = LayoutEngine.strokes(for: typed, language: .english) ?? []
+        let evaluation = engine.evaluate(strokes: strokes, typedText: typed, terminatorType: "space")
+
+        XCTAssertEqual(evaluation.decision?.replacement, "возможно")
+        XCTAssertEqual(evaluation.decision?.language, .russian)
+    }
+
+    func testExplicitShortLearnedCorrectionCanUseRussianPunctuationKey() {
+        let undo = CorrectionUndoManager()
+        let learningStore = isolatedLearningStore()
+        let engine = CorrectionEngine(undoController: undo, learningStore: learningStore)
+        learningStore.setPreference(original: ";t", replacement: "же", language: .russian)
+
+        let strokes = LayoutEngine.strokes(for: ";t", language: .english) ?? []
+        let evaluation = engine.evaluate(strokes: strokes, typedText: ";t", terminatorType: "space")
+
+        XCTAssertEqual(evaluation.decision?.replacement, "же")
+        XCTAssertEqual(evaluation.decision?.language, .russian)
+        XCTAssertEqual(engine.manualReplacement(for: ";t")?.replacement, "же")
+    }
+
+    func testAutomaticCorrectionTreatsShiftPunctuationAsPartOfTokenUntilSpace() {
+        let undo = CorrectionUndoManager()
+        let engine = CorrectionEngine(undoController: undo, learningStore: isolatedLearningStore())
+        engine.confidenceThreshold = 0.62
+
+        let examples: [(typed: String, replacement: String)] = [
+            ("Cgfcb,j^", "Спасибо,"),
+            ("ghbvth%", "пример:"),
+            ("pfgznsvb^", "запятыми,"),
+            ("ldjtnjxbzvb*", "двоеточиями;"),
+            ("yf,bhf.", "набираю")
+        ]
+
+        for example in examples {
+            let strokes = LayoutEngine.strokes(for: example.typed, language: .english) ?? []
+            let evaluation = engine.evaluate(strokes: strokes, typedText: example.typed, terminatorType: "space")
+            XCTAssertEqual(evaluation.decision?.replacement, example.replacement, example.typed)
+            XCTAssertEqual(evaluation.decision?.language, .russian, example.typed)
+        }
+    }
+
+    func testSpellingAssistedLayerDoesNotRewriteManualDictionaryReplayWord() {
+        let undo = CorrectionUndoManager()
+        let engine = CorrectionEngine(undoController: undo, learningStore: isolatedLearningStore())
+        engine.confidenceThreshold = 0.62
+
+        let typed = "ghj,tkf"
+        let strokes = LayoutEngine.strokes(for: typed, language: .english) ?? []
+        let evaluation = engine.evaluate(strokes: strokes, typedText: typed, terminatorType: "space")
+
+        XCTAssertEqual(evaluation.decision?.replacement, "пробела")
+        XCTAssertNotEqual(evaluation.decision?.replacement, "провела")
+    }
+
+    func testSafetyStillBlocksTechnicalTokensAfterPunctuationTokenSupport() {
+        XCTAssertEqual(SafetyPreflight.blockReason(for: "example.com"), "technical delimiter token")
+        XCTAssertEqual(SafetyPreflight.blockReason(for: "api_response"), "technical delimiter token")
+        XCTAssertNil(SafetyPreflight.blockReason(for: "yf,bhf."))
+    }
+
+    func testManualCorrectionTreatsMixedLayoutTokenWithPunctuationAsOneToken() {
+        let undo = CorrectionUndoManager()
+        let engine = CorrectionEngine(undoController: undo, learningStore: isolatedLearningStore())
+        engine.confidenceThreshold = 0.62
+
+        XCTAssertEqual(engine.manualReplacement(for: "gthtrk.чении")?.replacement, "переключении")
+    }
+
+    func testAutomaticCorrectionPreservesEdgeTokenPunctuationWhenSafe() {
+        let undo = CorrectionUndoManager()
+        let engine = CorrectionEngine(undoController: undo, learningStore: isolatedLearningStore())
+        engine.confidenceThreshold = 0.62
+
+        let examples: [(typed: String, replacement: String)] = [
+            ("[djn", "[вот"),
+            ("nfr]", "так]"),
+            ("jnltkmyj?", "отдельно?"),
+            ("‘Nj?", "это?")
+        ]
+
+        for example in examples {
+            let strokes = LayoutEngine.mixedLayoutStrokes(for: example.typed) ?? []
+            let evaluation = engine.evaluate(strokes: strokes, typedText: example.typed, terminatorType: "space")
+            XCTAssertEqual(evaluation.decision?.replacement, example.replacement, "\(example.typed): \(evaluation.diagnosticSummary)")
+            XCTAssertEqual(evaluation.decision?.language, .russian, "\(example.typed): \(evaluation.diagnosticSummary)")
+        }
+    }
+
+    func testShortRussianFunctionalWordsWithPunctuationKeys() {
+        let undo = CorrectionUndoManager()
+        let engine = CorrectionEngine(undoController: undo, learningStore: isolatedLearningStore())
+
+        let byStrokes = LayoutEngine.mixedLayoutStrokes(for: ",s") ?? []
+        let izStrokes = LayoutEngine.strokes(for: "bp", language: .english) ?? []
+        let acronymStrokes = LayoutEngine.strokes(for: "BP", language: .english) ?? []
+
+        XCTAssertEqual(engine.evaluate(strokes: byStrokes, typedText: ",s", allowsShortFunctionalWords: true, terminatorType: "space").decision?.replacement, "бы")
+        XCTAssertEqual(engine.evaluate(strokes: izStrokes, typedText: "bp", allowsShortFunctionalWords: true, terminatorType: "space").decision?.replacement, "из")
+        XCTAssertNil(engine.evaluate(strokes: acronymStrokes, typedText: "BP", allowsShortFunctionalWords: true, terminatorType: "space").decision)
+        XCTAssertEqual(engine.manualReplacement(for: ",s")?.replacement, "бы")
+        XCTAssertEqual(engine.manualReplacement(for: "bp")?.replacement, "из")
+        XCTAssertNil(engine.manualReplacement(for: "BP"))
     }
 
     func testRandomConvertedRussianLettersAreNotEnoughForCorrection() {
@@ -866,10 +1147,10 @@ final class KeyboardSwitcherCoreTests: XCTestCase {
     func testShortWordExtendedResourcesStaySeparateFromCore() {
         let classifier = TextClassifier()
 
-        XCTAssertFalse(classifier.isCoreShortWord("авп", language: .russian))
-        XCTAssertTrue(classifier.isExtendedShortWord("авп", language: .russian))
-        XCTAssertFalse(classifier.isCoreShortWord("aaah", language: .english))
-        XCTAssertTrue(classifier.isExtendedShortWord("aaah", language: .english))
+        XCTAssertFalse(classifier.isCoreShortWord("вах", language: .russian))
+        XCTAssertTrue(classifier.isExtendedShortWord("вах", language: .russian))
+        XCTAssertFalse(classifier.isCoreShortWord("ae", language: .english))
+        XCTAssertTrue(classifier.isExtendedShortWord("ae", language: .english))
     }
 
     func testShortWordCoreProvidesStrongEvidenceAndExtendedSupportsManualLayer() {
@@ -877,7 +1158,70 @@ final class KeyboardSwitcherCoreTests: XCTestCase {
 
         XCTAssertTrue(classifier.hasStrongLexicalEvidence(LayoutCandidate(language: .russian, text: "это")))
         XCTAssertTrue(classifier.hasStrongLexicalEvidence(LayoutCandidate(language: .english, text: "you")))
-        XCTAssertTrue(classifier.hasManualLexicalEvidence(LayoutCandidate(language: .english, text: "aaah")))
+        XCTAssertTrue(classifier.hasManualLexicalEvidence(LayoutCandidate(language: .english, text: "ae")))
+    }
+
+    func testDictionaryLayersKeepAutoManualAndShortWordsSeparated() {
+        let classifier = TextClassifier()
+
+        XCTAssertTrue(classifier.hasStrongLexicalEvidence(LayoutCandidate(language: .russian, text: "привет")))
+        XCTAssertTrue(classifier.hasStrongLexicalEvidence(LayoutCandidate(language: .english, text: "translate")))
+        XCTAssertTrue(classifier.hasStrongLexicalEvidence(LayoutCandidate(language: .hebrew, text: "שלום")))
+
+        XCTAssertFalse(classifier.hasStrongLexicalEvidence(LayoutCandidate(language: .russian, text: "россии")))
+        XCTAssertTrue(classifier.hasManualLexicalEvidence(LayoutCandidate(language: .russian, text: "россии")))
+        XCTAssertFalse(classifier.hasStrongLexicalEvidence(LayoutCandidate(language: .english, text: "american")))
+        XCTAssertTrue(classifier.hasManualLexicalEvidence(LayoutCandidate(language: .english, text: "american")))
+        XCTAssertFalse(classifier.hasStrongLexicalEvidence(LayoutCandidate(language: .russian, text: "приве")))
+        XCTAssertFalse(classifier.hasStrongLexicalEvidence(LayoutCandidate(language: .english, text: "translat")))
+
+        XCTAssertTrue(classifier.isCoreShortWord("как", language: .russian))
+        XCTAssertTrue(classifier.isCoreShortWord("you", language: .english))
+    }
+
+    func testSpellCheckerCanSuggestFinalEnglishCorrection() throws {
+        let classifier = TextClassifier()
+        guard let correction = classifier.spellingCorrection(for: "teh", language: .english) else {
+            throw XCTSkip("macOS spellchecker did not provide an English suggestion for this environment")
+        }
+
+        XCTAssertEqual(correction.original, "teh")
+        XCTAssertEqual(correction.replacement.lowercased(), "the")
+        XCTAssertEqual(correction.language, .english)
+    }
+
+    func testSpellCheckerRejectsTechnicalAndCodeLikeText() {
+        let classifier = TextClassifier()
+
+        XCTAssertNil(classifier.spellingCorrection(for: "SwiftUI", language: .english))
+        XCTAssertNil(classifier.spellingCorrection(for: "api_response", language: .english))
+        XCTAssertNil(classifier.spellingCorrection(for: "example.com", language: .english))
+    }
+
+    func testSpellingCorrectionLayerRunsOnlyInNormalTextModes() throws {
+        let undo = CorrectionUndoManager()
+        let engine = CorrectionEngine(undoController: undo, learningStore: isolatedLearningStore())
+        guard let normalDecision = engine.spellingCorrection(
+            for: "teh",
+            language: .english,
+            appMode: .normal,
+            terminatorType: "space"
+        ) else {
+            throw XCTSkip("macOS spellchecker did not provide an English suggestion for this environment")
+        }
+
+        XCTAssertEqual(normalDecision.replacement.lowercased(), "the")
+        XCTAssertNil(engine.spellingCorrection(for: "teh", language: .english, appMode: .strict, terminatorType: "space"))
+        XCTAssertNil(engine.spellingCorrection(for: "teh", language: .english, appMode: .normal, terminatorType: "punctuation"))
+    }
+
+    func testSpellingLanguageIsInferredFromWordScriptBeforeCurrentLayout() {
+        let undo = CorrectionUndoManager()
+        let engine = CorrectionEngine(undoController: undo, learningStore: isolatedLearningStore())
+
+        XCTAssertEqual(engine.inferredSpellingLanguage(for: "медецинский", currentLanguage: .english), .russian)
+        XCTAssertEqual(engine.inferredSpellingLanguage(for: "recieve", currentLanguage: .russian), .english)
+        XCTAssertEqual(engine.inferredSpellingLanguage(for: "שלום", currentLanguage: .english), .hebrew)
     }
 
     func testCorrectionSafetyFallbackClassifiesClearCorrection() {

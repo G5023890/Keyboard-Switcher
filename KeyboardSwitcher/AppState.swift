@@ -46,6 +46,18 @@ final class AppState: ObservableObject {
         }
     }
 
+    @Published var detectionPriority: [KeyboardLanguage] = KeyboardLanguage.allCases {
+        didSet {
+            let normalized = Self.normalizedDetectionPriority(detectionPriority)
+            guard normalized == detectionPriority else {
+                detectionPriority = normalized
+                return
+            }
+            UserDefaults.standard.set(detectionPriority.map(\.rawValue), forKey: DefaultsKey.detectionPriority)
+            correctionEngine.detectionPriority = detectionPriority
+        }
+    }
+
     @Published var excludedBundleIdentifiers: Set<String> = ExclusionManager.defaultExcludedBundleIdentifiers {
         didSet {
             UserDefaults.standard.set(Array(excludedBundleIdentifiers).sorted(), forKey: DefaultsKey.exclusions)
@@ -92,6 +104,20 @@ final class AppState: ObservableObject {
     @Published var playSoundWhenLayoutCorrected: Bool = true {
         didSet {
             UserDefaults.standard.set(playSoundWhenLayoutCorrected, forKey: DefaultsKey.playSoundWhenLayoutCorrected)
+            updateMonitorPreferences()
+        }
+    }
+
+    @Published var playSoundForPossibleTypo: Bool = true {
+        didSet {
+            UserDefaults.standard.set(playSoundForPossibleTypo, forKey: DefaultsKey.playSoundForPossibleTypo)
+            updateMonitorPreferences()
+        }
+    }
+
+    @Published var correctSpellingMistakes: Bool = false {
+        didSet {
+            UserDefaults.standard.set(correctSpellingMistakes, forKey: DefaultsKey.correctSpellingMistakes)
             updateMonitorPreferences()
         }
     }
@@ -146,6 +172,7 @@ final class AppState: ObservableObject {
         let defaults = UserDefaults.standard
         let storedLanguages = defaults.stringArray(forKey: DefaultsKey.enabledLanguages) ?? KeyboardLanguage.allCases.map(\.rawValue)
         let languages = Set(storedLanguages.compactMap(KeyboardLanguage.init(rawValue:)))
+        let storedPriority = defaults.stringArray(forKey: DefaultsKey.detectionPriority) ?? KeyboardLanguage.allCases.map(\.rawValue)
 
         isKeyboardSwitcherEnabled = defaults.object(forKey: DefaultsKey.keyboardSwitcherEnabled) as? Bool ?? true
         isAutoCorrectionEnabled = defaults.object(forKey: DefaultsKey.autoCorrection) as? Bool ?? true
@@ -153,11 +180,14 @@ final class AppState: ObservableObject {
         confidenceThreshold = max(storedConfidence, 0.62)
         correctionSensitivity = CorrectionSensitivity(rawValue: defaults.string(forKey: DefaultsKey.correctionSensitivity) ?? "") ?? CorrectionSensitivity.closest(to: confidenceThreshold)
         enabledLanguages = languages.isEmpty ? Set(KeyboardLanguage.allCases) : languages
+        detectionPriority = Self.normalizedDetectionPriority(storedPriority.compactMap(KeyboardLanguage.init(rawValue:)))
         menuBarIconStyle = MenuBarIconStyle(rawValue: defaults.string(forKey: DefaultsKey.menuBarIconStyle) ?? "") ?? .glyphs
         switchInputSourceAfterCorrection = defaults.object(forKey: DefaultsKey.switchInputSourceAfterCorrection) as? Bool ?? true
         learnsFromManualCorrections = defaults.object(forKey: DefaultsKey.learnsFromManualCorrections) as? Bool ?? true
         usesLocalMLSafetyClassifier = defaults.object(forKey: DefaultsKey.usesLocalMLSafetyClassifier) as? Bool ?? true
         playSoundWhenLayoutCorrected = defaults.object(forKey: DefaultsKey.playSoundWhenLayoutCorrected) as? Bool ?? true
+        playSoundForPossibleTypo = defaults.object(forKey: DefaultsKey.playSoundForPossibleTypo) as? Bool ?? true
+        correctSpellingMistakes = defaults.object(forKey: DefaultsKey.correctSpellingMistakes) as? Bool ?? false
         soundVolume = defaults.object(forKey: DefaultsKey.soundVolume) as? Double ?? 0.75
         playSoundOnlyForAutomaticCorrections = defaults.object(forKey: DefaultsKey.playSoundOnlyForAutomaticCorrections) as? Bool ?? false
         hasSeenOnboarding = defaults.object(forKey: DefaultsKey.hasSeenOnboarding) as? Bool ?? false
@@ -176,6 +206,7 @@ final class AppState: ObservableObject {
 
         correctionEngine.confidenceThreshold = confidenceThreshold
         correctionEngine.enabledLanguages = enabledLanguages
+        correctionEngine.detectionPriority = detectionPriority
         correctionEngine.learnsFromManualCorrections = learnsFromManualCorrections
         undoController.onRecord = { [weak self] correction in
             self?.privacyMetricsStore.recordCorrection(correction)
@@ -214,6 +245,33 @@ final class AppState: ObservableObject {
         } else if enabledLanguages.count > 1 {
             enabledLanguages.remove(language)
         }
+    }
+
+    func moveDetectionPriority(fromOffsets source: IndexSet, toOffset destination: Int) {
+        let indexes = source.sorted()
+        guard !indexes.isEmpty else { return }
+
+        var updated = detectionPriority
+        let movingLanguages = indexes.map { updated[$0] }
+        for index in indexes.reversed() {
+            updated.remove(at: index)
+        }
+
+        let removedBeforeDestination = indexes.filter { $0 < destination }.count
+        let insertionIndex = max(0, min(destination - removedBeforeDestination, updated.count))
+        updated.insert(contentsOf: movingLanguages, at: insertionIndex)
+        detectionPriority = updated
+    }
+
+    func moveDetectionLanguage(_ language: KeyboardLanguage, direction: Int) {
+        guard let index = detectionPriority.firstIndex(of: language) else { return }
+        let newIndex = max(0, min(index + direction, detectionPriority.count - 1))
+        guard newIndex != index else { return }
+        detectionPriority.swapAt(index, newIndex)
+    }
+
+    func resetDetectionPriority() {
+        detectionPriority = KeyboardLanguage.allCases
     }
 
     func setExclusion(_ bundleIdentifier: String, isEnabled: Bool) {
@@ -278,18 +336,6 @@ final class AppState: ObservableObject {
         canUndoLastCorrection = undoController.canUndo
     }
 
-    func acceptPendingSuggestion() {
-        keyboardMonitor.acceptPendingSuggestion()
-        diagnostics = keyboardMonitor.diagnostics
-        canUndoLastCorrection = undoController.canUndo
-    }
-
-    func ignorePendingSuggestion() {
-        keyboardMonitor.ignorePendingSuggestion()
-        diagnostics = keyboardMonitor.diagnostics
-        learningDataRevision += 1
-    }
-
     func setLaunchAtLoginEnabled(_ enabled: Bool) {
         do {
             try LaunchAtLoginManager.setEnabled(enabled)
@@ -320,6 +366,14 @@ final class AppState: ObservableObject {
 
     func removeLearnedCorrection(_ correction: LearnedCorrection) {
         LearningStore.shared.removePreference(original: correction.original)
+        learningDataRevision += 1
+    }
+
+    func removeLearnedCorrections(_ corrections: [LearnedCorrection]) {
+        guard !corrections.isEmpty else { return }
+        for correction in corrections {
+            LearningStore.shared.removePreference(original: correction.original)
+        }
         learningDataRevision += 1
     }
 
@@ -355,6 +409,23 @@ final class AppState: ObservableObject {
 
     func playSoundPreview() {
         soundPreviewPlayer.playLayoutSwitch(volume: soundVolume)
+    }
+
+    func playPossibleTypoSoundPreview() {
+        soundPreviewPlayer.playPossibleTypo(volume: soundVolume * 0.55)
+    }
+
+    private static func normalizedDetectionPriority(_ languages: [KeyboardLanguage]) -> [KeyboardLanguage] {
+        var seen = Set<KeyboardLanguage>()
+        var normalized: [KeyboardLanguage] = []
+        for language in languages where !seen.contains(language) {
+            normalized.append(language)
+            seen.insert(language)
+        }
+        for language in KeyboardLanguage.allCases where !seen.contains(language) {
+            normalized.append(language)
+        }
+        return normalized
     }
 
     func diagnosticReport() -> String {
@@ -400,16 +471,28 @@ final class AppState: ObservableObject {
 
     private func startInputSourcePolling() {
         currentLanguage = inputSourceManager.currentKeyboardLanguage()
-        inputSourceTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
+        inputSourceTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) { [weak self] _ in
             Task { @MainActor in
                 guard let self else { return }
                 if self.isKeyboardSwitcherEnabled {
                     self.keyboardMonitor.ensureRunning()
                 }
-                self.currentLanguage = self.inputSourceManager.currentKeyboardLanguage()
-                self.canUndoLastCorrection = self.undoController.canUndo
-                self.diagnostics = self.keyboardMonitor.diagnostics
-                self.privacyMetrics = self.privacyMetricsStore.snapshot()
+                let language = self.inputSourceManager.currentKeyboardLanguage()
+                if self.currentLanguage != language {
+                    self.currentLanguage = language
+                }
+                let canUndo = self.undoController.canUndo
+                if self.canUndoLastCorrection != canUndo {
+                    self.canUndoLastCorrection = canUndo
+                }
+                let diagnostics = self.keyboardMonitor.diagnostics
+                if self.diagnostics != diagnostics {
+                    self.diagnostics = diagnostics
+                }
+                let metrics = self.privacyMetricsStore.snapshot()
+                if self.privacyMetrics != metrics {
+                    self.privacyMetrics = metrics
+                }
                 self.permissions.refresh()
             }
         }
@@ -439,6 +522,8 @@ final class AppState: ObservableObject {
         keyboardMonitor.preferences = KeyboardMonitorPreferences(
             switchInputSourceAfterCorrection: switchInputSourceAfterCorrection,
             playSoundWhenLayoutCorrected: playSoundWhenLayoutCorrected,
+            playSoundForPossibleTypo: playSoundForPossibleTypo,
+            correctSpellingMistakes: correctSpellingMistakes,
             soundVolume: soundVolume,
             playSoundOnlyForAutomaticCorrections: playSoundOnlyForAutomaticCorrections
         )
@@ -451,6 +536,7 @@ private enum DefaultsKey {
     static let confidence = "confidenceThreshold"
     static let correctionSensitivity = "correctionSensitivity"
     static let enabledLanguages = "enabledLanguages"
+    static let detectionPriority = "detectionPriority"
     static let exclusions = "excludedBundleIdentifiers"
     static let appBehaviorModes = "appBehaviorModes"
     static let behaviorDefaultsVersion = "behaviorDefaultsVersion"
@@ -459,6 +545,8 @@ private enum DefaultsKey {
     static let learnsFromManualCorrections = "learnsFromManualCorrections"
     static let usesLocalMLSafetyClassifier = CoreMLCorrectionSafetyClassifier.userDefaultsEnabledKey
     static let playSoundWhenLayoutCorrected = "playSoundWhenLayoutCorrected"
+    static let playSoundForPossibleTypo = "playSoundForPossibleTypo"
+    static let correctSpellingMistakes = "correctSpellingMistakes"
     static let soundVolume = "soundVolume"
     static let playSoundOnlyForAutomaticCorrections = "playSoundOnlyForAutomaticCorrections"
     static let hasSeenOnboarding = "hasSeenOnboarding"

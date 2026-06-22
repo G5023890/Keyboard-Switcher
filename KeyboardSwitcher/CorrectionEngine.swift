@@ -94,6 +94,7 @@ final class CorrectionEngine {
     var confidenceThreshold = 0.42
     var minimumConfidenceDelta = 0.20
     var enabledLanguages = Set(KeyboardLanguage.allCases)
+    var detectionPriority = KeyboardLanguage.allCases
     var learnsFromManualCorrections = true
 
     private let classifier = TextClassifier()
@@ -106,7 +107,7 @@ final class CorrectionEngine {
     ]
     private let shortFunctionalWords: [KeyboardLanguage: Set<String>] = [
         .english: ["a", "as", "at", "by", "i", "if", "in", "is", "it", "of", "on", "or", "to", "we"],
-        .russian: ["а", "в", "и", "к", "о", "с", "у", "я"],
+        .russian: ["а", "бы", "в", "и", "из", "к", "о", "с", "у", "я"],
         .hebrew: ["ב", "ו", "זה", "לא", "ל", "מה", "על", "עם", "של"]
     ]
     private let automaticHebrewShortFunctionalWords: Set<String> = ["של"]
@@ -147,48 +148,42 @@ final class CorrectionEngine {
             )
         }
 
-        guard strokes.count >= 3 else {
-            return makeEvaluation(typedText: typedText, candidateScores: [], decision: nil, reason: "Need at least 3 letters", confidenceThreshold: activeConfidenceThreshold, minimumConfidenceDelta: activeMinimumConfidenceDelta)
-        }
-
         if let safetyReason = classifier.correctionSafetyReason(for: typedText) {
             return makeEvaluation(typedText: typedText, candidateScores: [], decision: nil, reason: "Skipped \(safetyReason)", confidenceThreshold: activeConfidenceThreshold, minimumConfidenceDelta: activeMinimumConfidenceDelta)
         }
 
-        if hasSuspiciousCasing(typedText) {
+        if hasSuspiciousCasing(typedText), !isMixedLayoutWord(typedText) {
             return makeEvaluation(typedText: typedText, candidateScores: [], decision: nil, reason: "Skipped suspicious casing", confidenceThreshold: activeConfidenceThreshold, minimumConfidenceDelta: activeMinimumConfidenceDelta)
+        }
+
+        if let learnedDecision = learnedDecision(for: typedText) {
+            return makeEvaluation(typedText: typedText, candidateScores: [], decision: learnedDecision, reason: "Learned correction", confidenceThreshold: activeConfidenceThreshold, minimumConfidenceDelta: activeMinimumConfidenceDelta)
+        }
+
+        guard strokes.count >= 3 else {
+            return makeEvaluation(typedText: typedText, candidateScores: [], decision: nil, reason: "Need at least 3 letters", confidenceThreshold: activeConfidenceThreshold, minimumConfidenceDelta: activeMinimumConfidenceDelta)
         }
 
         let rawCandidates = LayoutEngine.candidates(for: strokes, enabledLanguages: enabledLanguages)
             .filter { $0.text != typedText }
 
-        if let unsafeCandidate = rawCandidates.first(where: { candidateSafetyReason(for: $0.text) != nil }),
-           let safetyReason = candidateSafetyReason(for: unsafeCandidate.text) {
+        let normalizedCandidates = rawCandidates
+            .map { normalizedCandidate($0, typedText: typedText) }
+            .filter { $0.text != typedText }
+
+        let safeCandidates = normalizedCandidates
+            .filter { candidateSafetyReason(for: $0.text) == nil }
+
+        if rawCandidates.isEmpty {
+            return makeEvaluation(typedText: typedText, candidateScores: [], decision: nil, reason: "No alternate layout candidate", confidenceThreshold: activeConfidenceThreshold, minimumConfidenceDelta: activeMinimumConfidenceDelta)
+        }
+
+        if safeCandidates.isEmpty,
+           let safetyReason = normalizedCandidates.compactMap({ candidateSafetyReason(for: $0.text) }).first {
             return makeEvaluation(typedText: typedText, candidateScores: [], decision: nil, reason: "Skipped \(safetyReason)", confidenceThreshold: activeConfidenceThreshold, minimumConfidenceDelta: activeMinimumConfidenceDelta)
         }
 
-        if let learned = learningStore.preference(for: typedText),
-           enabledLanguages.contains(learned.language),
-           learned.replacement != typedText,
-           !learningStore.isSuppressed(original: typedText, replacement: learned.replacement) {
-            let replacement = casingAdjustedReplacement(
-                classifier.preferredSpelling(for: learned.replacement, language: learned.language),
-                language: learned.language,
-                typedText: typedText
-            )
-            let decision = CorrectionDecision(
-                replacement: replacement,
-                language: learned.language,
-                score: min(0.98, 0.78 + Double(min(learned.uses, 10)) * 0.02),
-                runnerUpScore: 0
-            )
-            return makeEvaluation(typedText: typedText, candidateScores: [], decision: decision, reason: "Learned correction", confidenceThreshold: activeConfidenceThreshold, minimumConfidenceDelta: activeMinimumConfidenceDelta)
-        }
-
-        let candidates = rawCandidates
-            .map(normalizedCandidate)
-
-        let scores = candidates.map(classifier.score).sorted { $0.score > $1.score }
+        let scores = sortedScores(safeCandidates.map(classifier.score))
         guard let winner = scores.first else {
             return makeEvaluation(typedText: typedText, candidateScores: scores, decision: nil, reason: "No alternate layout candidate", confidenceThreshold: activeConfidenceThreshold, minimumConfidenceDelta: activeMinimumConfidenceDelta)
         }
@@ -211,6 +206,47 @@ final class CorrectionEngine {
             minimumConfidenceDelta: activeMinimumConfidenceDelta
         ) {
             return makeEvaluation(typedText: typedText, candidateScores: scores, decision: nil, reason: hebrewSafetyReason, confidenceThreshold: activeConfidenceThreshold, minimumConfidenceDelta: activeMinimumConfidenceDelta, safetyFeatures: safety.features, safetyPrediction: safety.prediction, safetyFallbackPrediction: safety.fallbackPrediction)
+        }
+
+        if let punctuationTokenDecision = punctuationTokenDecision(
+            for: winner,
+            runnerUp: runnerUp,
+            margin: margin,
+            typedText: typedText,
+            minimumConfidenceDelta: activeMinimumConfidenceDelta
+        ) {
+            return makeEvaluation(
+                typedText: typedText,
+                candidateScores: scores,
+                decision: punctuationTokenDecision,
+                reason: "Corrected punctuation token",
+                confidenceThreshold: activeConfidenceThreshold,
+                minimumConfidenceDelta: activeMinimumConfidenceDelta,
+                safetyFeatures: safety.features,
+                safetyPrediction: safety.prediction,
+                safetyFallbackPrediction: safety.fallbackPrediction
+            )
+        }
+
+        if let spellingAssistedDecision = spellingAssistedLayoutDecision(
+            for: winner,
+            runnerUp: runnerUp,
+            margin: margin,
+            typedText: typedText,
+            confidenceThreshold: activeConfidenceThreshold,
+            minimumConfidenceDelta: activeMinimumConfidenceDelta
+        ) {
+            return makeEvaluation(
+                typedText: typedText,
+                candidateScores: scores,
+                decision: spellingAssistedDecision,
+                reason: "Corrected layout candidate spelling",
+                confidenceThreshold: activeConfidenceThreshold,
+                minimumConfidenceDelta: activeMinimumConfidenceDelta,
+                safetyFeatures: safety.features,
+                safetyPrediction: safety.prediction,
+                safetyFallbackPrediction: safety.fallbackPrediction
+            )
         }
 
         guard winner.score >= activeConfidenceThreshold else {
@@ -326,10 +362,137 @@ final class CorrectionEngine {
         )
     }
 
-    func applyCorrection(replacingPreviousCharacterCount originalLength: Int, original: String, with replacement: String, language: KeyboardLanguage) {
+    private func spellingAssistedLayoutDecision(
+        for winner: CandidateScore,
+        runnerUp: Double,
+        margin: Double,
+        typedText: String,
+        confidenceThreshold: Double,
+        minimumConfidenceDelta: Double
+    ) -> CorrectionDecision? {
+        let candidate = winner.candidate
+        let candidateText = candidate.text
+        let minimumScore = max(0.34, confidenceThreshold - 0.28)
+        let minimumMargin = max(0.08, minimumConfidenceDelta * 0.45)
+
+        guard candidate.language != .hebrew,
+              candidateText != typedText,
+              winner.score >= minimumScore,
+              margin >= minimumMargin,
+              !classifier.hasManualLexicalEvidence(candidate),
+              candidateText.count >= 6,
+              let spellingCorrection = classifier.spellingCorrection(for: candidateText, language: candidate.language) else {
+            return nil
+        }
+
+        let replacement = casingAdjustedReplacement(
+            spellingCorrection.replacement,
+            language: candidate.language,
+            typedText: typedText
+        )
+
+        guard replacement != typedText,
+              !learningStore.isSuppressed(original: typedText, replacement: replacement),
+              hebrewAutomaticSafetyReason(
+                for: LayoutCandidate(language: candidate.language, text: replacement),
+                score: winner.score,
+                margin: margin,
+                confidenceThreshold: confidenceThreshold,
+                minimumConfidenceDelta: minimumConfidenceDelta
+              ) == nil else {
+            return nil
+        }
+
+        return CorrectionDecision(
+            replacement: replacement,
+            language: candidate.language,
+            score: max(winner.score, confidenceThreshold),
+            runnerUpScore: runnerUp
+        )
+    }
+
+    private func punctuationTokenDecision(
+        for winner: CandidateScore,
+        runnerUp: Double,
+        margin: Double,
+        typedText: String,
+        minimumConfidenceDelta: Double
+    ) -> CorrectionDecision? {
+        let requiredMargin = hasFinalSentencePunctuation(typedText)
+            ? 0.03
+            : max(0.08, minimumConfidenceDelta * 0.4)
+
+        guard isMixedLayoutWord(typedText),
+              winner.score >= 0.34,
+              margin >= requiredMargin,
+              classifier.hasManualLexicalEvidence(winner.candidate) else {
+            return nil
+        }
+
+        let replacement = casingAdjustedReplacement(
+            winner.candidate.text,
+            language: winner.candidate.language,
+            typedText: typedText
+        )
+        guard !learningStore.isSuppressed(original: typedText, replacement: replacement) else {
+            return nil
+        }
+
+        return CorrectionDecision(
+            replacement: replacement,
+            language: winner.candidate.language,
+            score: max(winner.score, 0.72),
+            runnerUpScore: runnerUp
+        )
+    }
+
+    private func hasFinalSentencePunctuation(_ text: String) -> Bool {
+        guard let last = text.last else { return false }
+        return "?!".contains(last)
+    }
+
+    @discardableResult
+    func applyCorrection(
+        replacingPreviousCharacterCount originalLength: Int,
+        original: String,
+        with replacement: String,
+        language: KeyboardLanguage,
+        allowSyntheticFallback: Bool = true
+    ) -> Bool {
         let previousText = String(original.prefix(originalLength))
-        TextReplacementPerformer.replacePreviousText(characterCount: originalLength, expectedPreviousText: previousText, with: replacement)
+        let didReplace = TextReplacementPerformer.replacePreviousText(
+            characterCount: originalLength,
+            expectedPreviousText: previousText,
+            with: replacement,
+            allowSyntheticFallback: allowSyntheticFallback
+        )
+        guard didReplace else { return false }
         undoController.record(original: original, replacement: replacement, language: language, origin: .automatic)
+        return true
+    }
+
+    func spellingCorrection(for word: String, language: KeyboardLanguage, appMode: AppBehaviorMode, terminatorType: String) -> CorrectionDecision? {
+        guard let spellingLanguage = LayoutEngine.detectScriptLanguage(for: word) else {
+            return nil
+        }
+        guard terminatorType == "space",
+              appMode == .normal || appMode == .textFocused,
+              enabledLanguages.contains(spellingLanguage),
+              let correction = classifier.spellingCorrection(for: word, language: spellingLanguage),
+              !learningStore.isSuppressed(original: correction.original, replacement: correction.replacement) else {
+            return nil
+        }
+
+        return CorrectionDecision(
+            replacement: correction.replacement,
+            language: correction.language,
+            score: 0.70,
+            runnerUpScore: 0
+        )
+    }
+
+    func inferredSpellingLanguage(for word: String, currentLanguage: KeyboardLanguage) -> KeyboardLanguage {
+        LayoutEngine.detectScriptLanguage(for: word) ?? currentLanguage
     }
 
     func manualReplacement(for word: String) -> CorrectionDecision? {
@@ -337,6 +500,12 @@ final class CorrectionEngine {
     }
 
     func manualReplacements(for word: String) -> [CorrectionDecision] {
+        if let learnedDecision = learnedDecision(for: word) {
+            return [learnedDecision]
+        }
+
+        guard !isAllUppercaseWord(word) else { return [] }
+
         if let strokes = LayoutEngine.strokes(for: word),
            let decision = shortWordDecision(for: strokes, typedText: word, mode: .manual) {
             return [decision]
@@ -349,7 +518,7 @@ final class CorrectionEngine {
 
         let currentLanguage = isMixedLayoutWord ? nil : LayoutEngine.detectScriptLanguage(for: word) ?? .english
         let candidates = LayoutEngine.candidates(for: strokes, enabledLanguages: enabledLanguages)
-            .map(normalizedCandidate)
+            .map { normalizedCandidate($0, typedText: word) }
             .filter { candidate in
                 if candidate.text == word { return false }
                 if let currentLanguage {
@@ -358,7 +527,7 @@ final class CorrectionEngine {
                 return true
             }
 
-        let scored = candidates.map(classifier.score).sorted { $0.score > $1.score }
+        let scored = sortedScores(candidates.map(classifier.score))
         let lexicalDecisions = scored
             .filter { classifier.hasManualLexicalEvidence($0.candidate) && $0.score >= 0.28 }
             .map { score in
@@ -424,14 +593,57 @@ final class CorrectionEngine {
     }
 
     private func manualLanguageCycle(from language: KeyboardLanguage) -> [KeyboardLanguage] {
-        switch language {
-        case .english:
-            return [.russian, .hebrew]
-        case .russian:
-            return [.english, .hebrew]
-        case .hebrew:
-            return [.english, .russian]
+        normalizedDetectionPriority()
+            .filter { $0 != language && enabledLanguages.contains($0) }
+    }
+
+    private func learnedDecision(for typedText: String) -> CorrectionDecision? {
+        guard let learned = learningStore.preference(for: typedText),
+              enabledLanguages.contains(learned.language),
+              learned.replacement != typedText,
+              !learningStore.isSuppressed(original: typedText, replacement: learned.replacement) else {
+            return nil
         }
+
+        let replacement = casingAdjustedReplacement(
+            classifier.preferredSpelling(for: learned.replacement, language: learned.language),
+            language: learned.language,
+            typedText: typedText
+        )
+
+        return CorrectionDecision(
+            replacement: replacement,
+            language: learned.language,
+            score: min(0.98, 0.78 + Double(min(learned.uses, 10)) * 0.02),
+            runnerUpScore: 0
+        )
+    }
+
+    private func sortedScores(_ scores: [CandidateScore]) -> [CandidateScore] {
+        scores.sorted { left, right in
+            let delta = abs(left.score - right.score)
+            if delta > 0.001 {
+                return left.score > right.score
+            }
+            return priorityIndex(for: left.candidate.language) < priorityIndex(for: right.candidate.language)
+        }
+    }
+
+    private func priorityIndex(for language: KeyboardLanguage) -> Int {
+        normalizedDetectionPriority().firstIndex(of: language) ?? Int.max
+    }
+
+    private func normalizedDetectionPriority() -> [KeyboardLanguage] {
+        var seen = Set<KeyboardLanguage>()
+        var ordered: [KeyboardLanguage] = []
+        for language in detectionPriority where !seen.contains(language) {
+            ordered.append(language)
+            seen.insert(language)
+        }
+        for language in KeyboardLanguage.allCases where !seen.contains(language) {
+            ordered.append(language)
+        }
+        return ordered
     }
 
     private func uniqueDecisions(_ decisions: [CorrectionDecision]) -> [CorrectionDecision] {
@@ -444,11 +656,45 @@ final class CorrectionEngine {
         }
     }
 
-    private func normalizedCandidate(_ candidate: LayoutCandidate) -> LayoutCandidate {
-        let fixedText = commonCandidateFixes[candidate.text.lowercased()] ?? candidate.text
+    private func normalizedCandidate(_ candidate: LayoutCandidate, typedText: String) -> LayoutCandidate {
+        var edgeAdjustedText = edgePunctuationAdjustedCandidateText(candidate.text, typedText: typedText)
+        if isMixedLayoutWord(typedText), hasSuspiciousCasing(edgeAdjustedText) {
+            edgeAdjustedText = edgeAdjustedText.lowercased()
+        }
+        let fixedText = commonCandidateFixes[edgeAdjustedText.lowercased()] ?? edgeAdjustedText
         let normalizedText = candidate.language == .hebrew ? normalizedHebrewFinalLetters(fixedText) : fixedText
         let preferredText = classifier.preferredSpelling(for: normalizedText, language: candidate.language)
         return LayoutCandidate(language: candidate.language, text: preferredText)
+    }
+
+    private func edgePunctuationAdjustedCandidateText(_ candidateText: String, typedText: String) -> String {
+        var candidateCharacters = Array(candidateText)
+        let typedCharacters = Array(typedText)
+        guard !candidateCharacters.isEmpty, !typedCharacters.isEmpty else {
+            return candidateText
+        }
+
+        if let firstTyped = typedCharacters.first,
+           "[({<".contains(firstTyped),
+           isLatinLayoutBody(String(typedCharacters.dropFirst())) {
+            candidateCharacters[0] = firstTyped
+        }
+
+        if let lastTyped = typedCharacters.last,
+           "?!".contains(lastTyped) || ("])}>".contains(lastTyped) && isLatinLayoutBody(String(typedCharacters.dropLast()))) {
+            candidateCharacters[candidateCharacters.count - 1] = lastTyped
+        }
+
+        return String(candidateCharacters)
+    }
+
+    private func isLatinLayoutBody(_ text: String) -> Bool {
+        let scalars = text.unicodeScalars.filter { CharacterSet.letters.contains($0) }
+        guard !scalars.isEmpty else { return false }
+        let hasLatin = scalars.contains { ("a"..."z").contains(String($0).lowercased()) }
+        let hasCyrillic = scalars.contains { (0x0400...0x04FF).contains(Int($0.value)) }
+        let hasHebrew = scalars.contains { (0x0590...0x05FF).contains(Int($0.value)) }
+        return hasLatin && !hasCyrillic && !hasHebrew
     }
 
     private func candidateSafetyReason(for text: String) -> String? {
@@ -529,6 +775,10 @@ final class CorrectionEngine {
 
         if isTitleCaseWord(typedText) {
             return replacement.prefix(1).uppercased() + replacement.dropFirst().lowercased()
+        }
+
+        if isMixedLayoutWord(typedText), hasSuspiciousCasing(replacement) {
+            return replacement.lowercased()
         }
 
         return replacement
@@ -628,6 +878,8 @@ final class CorrectionEngine {
     }
 
     private func shortFunctionalWordDecision(for strokes: [KeyStroke], typedText: String, mode: ShortWordMode) -> CorrectionDecision? {
+        guard !isAllUppercaseWord(typedText) else { return nil }
+
         let normalizedTypedText = typedText.lowercased()
         let currentLanguage = LayoutEngine.detectScriptLanguage(for: typedText)
         let candidates = LayoutEngine.candidates(for: strokes, enabledLanguages: enabledLanguages)
@@ -691,7 +943,7 @@ final class CorrectionEngine {
             return true
         }
 
-        let layoutLetterPunctuation = CharacterSet(charactersIn: ",.;'[]")
+        let layoutLetterPunctuation = CharacterSet(charactersIn: ".,;:'\"`‘’“”!?()[]{}<>%^*")
         let hasAmbiguousPunctuationKey = text.rangeOfCharacter(from: layoutLetterPunctuation) != nil
         let hasLetters = text.rangeOfCharacter(from: .letters) != nil
         return hasAmbiguousPunctuationKey && hasLetters
@@ -699,16 +951,35 @@ final class CorrectionEngine {
 }
 
 enum TextReplacementPerformer {
+    private enum FocusedTextReplacementResult {
+        case replaced
+        case unavailable
+        case expectedTextMismatch
+    }
+
     private static let pasteboardRestoreLock = NSLock()
     private static let shortSyntheticKeyPause: useconds_t = 12_000
     nonisolated(unsafe) private static var pasteboardRestoreToken = UUID()
 
-    static func replacePreviousText(characterCount: Int, expectedPreviousText: String? = nil, with replacement: String) {
-        guard characterCount > 0, !replacement.isEmpty else { return }
+    @discardableResult
+    static func replacePreviousText(
+        characterCount: Int,
+        expectedPreviousText: String? = nil,
+        with replacement: String,
+        allowSyntheticFallback: Bool = true
+    ) -> Bool {
+        guard characterCount > 0, !replacement.isEmpty else { return false }
 
-        if replaceFocusedTextPreviousCharacters(characterCount: characterCount, expectedPreviousText: expectedPreviousText, with: replacement) {
-            return
+        switch replaceFocusedTextPreviousCharacters(characterCount: characterCount, expectedPreviousText: expectedPreviousText, with: replacement) {
+        case .replaced:
+            return true
+        case .expectedTextMismatch:
+            return false
+        case .unavailable:
+            break
         }
+
+        guard allowSyntheticFallback else { return false }
 
         for _ in 0..<characterCount {
             postKey(keyCode: 51)
@@ -716,11 +987,121 @@ enum TextReplacementPerformer {
         }
         usleep(shortSyntheticKeyPause * 2)
         pasteText(replacement)
+        return true
     }
 
     static func replaceSelection(with replacement: String) {
         guard !replacement.isEmpty else { return }
         pasteText(replacement)
+    }
+
+    static func copySpaceTokenBeforeCursor() -> String? {
+        let systemWideElement = AXUIElementCreateSystemWide()
+        var focusedElementRef: CFTypeRef?
+        guard AXUIElementCopyAttributeValue(
+            systemWideElement,
+            kAXFocusedUIElementAttribute as CFString,
+            &focusedElementRef
+        ) == .success, let focusedElementRef else {
+            return nil
+        }
+
+        let focusedElement = focusedElementRef as! AXUIElement
+        var valueRef: CFTypeRef?
+        guard AXUIElementCopyAttributeValue(
+            focusedElement,
+            kAXValueAttribute as CFString,
+            &valueRef
+        ) == .success, let value = valueRef as? String else {
+            return nil
+        }
+
+        var rangeRef: CFTypeRef?
+        guard AXUIElementCopyAttributeValue(
+            focusedElement,
+            kAXSelectedTextRangeAttribute as CFString,
+            &rangeRef
+        ) == .success, let rangeRef else {
+            return nil
+        }
+
+        let axRange = rangeRef as! AXValue
+        var selectedRange = CFRange()
+        guard AXValueGetValue(axRange, .cfRange, &selectedRange),
+              selectedRange.length == 0,
+              selectedRange.location > 0 else {
+            return nil
+        }
+
+        let nsValue = value as NSString
+        guard selectedRange.location <= nsValue.length else { return nil }
+
+        var tokenEnd = selectedRange.location
+        while tokenEnd > 0 {
+            let previous = nsValue.substring(with: NSRange(location: tokenEnd - 1, length: 1))
+            if previous.rangeOfCharacter(from: .whitespacesAndNewlines) == nil { break }
+            tokenEnd -= 1
+        }
+        guard tokenEnd > 0 else { return nil }
+
+        var tokenStart = tokenEnd
+        while tokenStart > 0 {
+            let previous = nsValue.substring(with: NSRange(location: tokenStart - 1, length: 1))
+            if previous.rangeOfCharacter(from: .whitespacesAndNewlines) != nil { break }
+            tokenStart -= 1
+        }
+
+        let tokenRange = NSRange(location: tokenStart, length: tokenEnd - tokenStart)
+        guard tokenRange.length > 0 else { return nil }
+
+        var axTokenRange = CFRange(location: tokenRange.location, length: tokenRange.length)
+        guard let tokenAXRange = AXValueCreate(.cfRange, &axTokenRange),
+              AXUIElementSetAttributeValue(
+                focusedElement,
+                kAXSelectedTextRangeAttribute as CFString,
+                tokenAXRange
+              ) == .success else {
+            return nil
+        }
+
+        return nsValue.substring(with: tokenRange)
+    }
+
+    static func collapseSelectionToEnd() {
+        let systemWideElement = AXUIElementCreateSystemWide()
+        var focusedElementRef: CFTypeRef?
+        guard AXUIElementCopyAttributeValue(
+            systemWideElement,
+            kAXFocusedUIElementAttribute as CFString,
+            &focusedElementRef
+        ) == .success, let focusedElementRef else {
+            return
+        }
+
+        let focusedElement = focusedElementRef as! AXUIElement
+        var rangeRef: CFTypeRef?
+        guard AXUIElementCopyAttributeValue(
+            focusedElement,
+            kAXSelectedTextRangeAttribute as CFString,
+            &rangeRef
+        ) == .success, let rangeRef else {
+            return
+        }
+
+        let axRange = rangeRef as! AXValue
+        var selectedRange = CFRange()
+        guard AXValueGetValue(axRange, .cfRange, &selectedRange),
+              selectedRange.length > 0 else {
+            return
+        }
+
+        var collapsedRange = CFRange(location: selectedRange.location + selectedRange.length, length: 0)
+        guard let collapsedAXRange = AXValueCreate(.cfRange, &collapsedRange) else { return }
+        _ = AXUIElementSetAttributeValue(
+            focusedElement,
+            kAXSelectedTextRangeAttribute as CFString,
+            collapsedAXRange
+        )
     }
 
     static func copyWordBeforeCursor() -> String? {
@@ -747,7 +1128,7 @@ enum TextReplacementPerformer {
         schedulePasteboardRestore(expectedTemporaryString: text, preservedString: preservedString)
     }
 
-    private static func replaceFocusedTextPreviousCharacters(characterCount: Int, expectedPreviousText: String?, with replacement: String) -> Bool {
+    private static func replaceFocusedTextPreviousCharacters(characterCount: Int, expectedPreviousText: String?, with replacement: String) -> FocusedTextReplacementResult {
         let systemWideElement = AXUIElementCreateSystemWide()
         var focusedElementRef: CFTypeRef?
         guard AXUIElementCopyAttributeValue(
@@ -755,7 +1136,7 @@ enum TextReplacementPerformer {
             kAXFocusedUIElementAttribute as CFString,
             &focusedElementRef
         ) == .success, let focusedElementRef else {
-            return false
+            return .unavailable
         }
 
         let focusedElement = focusedElementRef as! AXUIElement
@@ -765,7 +1146,7 @@ enum TextReplacementPerformer {
             kAXValueAttribute as CFString,
             &valueRef
         ) == .success, let value = valueRef as? String else {
-            return false
+            return .unavailable
         }
 
         var rangeRef: CFTypeRef?
@@ -774,7 +1155,7 @@ enum TextReplacementPerformer {
             kAXSelectedTextRangeAttribute as CFString,
             &rangeRef
         ) == .success, let rangeRef else {
-            return false
+            return .unavailable
         }
         let axRange = rangeRef as! AXValue
 
@@ -782,12 +1163,12 @@ enum TextReplacementPerformer {
         guard AXValueGetValue(axRange, .cfRange, &selectedRange),
               selectedRange.length == 0,
               selectedRange.location >= characterCount else {
-            return false
+            return .unavailable
         }
 
         let nsValue = value as NSString
         guard selectedRange.location <= nsValue.length else {
-            return false
+            return .unavailable
         }
 
         let replacementRange = NSRange(
@@ -796,7 +1177,7 @@ enum TextReplacementPerformer {
         )
         if let expectedPreviousText,
            nsValue.substring(with: replacementRange) != expectedPreviousText {
-            return false
+            return .expectedTextMismatch
         }
 
         let updatedValue = nsValue.replacingCharacters(in: replacementRange, with: replacement)
@@ -805,7 +1186,7 @@ enum TextReplacementPerformer {
             kAXValueAttribute as CFString,
             updatedValue as CFString
         ) == .success else {
-            return false
+            return .unavailable
         }
 
         var updatedRange = CFRange(
@@ -813,14 +1194,14 @@ enum TextReplacementPerformer {
             length: 0
         )
         guard let updatedAXRange = AXValueCreate(.cfRange, &updatedRange) else {
-            return true
+            return .replaced
         }
         _ = AXUIElementSetAttributeValue(
             focusedElement,
             kAXSelectedTextRangeAttribute as CFString,
             updatedAXRange
         )
-        return true
+        return .replaced
     }
 
     private static func waitForPasteboardString(changeCount: Int) -> String? {

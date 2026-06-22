@@ -59,8 +59,31 @@ The app only applies a correction when the winner is clear enough. Low-confidenc
 - The model runs only after a word-level decision point, such as a terminator, manual correction, or suggestion flow.
 - The model currently operates in shadow/reranker diagnostics mode: it reports `auto_correct`, `suggest_only`, or `do_nothing`, plus confidence, but does not override the deterministic safety rules.
 - Diagnostics show the last ML decision, confidence, text context, divergence from the rule fallback, and local training sample count.
-- Synthetic dataset and training helpers live in `scripts/generate_synthetic_dataset.py` and `scripts/train_correction_safety_model.swift`.
+- Synthetic dataset and training helpers live in `scripts/generate_synthetic_dataset.py`, `scripts/merge_training_samples.py`, and `scripts/train_correction_safety_model.swift`.
 - Training samples are stored locally and are used for development diagnostics; no typed text is sent to a network service.
+- Local training samples can be exported manually from Settings -> Diagnostics -> Export Training Samples. The export is JSONL with correction features, outcomes, model predictions, and text context labels only.
+
+Local model training workflow:
+
+```bash
+scripts/generate_synthetic_dataset.py \
+  --output dist/training/correction_safety_synthetic.jsonl
+
+# Save the Settings export as:
+# dist/training/correction_safety_local.jsonl
+
+scripts/merge_training_samples.py \
+  --synthetic dist/training/correction_safety_synthetic.jsonl \
+  --local dist/training/correction_safety_local.jsonl \
+  --output dist/training/correction_safety_mixed.jsonl \
+  --local-weight 4
+
+scripts/train_correction_safety_model.swift \
+  --input dist/training/correction_safety_mixed.jsonl \
+  --model-output dist/training/CorrectionSafetyClassifier.mlmodel
+```
+
+The default merge keeps synthetic samples as the broad baseline and gives local samples higher weight so real undo/manual/suggestion behavior can shape the next model without exporting typed text.
 
 Recent short-word examples:
 
@@ -112,22 +135,30 @@ Recommended exclusions include Terminal, Xcode, code editors, password managers,
 
 Bundled resources are kept small:
 
-- `KeyboardSwitcher/Resources/russian-frequency-50000.txt`
-- `KeyboardSwitcher/Resources/english-common-5000.txt`
-- `KeyboardSwitcher/Resources/short-ru-core-1-4.txt`
-- `KeyboardSwitcher/Resources/short-ru-extended-1-4.txt`
-- `KeyboardSwitcher/Resources/short-en-core-1-4.txt`
-- `KeyboardSwitcher/Resources/short-en-extended-1-4.txt`
-- `KeyboardSwitcher/Resources/technical-terms-ui.txt`
-- `KeyboardSwitcher/Resources/technical-terms-ui.csv`
-- `KeyboardSwitcher/Resources/technical-terms-ui-rules.csv`
+- `KeyboardSwitcher/Resources/ru_auto_core_100k.tsv`
+- `KeyboardSwitcher/Resources/ru_manual_extended_300k.tsv`
+- `KeyboardSwitcher/Resources/en_auto_core_50k.tsv`
+- `KeyboardSwitcher/Resources/en_manual_extended_200k.tsv`
+- `KeyboardSwitcher/Resources/short_words_auto_whitelist.tsv`
+- `KeyboardSwitcher/Resources/technical_never_correct.tsv`
 - `KeyboardSwitcher/Resources/CorrectionSafetyClassifier.mlmodel`
 - `KeyboardSwitcher/Resources/AppIcon.icns`
 - `KeyboardSwitcher/Resources/KeyboardSwitcherIcon_1024_whitebg.png`
 - `KeyboardSwitcher/Resources/switch_typewriter_shift.wav`
 - `KeyboardSwitcher/Resources/THIRD-PARTY-NOTICES.txt`
 
-The current installed app bundle is roughly 7 MB, comfortably below the 500 MB hard limit.
+The current dictionary TSV set adds roughly 20 MB of local data before app packaging, comfortably below the 500 MB hard limit.
+
+Dictionary policy:
+
+- Automatic correction uses only the clean auto dictionaries: `ru_auto_core_100k.tsv`, `en_auto_core_50k.tsv`, and `short_words_auto_whitelist.tsv`.
+- Manual correction and Double Shift may use the broader manual delta dictionaries: `ru_manual_extended_300k.tsv` and `en_manual_extended_200k.tsv`.
+- Manual extended dictionaries do not increase automatic confidence.
+- Manual delta dictionaries intentionally exclude words already covered by the automatic core dictionaries and short-word whitelist.
+- `technical_never_correct.tsv` is checked before normal layout scoring to protect technical terms, paths, identifiers, versions, URLs, emails, and code-like tokens.
+- Some technical terms can also exist in word dictionaries; the technical preflight layer takes precedence.
+- Russian dictionary matching normalizes `ё` to `е`.
+- Dictionary separation can be checked with `python3 scripts/audit_dictionaries.py`.
 
 ## Third-Party Notices
 
@@ -135,9 +166,9 @@ See `LICENSES/THIRD-PARTY-NOTICES.md` and the bundled `KeyboardSwitcher/Resource
 
 Summary:
 
-- Current Russian and English scoring dictionaries are project-provided bundled resources maintained for Keyboard Switcher.
-- Short Russian and English 1-4 character word lists are project-generated resources created by the project owner with ChatGPT assistance.
-- Technical terms and technical-token rules are project-provided resources used to reduce false corrections around macOS, iOS, SwiftUI, Core ML, Xcode, APIs, filenames, and identifiers.
+- Current Russian and English scoring dictionaries are project-provided TSV resources maintained for Keyboard Switcher, split into automatic core dictionaries and manual delta dictionaries. Older bundled `txt`/`csv` dictionary resources were removed after the TSV migration.
+- Short Russian and English 1-4 character word behavior is controlled by the project-provided `short_words_auto_whitelist.tsv`.
+- Technical terms and technical-token rules are project-provided resources, now backed by `technical_never_correct.tsv`, used to reduce false corrections around macOS, iOS, SwiftUI, Core ML, Xcode, APIs, filenames, and identifiers.
 - `CorrectionSafetyClassifier.mlmodel` is a project-generated local Core ML model trained from synthetic/project data for shadow safety diagnostics.
 - The app icon and switch sound are project-provided assets.
 
