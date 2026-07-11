@@ -493,7 +493,6 @@ final class AppState: ObservableObject {
                 if self.privacyMetrics != metrics {
                     self.privacyMetrics = metrics
                 }
-                self.permissions.refresh()
             }
         }
     }

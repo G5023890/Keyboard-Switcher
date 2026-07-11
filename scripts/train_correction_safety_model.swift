@@ -246,7 +246,7 @@ do {
     let metadata = MLModelMetadata(
         author: "Keyboard Switcher",
         shortDescription: "Local correction safety classifier for EN/RU/HE keyboard layout switching.",
-        version: "0.1-stage4"
+        version: "0.2-local-20260630"
     )
 
     try FileManager.default.createDirectory(at: modelURL.deletingLastPathComponent(), withIntermediateDirectories: true)

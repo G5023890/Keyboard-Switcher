@@ -73,8 +73,13 @@ final class CorrectionTrainingSampleStore: @unchecked Sendable {
     private let defaults: UserDefaults
     private let samplesKey = "correctionTrainingSamples.v1"
     private let maximumSamples = 2_000
+    private let persistenceQueue = DispatchQueue(
+        label: "com.local.KeyboardSwitcher.training-samples",
+        qos: .utility
+    )
     private let lock = NSLock()
     private var samples: [CorrectionTrainingSample]
+    private var pendingSave: DispatchWorkItem?
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
@@ -103,7 +108,7 @@ final class CorrectionTrainingSampleStore: @unchecked Sendable {
             if samples.count > maximumSamples {
                 samples.removeFirst(samples.count - maximumSamples)
             }
-            save()
+            scheduleSave()
         }
     }
 
@@ -148,6 +153,8 @@ final class CorrectionTrainingSampleStore: @unchecked Sendable {
 
     func reset() {
         lock.withLock {
+            pendingSave?.cancel()
+            pendingSave = nil
             samples.removeAll()
             save()
         }
@@ -182,6 +189,21 @@ final class CorrectionTrainingSampleStore: @unchecked Sendable {
     private func save() {
         guard let data = try? JSONEncoder().encode(samples) else { return }
         defaults.set(data, forKey: samplesKey)
+    }
+
+    private func scheduleSave() {
+        pendingSave?.cancel()
+
+        let workItem = DispatchWorkItem { [weak self] in
+            guard let self else { return }
+            let data = self.lock.withLock {
+                try? JSONEncoder().encode(self.samples)
+            }
+            guard let data else { return }
+            self.defaults.set(data, forKey: self.samplesKey)
+        }
+        pendingSave = workItem
+        persistenceQueue.asyncAfter(deadline: .now() + 1.5, execute: workItem)
     }
 
     private static func loadSamples(defaults: UserDefaults, key: String) -> [CorrectionTrainingSample] {
@@ -280,7 +302,7 @@ final class CoreMLCorrectionSafetyClassifier: CorrectionSafetyClassifying, @unch
         guard model != nil else {
             return "CoreMLCorrectionSafetyClassifier unavailable; \(fallback.modelIdentifier)"
         }
-        return "CorrectionSafetyClassifier.mlmodel v0.1; \(fallback.modelIdentifier)"
+        return "CorrectionSafetyClassifier.mlmodel v0.2-local; \(fallback.modelIdentifier)"
     }
 
     private var isEnabled: Bool {

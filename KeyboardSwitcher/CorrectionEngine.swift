@@ -8,6 +8,11 @@ struct CorrectionDecision: Equatable {
     let runnerUpScore: Double
 }
 
+enum TextReplacementMethod {
+    case accessibility
+    case synthetic
+}
+
 struct CorrectionEvaluation: Equatable {
     let typedText: String
     let candidateScores: [CandidateScore]
@@ -148,8 +153,11 @@ final class CorrectionEngine {
             )
         }
 
-        if let safetyReason = classifier.correctionSafetyReason(for: typedText) {
-            return makeEvaluation(typedText: typedText, candidateScores: [], decision: nil, reason: "Skipped \(safetyReason)", confidenceThreshold: activeConfidenceThreshold, minimumConfidenceDelta: activeMinimumConfidenceDelta)
+        let typedSafetyReason = classifier.correctionSafetyReason(for: typedText)
+        let replayableSafetyReasons = Set(["technical delimiter token", "path-like text"])
+        if let typedSafetyReason,
+           !replayableSafetyReasons.contains(typedSafetyReason) {
+            return makeEvaluation(typedText: typedText, candidateScores: [], decision: nil, reason: "Skipped \(typedSafetyReason)", confidenceThreshold: activeConfidenceThreshold, minimumConfidenceDelta: activeMinimumConfidenceDelta)
         }
 
         if hasSuspiciousCasing(typedText), !isMixedLayoutWord(typedText) {
@@ -173,6 +181,17 @@ final class CorrectionEngine {
 
         let safeCandidates = normalizedCandidates
             .filter { candidateSafetyReason(for: $0.text) == nil }
+
+        if let typedSafetyReason {
+            let sourceLanguage = LayoutEngine.detectScriptLanguage(for: typedText)
+            let hasCrossLanguageEvidence = safeCandidates.contains { candidate in
+                classifier.hasStrongLexicalEvidence(candidate)
+                    && candidate.language != sourceLanguage
+            }
+            if !hasCrossLanguageEvidence {
+                return makeEvaluation(typedText: typedText, candidateScores: [], decision: nil, reason: "Skipped \(typedSafetyReason)", confidenceThreshold: activeConfidenceThreshold, minimumConfidenceDelta: activeMinimumConfidenceDelta)
+            }
+        }
 
         if rawCandidates.isEmpty {
             return makeEvaluation(typedText: typedText, candidateScores: [], decision: nil, reason: "No alternate layout candidate", confidenceThreshold: activeConfidenceThreshold, minimumConfidenceDelta: activeMinimumConfidenceDelta)
@@ -249,6 +268,25 @@ final class CorrectionEngine {
             )
         }
 
+        if let lexicalDecision = clearStrongLexicalDecision(
+            scores: scores,
+            typedText: typedText,
+            confidenceThreshold: activeConfidenceThreshold,
+            minimumConfidenceDelta: activeMinimumConfidenceDelta
+        ) {
+            return makeEvaluation(
+                typedText: typedText,
+                candidateScores: scores,
+                decision: lexicalDecision,
+                reason: "Corrected clear dictionary candidate",
+                confidenceThreshold: activeConfidenceThreshold,
+                minimumConfidenceDelta: activeMinimumConfidenceDelta,
+                safetyFeatures: safety.features,
+                safetyPrediction: safety.prediction,
+                safetyFallbackPrediction: safety.fallbackPrediction
+            )
+        }
+
         guard winner.score >= activeConfidenceThreshold else {
             let suggestion = mediumConfidenceSuggestion(
                 winner: winner,
@@ -295,6 +333,43 @@ final class CorrectionEngine {
         )
 
         return makeEvaluation(typedText: typedText, candidateScores: scores, decision: decision, reason: "Corrected", confidenceThreshold: activeConfidenceThreshold, minimumConfidenceDelta: activeMinimumConfidenceDelta, safetyFeatures: safety.features, safetyPrediction: safety.prediction, safetyFallbackPrediction: safety.fallbackPrediction)
+    }
+
+    private func clearStrongLexicalDecision(
+        scores: [CandidateScore],
+        typedText: String,
+        confidenceThreshold: Double,
+        minimumConfidenceDelta: Double
+    ) -> CorrectionDecision? {
+        guard let winner = scores.first else { return nil }
+        let runnerUp = scores.dropFirst().first?.score ?? 0
+        let margin = winner.score - runnerUp
+        let supported = scores.filter { classifier.hasStrongLexicalEvidence($0.candidate) }
+        guard confidenceThreshold <= 0.72,
+              supported.count == 1,
+              supported.first?.candidate == winner.candidate,
+              winner.score < confidenceThreshold,
+              winner.score >= 0.42,
+              margin >= max(0.08, minimumConfidenceDelta * 0.4),
+              winner.candidate.text.count >= 5 else {
+            return nil
+        }
+
+        let replacement = casingAdjustedReplacement(
+            winner.candidate.text,
+            language: winner.candidate.language,
+            typedText: typedText
+        )
+        guard !learningStore.isSuppressed(original: typedText, replacement: replacement) else {
+            return nil
+        }
+
+        return CorrectionDecision(
+            replacement: replacement,
+            language: winner.candidate.language,
+            score: max(winner.score, confidenceThreshold),
+            runnerUpScore: runnerUp
+        )
     }
 
     private func makeEvaluation(
@@ -425,7 +500,7 @@ final class CorrectionEngine {
         guard isMixedLayoutWord(typedText),
               winner.score >= 0.34,
               margin >= requiredMargin,
-              classifier.hasManualLexicalEvidence(winner.candidate) else {
+              classifier.hasStrongLexicalEvidence(winner.candidate) else {
             return nil
         }
 
@@ -457,18 +532,25 @@ final class CorrectionEngine {
         original: String,
         with replacement: String,
         language: KeyboardLanguage,
-        allowSyntheticFallback: Bool = true
-    ) -> Bool {
+        terminator: String = "",
+        allowSyntheticFallback: Bool = false
+    ) -> TextReplacementMethod? {
         let previousText = String(original.prefix(originalLength))
-        let didReplace = TextReplacementPerformer.replacePreviousText(
+        let replacementMethod = TextReplacementPerformer.replacePreviousTextMethod(
             characterCount: originalLength,
             expectedPreviousText: previousText,
             with: replacement,
+            syntheticReplacement: replacement + terminator,
             allowSyntheticFallback: allowSyntheticFallback
         )
-        guard didReplace else { return false }
-        undoController.record(original: original, replacement: replacement, language: language, origin: .automatic)
-        return true
+        guard let replacementMethod else { return nil }
+        undoController.record(
+            original: original + terminator,
+            replacement: replacement + terminator,
+            language: language,
+            origin: .automatic
+        )
+        return replacementMethod
     }
 
     func spellingCorrection(for word: String, language: KeyboardLanguage, appMode: AppBehaviorMode, terminatorType: String) -> CorrectionDecision? {
@@ -958,7 +1040,10 @@ enum TextReplacementPerformer {
     }
 
     private static let pasteboardRestoreLock = NSLock()
-    private static let shortSyntheticKeyPause: useconds_t = 12_000
+    private static let maximumSyntheticReplacementLength = 16
+    private static let shortSyntheticKeyPause: useconds_t = 8_000
+    private static let syntheticDeletionSettlePause: useconds_t = 16_000
+    private static let syntheticInsertionSettlePause: useconds_t = 35_000
     nonisolated(unsafe) private static var pasteboardRestoreToken = UUID()
 
     @discardableResult
@@ -966,28 +1051,48 @@ enum TextReplacementPerformer {
         characterCount: Int,
         expectedPreviousText: String? = nil,
         with replacement: String,
-        allowSyntheticFallback: Bool = true
+        allowSyntheticFallback: Bool = false
     ) -> Bool {
-        guard characterCount > 0, !replacement.isEmpty else { return false }
+        replacePreviousTextMethod(
+            characterCount: characterCount,
+            expectedPreviousText: expectedPreviousText,
+            with: replacement,
+            syntheticReplacement: replacement,
+            allowSyntheticFallback: allowSyntheticFallback
+        ) != nil
+    }
+
+    static func replacePreviousTextMethod(
+        characterCount: Int,
+        expectedPreviousText: String? = nil,
+        with replacement: String,
+        syntheticReplacement: String,
+        allowSyntheticFallback: Bool = false
+    ) -> TextReplacementMethod? {
+        guard characterCount > 0, !replacement.isEmpty else { return nil }
 
         switch replaceFocusedTextPreviousCharacters(characterCount: characterCount, expectedPreviousText: expectedPreviousText, with: replacement) {
         case .replaced:
-            return true
+            return .accessibility
         case .expectedTextMismatch:
-            return false
+            return nil
         case .unavailable:
             break
         }
 
-        guard allowSyntheticFallback else { return false }
+        guard allowSyntheticFallback,
+              characterCount <= maximumSyntheticReplacementLength else {
+            return nil
+        }
 
         for _ in 0..<characterCount {
             postKey(keyCode: 51)
             usleep(shortSyntheticKeyPause)
         }
-        usleep(shortSyntheticKeyPause * 2)
-        pasteText(replacement)
-        return true
+        usleep(syntheticDeletionSettlePause)
+        guard postUnicodeText(syntheticReplacement) else { return nil }
+        usleep(syntheticInsertionSettlePause)
+        return .synthetic
     }
 
     static func replaceSelection(with replacement: String) {
@@ -1181,27 +1286,55 @@ enum TextReplacementPerformer {
         }
 
         let updatedValue = nsValue.replacingCharacters(in: replacementRange, with: replacement)
-        guard AXUIElementSetAttributeValue(
+        if AXUIElementSetAttributeValue(
             focusedElement,
             kAXValueAttribute as CFString,
             updatedValue as CFString
-        ) == .success else {
+        ) == .success {
+            setCaret(
+                on: focusedElement,
+                location: replacementRange.location + (replacement as NSString).length
+            )
+            return .replaced
+        }
+
+        var selectedReplacementRange = CFRange(
+            location: replacementRange.location,
+            length: replacementRange.length
+        )
+        guard let selectedReplacementAXRange = AXValueCreate(.cfRange, &selectedReplacementRange),
+              AXUIElementSetAttributeValue(
+                focusedElement,
+                kAXSelectedTextRangeAttribute as CFString,
+                selectedReplacementAXRange
+              ) == .success else {
             return .unavailable
         }
 
-        var updatedRange = CFRange(
-            location: replacementRange.location + (replacement as NSString).length,
-            length: 0
-        )
-        guard let updatedAXRange = AXValueCreate(.cfRange, &updatedRange) else {
+        if AXUIElementSetAttributeValue(
+            focusedElement,
+            kAXSelectedTextAttribute as CFString,
+            replacement as CFString
+        ) == .success {
+            setCaret(
+                on: focusedElement,
+                location: replacementRange.location + (replacement as NSString).length
+            )
             return .replaced
         }
+
+        setCaret(on: focusedElement, location: selectedRange.location)
+        return .unavailable
+    }
+
+    private static func setCaret(on element: AXUIElement, location: Int) {
+        var range = CFRange(location: location, length: 0)
+        guard let axRange = AXValueCreate(.cfRange, &range) else { return }
         _ = AXUIElementSetAttributeValue(
-            focusedElement,
+            element,
             kAXSelectedTextRangeAttribute as CFString,
-            updatedAXRange
+            axRange
         )
-        return .replaced
     }
 
     private static func waitForPasteboardString(changeCount: Int) -> String? {
@@ -1267,5 +1400,20 @@ enum TextReplacementPerformer {
         up.flags = flags
         down.post(tap: .cghidEventTap)
         up.post(tap: .cghidEventTap)
+    }
+
+    private static func postUnicodeText(_ text: String) -> Bool {
+        let unicode = Array(text.utf16)
+        guard !unicode.isEmpty,
+              let down = CGEvent(keyboardEventSource: nil, virtualKey: 0, keyDown: true),
+              let up = CGEvent(keyboardEventSource: nil, virtualKey: 0, keyDown: false) else {
+            return false
+        }
+
+        down.keyboardSetUnicodeString(stringLength: unicode.count, unicodeString: unicode)
+        up.keyboardSetUnicodeString(stringLength: 0, unicodeString: [])
+        down.post(tap: .cghidEventTap)
+        up.post(tap: .cghidEventTap)
+        return true
     }
 }

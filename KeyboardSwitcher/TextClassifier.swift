@@ -184,7 +184,10 @@ final class TextClassifier {
     private let russianSupplementalTokenWords: Set<String> = [
         "двоеточиями",
         "запятыми",
-        "пробела"
+        "пробела",
+        "раскладка",
+        "раскладке",
+        "ёлка"
     ]
 
     private let ngrams: [KeyboardLanguage: Set<String>] = [

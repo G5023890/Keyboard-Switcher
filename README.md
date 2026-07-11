@@ -62,6 +62,7 @@ The app only applies a correction when the winner is clear enough. Low-confidenc
 - Synthetic dataset and training helpers live in `scripts/generate_synthetic_dataset.py`, `scripts/merge_training_samples.py`, and `scripts/train_correction_safety_model.swift`.
 - Training samples are stored locally and are used for development diagnostics; no typed text is sent to a network service.
 - Local training samples can be exported manually from Settings -> Diagnostics -> Export Training Samples. The export is JSONL with correction features, outcomes, model predictions, and text context labels only.
+- `CorrectionSafetyClassifier v0.2-local` was retrained on 2026-06-30 from 17,958 unique synthetic patterns and 456 deduplicated local feature/outcome patterns. Local patterns were weighted 4x; typed words were not included.
 
 Local model training workflow:
 

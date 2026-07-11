@@ -68,12 +68,35 @@ final class InputSourceManager {
     }
 
     @discardableResult
-    func selectKeyboardLanguage(_ language: KeyboardLanguage) -> Bool {
+    func selectKeyboardLanguage(
+        _ language: KeyboardLanguage,
+        confirmationTimeout: TimeInterval = 0.06,
+        settlingDelay: TimeInterval = 0.04
+    ) -> Bool {
+        if currentKeyboardLanguage() == language {
+            return true
+        }
+
         guard let source = selectableInputSource(for: language) else {
             return false
         }
 
-        return TISSelectInputSource(source) == noErr
+        guard TISSelectInputSource(source) == noErr else {
+            return false
+        }
+
+        let deadline = Date().addingTimeInterval(confirmationTimeout)
+        repeat {
+            if currentKeyboardLanguage() == language {
+                if settlingDelay > 0 {
+                    usleep(useconds_t(settlingDelay * 1_000_000))
+                }
+                return true
+            }
+            usleep(1_000)
+        } while Date() < deadline
+
+        return currentKeyboardLanguage() == language
     }
 
     private func selectableInputSource(for language: KeyboardLanguage) -> TISInputSource? {

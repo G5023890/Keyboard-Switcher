@@ -74,6 +74,8 @@ private struct ManualCandidateOption: Identifiable, Equatable {
 }
 
 final class KeyboardMonitor {
+    private static let maximumBufferedTokenLength = 64
+
     private let correctionEngine: CorrectionEngine
     private let exclusionManager: ExclusionManager
     private let inputSourceManager = InputSourceManager()
@@ -85,6 +87,7 @@ final class KeyboardMonitor {
     private var runLoopSource: CFRunLoopSource?
     private var strokes: [KeyStroke] = []
     private var typedText = ""
+    private var isDiscardingOversizedToken = false
     private var isApplyingCorrection = false
     private var lastShiftKeyDownAt: Date?
     private var isShiftCurrentlyDown = false
@@ -221,6 +224,11 @@ final class KeyboardMonitor {
 
         if let terminator = wordTerminator(for: keyCode) {
             manualCycleState = nil
+            if isDiscardingOversizedToken {
+                diagnostics.lastDecision = "Skipped oversized token"
+                resetBuffer()
+                return false
+            }
             guard !typedText.isEmpty else {
                 diagnostics.lastDecision = "Space passed through: no buffered word"
                 resetBuffer()
@@ -255,10 +263,15 @@ final class KeyboardMonitor {
 
         if isNavigationKey(keyCode) {
             manualCycleState = nil
-            if !typedText.isEmpty {
+            if !typedText.isEmpty || isDiscardingOversizedToken {
                 diagnostics.lastDecision = "Navigation inside word: reset buffer"
                 resetBuffer()
             }
+            return false
+        }
+
+        if isDiscardingOversizedToken {
+            diagnostics.lastDecision = "Ignoring oversized token until Space"
             return false
         }
 
@@ -283,6 +296,7 @@ final class KeyboardMonitor {
         if let separator = LayoutEngine.technicalTokenSeparator(for: stroke, currentLanguage: currentLanguage) {
             strokes.append(stroke)
             typedText.append(separator)
+            guard keepBufferingCurrentToken() else { return false }
             manualCycleState = nil
             diagnostics.lastBuffer = typedText
             diagnostics.lastPhysicalReplay = LayoutEngine.physicalReplaySummary(for: strokes)
@@ -298,6 +312,7 @@ final class KeyboardMonitor {
 
         strokes.append(stroke)
         typedText.append(character)
+        guard keepBufferingCurrentToken() else { return false }
         manualCycleState = nil
         diagnostics.lastBuffer = typedText
         diagnostics.lastPhysicalReplay = LayoutEngine.physicalReplaySummary(for: strokes)
@@ -410,7 +425,7 @@ final class KeyboardMonitor {
                     appMode: appMode,
                     terminatorType: "space"
                    ) {
-                    applySpellingCorrection(
+                    let shouldSuppressTerminator = applySpellingCorrection(
                         spellingDecision,
                         original: activeTypedText,
                         terminator: terminator,
@@ -418,27 +433,28 @@ final class KeyboardMonitor {
                         appMode: appMode
                     )
                     diagnostics.lastCandidateInspector += "\nSpellchecker: corrected \(activeTypedText) -> \(spellingDecision.replacement)"
-                    return true
+                    return shouldSuppressTerminator
                 }
             }
             return false
         }
 
         let original = activeTypedText
-        let replacement = decision.replacement + terminator
+        let replacement = decision.replacement
 
         isApplyingCorrection = true
-        let didReplace = correctionEngine.applyCorrection(
+        let replacementMethod = correctionEngine.applyCorrection(
             replacingPreviousCharacterCount: original.count,
-            original: original + terminator,
+            original: original,
             with: replacement,
             language: decision.language,
+            terminator: terminator,
             allowSyntheticFallback: Self.allowsSyntheticReplacementFallback(
                 bundleIdentifier: frontmostBundleIdentifier,
                 inputContext: inputContext
             )
         )
-        guard didReplace else {
+        guard let replacementMethod else {
             isApplyingCorrection = false
             diagnostics.lastDecision = "Skipped replacement: focused text unavailable"
             return false
@@ -454,7 +470,7 @@ final class KeyboardMonitor {
             prediction: evaluation.safetyPrediction,
             decisionReason: evaluation.reason
         )
-        return true
+        return replacementMethod == .synthetic
     }
 
     private func applySpellingCorrection(
@@ -463,29 +479,31 @@ final class KeyboardMonitor {
         terminator: String,
         inputContext: FocusedInputContext,
         appMode: AppBehaviorMode
-    ) {
-        let replacement = decision.replacement + terminator
+    ) -> Bool {
+        let replacement = decision.replacement
         isApplyingCorrection = true
-        let didReplace = correctionEngine.applyCorrection(
+        let replacementMethod = correctionEngine.applyCorrection(
             replacingPreviousCharacterCount: original.count,
-            original: original + terminator,
+            original: original,
             with: replacement,
             language: decision.language,
+            terminator: terminator,
             allowSyntheticFallback: Self.allowsSyntheticReplacementFallback(
                 bundleIdentifier: NSWorkspace.shared.frontmostApplication?.bundleIdentifier,
                 inputContext: inputContext
             )
         )
-        guard didReplace else {
+        guard let replacementMethod else {
             isApplyingCorrection = false
             diagnostics.lastDecision = "Skipped spelling replacement: focused text unavailable"
-            return
+            return false
         }
         handlePostCorrection(language: decision.language, origin: .automatic)
         isApplyingCorrection = false
         diagnostics.lastCorrection = "\(original) -> \(decision.replacement)"
         diagnostics.lastSuggestion = ""
         diagnostics.lastDecision = "Spelling corrected with macOS spellchecker"
+        return replacementMethod == .synthetic
     }
 
     private func handleFlagsChanged(keyCode: Int64, flags: CGEventFlags) -> Bool {
@@ -882,18 +900,35 @@ final class KeyboardMonitor {
         }
 
         switch inputContext.kind {
+        case .textField, .textArea:
+            return true
+        case .unavailable:
+            return bundleIdentifier == "com.openai.codex"
         case .secureTextField, .searchField, .comboBox, .unknown:
             return false
-        case .textField, .textArea, .unavailable:
-            return true
         }
     }
 
     private func resetBuffer() {
         strokes.removeAll(keepingCapacity: true)
         typedText.removeAll(keepingCapacity: true)
+        isDiscardingOversizedToken = false
         pendingManualCorrectionAfterShiftRelease = false
         diagnostics.lastBuffer = ""
+    }
+
+    private func keepBufferingCurrentToken() -> Bool {
+        guard strokes.count <= Self.maximumBufferedTokenLength else {
+            strokes.removeAll(keepingCapacity: true)
+            typedText.removeAll(keepingCapacity: true)
+            isDiscardingOversizedToken = true
+            manualCycleState = nil
+            diagnostics.lastBuffer = ""
+            diagnostics.lastPhysicalReplay = "Skipped oversized token"
+            diagnostics.lastDecision = "Ignoring token longer than \(Self.maximumBufferedTokenLength) keys"
+            return false
+        }
+        return true
     }
 
     private func wordTerminator(for keyCode: Int64) -> String? {
