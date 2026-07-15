@@ -90,7 +90,7 @@ struct CorrectionEvaluation: Equatable {
     }
 }
 
-final class CorrectionEngine {
+final class CorrectionEngine: @unchecked Sendable {
     private enum ShortWordMode {
         case automatic
         case manual
@@ -124,6 +124,33 @@ final class CorrectionEngine {
 
     func decision(for strokes: [KeyStroke], typedText: String, allowsShortFunctionalWords: Bool = true) -> CorrectionDecision? {
         evaluate(strokes: strokes, typedText: typedText, allowsShortFunctionalWords: allowsShortFunctionalWords).decision
+    }
+
+    func warmUp() {
+        classifier.warmUp()
+        let features = CorrectionSafetyFeatureExtractor.make(
+            typedText: "ghbdtn",
+            candidate: "привет",
+            targetLanguage: .russian,
+            ruleScore: 0.92,
+            runnerUpScore: 0.08,
+            appMode: .normal,
+            terminatorType: "space",
+            isTechnicalContext: false
+        )
+        _ = fallbackSafetyClassifier.prediction(for: features)
+        _ = safetyClassifier.prediction(for: features)
+        _ = LayoutEngine.candidates(
+            for: [
+                KeyStroke(keyCode: 5, isShifted: false),
+                KeyStroke(keyCode: 4, isShifted: false),
+                KeyStroke(keyCode: 11, isShifted: false),
+                KeyStroke(keyCode: 2, isShifted: false),
+                KeyStroke(keyCode: 17, isShifted: false),
+                KeyStroke(keyCode: 45, isShifted: false)
+            ],
+            enabledLanguages: Set(KeyboardLanguage.allCases)
+        )
     }
 
     func evaluate(
@@ -783,7 +810,11 @@ final class CorrectionEngine {
     }
 
     private func normalizedCandidate(_ candidate: LayoutCandidate, typedText: String) -> LayoutCandidate {
-        var edgeAdjustedText = edgePunctuationAdjustedCandidateText(candidate.text, typedText: typedText)
+        var edgeAdjustedText = edgePunctuationAdjustedCandidateText(
+            candidate.text,
+            typedText: typedText,
+            preservesBracketPunctuation: !classifier.hasStrongLexicalEvidence(candidate)
+        )
         if isMixedLayoutWord(typedText), hasSuspiciousCasing(edgeAdjustedText) {
             edgeAdjustedText = edgeAdjustedText.lowercased()
         }
@@ -793,21 +824,26 @@ final class CorrectionEngine {
         return LayoutCandidate(language: candidate.language, text: preferredText)
     }
 
-    private func edgePunctuationAdjustedCandidateText(_ candidateText: String, typedText: String) -> String {
+    private func edgePunctuationAdjustedCandidateText(
+        _ candidateText: String,
+        typedText: String,
+        preservesBracketPunctuation: Bool
+    ) -> String {
         var candidateCharacters = Array(candidateText)
         let typedCharacters = Array(typedText)
         guard !candidateCharacters.isEmpty, !typedCharacters.isEmpty else {
             return candidateText
         }
 
-        if let firstTyped = typedCharacters.first,
+        if preservesBracketPunctuation,
+           let firstTyped = typedCharacters.first,
            "[({<".contains(firstTyped),
            isLatinLayoutBody(String(typedCharacters.dropFirst())) {
             candidateCharacters[0] = firstTyped
         }
 
         if let lastTyped = typedCharacters.last,
-           "?!".contains(lastTyped) || ("])}>".contains(lastTyped) && isLatinLayoutBody(String(typedCharacters.dropLast()))) {
+           "?!".contains(lastTyped) || (preservesBracketPunctuation && "])}>".contains(lastTyped) && isLatinLayoutBody(String(typedCharacters.dropLast()))) {
             candidateCharacters[candidateCharacters.count - 1] = lastTyped
         }
 

@@ -23,6 +23,219 @@ struct KeyboardMonitorDiagnostics: Equatable {
     var lastMLDivergence = "None"
     var lastTextContext = "plain_text"
     var trainingSampleCount = 0
+    var performance = PerformanceMetricsSnapshot.empty
+}
+
+enum PerformanceCorrectionKind: String, Equatable {
+    case automatic
+    case manual
+    case spelling
+
+    var displayName: String {
+        switch self {
+        case .automatic: "Auto"
+        case .manual: "Manual"
+        case .spelling: "Spelling"
+        }
+    }
+}
+
+struct PerformanceMetricsSnapshot: Equatable {
+    struct Bucket: Equatable {
+        let count: Int
+        let averageMilliseconds: Double
+        let p50Milliseconds: Double
+        let p95Milliseconds: Double
+        let maxMilliseconds: Double
+
+        static let empty = Bucket(
+            count: 0,
+            averageMilliseconds: 0,
+            p50Milliseconds: 0,
+            p95Milliseconds: 0,
+            maxMilliseconds: 0
+        )
+    }
+
+    let lastKind: PerformanceCorrectionKind?
+    let lastTotalMilliseconds: Double
+    let lastEvaluationMilliseconds: Double
+    let lastReplacementMilliseconds: Double
+    let lastLayoutSwitchMilliseconds: Double
+    let lastSoundMilliseconds: Double
+    let overall: Bucket
+    let warmOverall: Bucket
+    let automatic: Bucket
+    let manual: Bucket
+    let spelling: Bucket
+    let coldStartSamples: Int
+
+    var warning: String {
+        let p95 = warmOverall.count > 0 ? warmOverall.p95Milliseconds : overall.p95Milliseconds
+        return p95 > 120
+            ? "Session p95 is above 120 ms"
+            : "Latency looks normal"
+    }
+
+    static let empty = PerformanceMetricsSnapshot(
+        lastKind: nil,
+        lastTotalMilliseconds: 0,
+        lastEvaluationMilliseconds: 0,
+        lastReplacementMilliseconds: 0,
+        lastLayoutSwitchMilliseconds: 0,
+        lastSoundMilliseconds: 0,
+        overall: .empty,
+        warmOverall: .empty,
+        automatic: .empty,
+        manual: .empty,
+        spelling: .empty,
+        coldStartSamples: 0
+    )
+}
+
+struct PerformanceTimingSample: Equatable {
+    let kind: PerformanceCorrectionKind
+    let totalMilliseconds: Double
+    let evaluationMilliseconds: Double
+    let replacementMilliseconds: Double
+    let layoutSwitchMilliseconds: Double
+    let soundMilliseconds: Double
+    let isColdStart: Bool
+
+    init(
+        kind: PerformanceCorrectionKind,
+        totalMilliseconds: Double,
+        evaluationMilliseconds: Double,
+        replacementMilliseconds: Double,
+        layoutSwitchMilliseconds: Double,
+        soundMilliseconds: Double,
+        isColdStart: Bool = false
+    ) {
+        self.kind = kind
+        self.totalMilliseconds = totalMilliseconds
+        self.evaluationMilliseconds = evaluationMilliseconds
+        self.replacementMilliseconds = replacementMilliseconds
+        self.layoutSwitchMilliseconds = layoutSwitchMilliseconds
+        self.soundMilliseconds = soundMilliseconds
+        self.isColdStart = isColdStart
+    }
+
+    func markingColdStart(_ isColdStart: Bool) -> PerformanceTimingSample {
+        PerformanceTimingSample(
+            kind: kind,
+            totalMilliseconds: totalMilliseconds,
+            evaluationMilliseconds: evaluationMilliseconds,
+            replacementMilliseconds: replacementMilliseconds,
+            layoutSwitchMilliseconds: layoutSwitchMilliseconds,
+            soundMilliseconds: soundMilliseconds,
+            isColdStart: isColdStart
+        )
+    }
+}
+
+final class PerformanceMetricsStore {
+    private var samples: [PerformanceTimingSample] = []
+    private let maximumSamples: Int
+
+    init(maximumSamples: Int = 500) {
+        self.maximumSamples = maximumSamples
+    }
+
+    func record(_ sample: PerformanceTimingSample) -> PerformanceMetricsSnapshot {
+        let storedSample = sample.markingColdStart(sample.isColdStart || samples.isEmpty)
+        samples.append(storedSample)
+        if samples.count > maximumSamples {
+            samples.removeFirst(samples.count - maximumSamples)
+        }
+        return snapshot()
+    }
+
+    func snapshot() -> PerformanceMetricsSnapshot {
+        let last = samples.last
+        let warmSamples = samples.filter { !$0.isColdStart }
+        return PerformanceMetricsSnapshot(
+            lastKind: last?.kind,
+            lastTotalMilliseconds: last?.totalMilliseconds ?? 0,
+            lastEvaluationMilliseconds: last?.evaluationMilliseconds ?? 0,
+            lastReplacementMilliseconds: last?.replacementMilliseconds ?? 0,
+            lastLayoutSwitchMilliseconds: last?.layoutSwitchMilliseconds ?? 0,
+            lastSoundMilliseconds: last?.soundMilliseconds ?? 0,
+            overall: bucket(for: samples),
+            warmOverall: bucket(for: warmSamples),
+            automatic: bucket(for: samples.filter { $0.kind == .automatic }),
+            manual: bucket(for: samples.filter { $0.kind == .manual }),
+            spelling: bucket(for: samples.filter { $0.kind == .spelling }),
+            coldStartSamples: samples.filter(\.isColdStart).count
+        )
+    }
+
+    private func bucket(for samples: [PerformanceTimingSample]) -> PerformanceMetricsSnapshot.Bucket {
+        guard !samples.isEmpty else { return .empty }
+        let totals = samples.map(\.totalMilliseconds).sorted()
+        let average = totals.reduce(0, +) / Double(totals.count)
+        return PerformanceMetricsSnapshot.Bucket(
+            count: totals.count,
+            averageMilliseconds: average,
+            p50Milliseconds: percentile(0.50, in: totals),
+            p95Milliseconds: percentile(0.95, in: totals),
+            maxMilliseconds: totals.last ?? 0
+        )
+    }
+
+    private func percentile(_ percentile: Double, in sortedValues: [Double]) -> Double {
+        guard !sortedValues.isEmpty else { return 0 }
+        let clamped = max(0, min(percentile, 1))
+        let index = Int((Double(sortedValues.count - 1) * clamped).rounded(.up))
+        return sortedValues[min(index, sortedValues.count - 1)]
+    }
+}
+
+private struct CorrectionPerformanceTimer {
+    let kind: PerformanceCorrectionKind
+    private let startedAt: DispatchTime
+    private var evaluationCompletedAt: DispatchTime?
+    private var replacementCompletedAt: DispatchTime?
+    private var layoutSwitchMilliseconds: Double = 0
+    private var soundMilliseconds: Double = 0
+
+    init(kind: PerformanceCorrectionKind, startedAt: DispatchTime = .now()) {
+        self.kind = kind
+        self.startedAt = startedAt
+    }
+
+    mutating func markEvaluationComplete() {
+        evaluationCompletedAt = .now()
+    }
+
+    mutating func markReplacementComplete() {
+        replacementCompletedAt = .now()
+    }
+
+    mutating func addPostCorrection(_ timing: PostCorrectionPerformanceTiming) {
+        layoutSwitchMilliseconds += timing.layoutSwitchMilliseconds
+        soundMilliseconds += timing.soundMilliseconds
+    }
+
+    func finish() -> PerformanceTimingSample {
+        let finishedAt = DispatchTime.now()
+        return PerformanceTimingSample(
+            kind: kind,
+            totalMilliseconds: Self.milliseconds(from: startedAt, to: finishedAt),
+            evaluationMilliseconds: evaluationCompletedAt.map { Self.milliseconds(from: startedAt, to: $0) } ?? 0,
+            replacementMilliseconds: replacementCompletedAt.map { Self.milliseconds(from: evaluationCompletedAt ?? startedAt, to: $0) } ?? 0,
+            layoutSwitchMilliseconds: layoutSwitchMilliseconds,
+            soundMilliseconds: soundMilliseconds
+        )
+    }
+
+    private static func milliseconds(from start: DispatchTime, to end: DispatchTime) -> Double {
+        Double(end.uptimeNanoseconds - start.uptimeNanoseconds) / 1_000_000
+    }
+}
+
+private struct PostCorrectionPerformanceTiming {
+    var layoutSwitchMilliseconds: Double = 0
+    var soundMilliseconds: Double = 0
 }
 
 private struct ManualCandidateCycleState {
@@ -81,6 +294,7 @@ final class KeyboardMonitor {
     private let inputSourceManager = InputSourceManager()
     private let soundPlayer = SoundPlayer()
     private let trainingSampleStore = CorrectionTrainingSampleStore.shared
+    private let performanceMetricsStore = PerformanceMetricsStore()
     var preferences = KeyboardMonitorPreferences()
     var automaticallyCorrectsTypedWords = true
     private var eventTap: CFMachPort?
@@ -340,6 +554,7 @@ final class KeyboardMonitor {
     }
 
     private func finalizeWord(strokes activeStrokes: [KeyStroke], typedText activeTypedText: String, terminator: String) -> Bool {
+        var timing = CorrectionPerformanceTimer(kind: .automatic)
         let appMode = exclusionManager.frontmostAppBehaviorMode
         let frontmostBundleIdentifier = NSWorkspace.shared.frontmostApplication?.bundleIdentifier
         let inputContext = FocusedInputContextInspector.current()
@@ -385,6 +600,7 @@ final class KeyboardMonitor {
             appMode: appMode,
             terminatorType: terminator == " " ? "space" : "punctuation"
         )
+        timing.markEvaluationComplete()
         diagnostics.lastTypedWord = activeTypedText
         diagnostics.lastTerminator = terminatorLabel(terminator)
         diagnostics.lastCandidates = evaluation.candidateScores
@@ -420,6 +636,7 @@ final class KeyboardMonitor {
                     decisionReason: evaluation.reason
                 )
             } else {
+                let spellingStartedAt = DispatchTime.now()
                 if preferences.shouldCorrectSpellingMistakes(),
                    terminator == " ",
                    case .allow = inputContext.correctionPolicy,
@@ -429,12 +646,15 @@ final class KeyboardMonitor {
                     appMode: appMode,
                     terminatorType: "space"
                    ) {
+                    var spellingTiming = CorrectionPerformanceTimer(kind: .spelling, startedAt: spellingStartedAt)
+                    spellingTiming.markEvaluationComplete()
                     let shouldSuppressTerminator = applySpellingCorrection(
                         spellingDecision,
                         original: activeTypedText,
                         terminator: terminator,
                         inputContext: inputContext,
-                        appMode: appMode
+                        appMode: appMode,
+                        timing: &spellingTiming
                     )
                     diagnostics.lastCandidateInspector += "\nSpellchecker: corrected \(activeTypedText) -> \(spellingDecision.replacement)"
                     return shouldSuppressTerminator
@@ -463,11 +683,13 @@ final class KeyboardMonitor {
             diagnostics.lastDecision = "Skipped replacement: focused text unavailable"
             return false
         }
-        handlePostCorrection(language: decision.language, origin: .automatic)
+        timing.markReplacementComplete()
+        timing.addPostCorrection(handlePostCorrection(language: decision.language, origin: .automatic))
         isApplyingCorrection = false
         diagnostics.lastCorrection = "\(original) -> \(replacement)"
         diagnostics.lastSuggestion = ""
         diagnostics.lastDecision = "Corrected to \(decision.language.displayName), score \(Int(decision.score * 100))%"
+        recordPerformanceTiming(timing.finish())
         recordTrainingSample(
             outcome: .autoCorrected,
             features: evaluation.safetyFeatures,
@@ -485,7 +707,8 @@ final class KeyboardMonitor {
         original: String,
         terminator: String,
         inputContext: FocusedInputContext,
-        appMode: AppBehaviorMode
+        appMode: AppBehaviorMode,
+        timing: inout CorrectionPerformanceTimer
     ) -> Bool {
         let replacement = decision.replacement
         isApplyingCorrection = true
@@ -505,11 +728,13 @@ final class KeyboardMonitor {
             diagnostics.lastDecision = "Skipped spelling replacement: focused text unavailable"
             return false
         }
-        handlePostCorrection(language: decision.language, origin: .automatic)
+        timing.markReplacementComplete()
+        timing.addPostCorrection(handlePostCorrection(language: decision.language, origin: .automatic))
         isApplyingCorrection = false
         diagnostics.lastCorrection = "\(original) -> \(decision.replacement)"
         diagnostics.lastSuggestion = ""
         diagnostics.lastDecision = "Spelling corrected with macOS spellchecker"
+        recordPerformanceTiming(timing.finish())
         // Spelling replacement follows the same atomic word-plus-Space path.
         return true
     }
@@ -546,6 +771,7 @@ final class KeyboardMonitor {
     }
 
     private func performManualCorrection() -> Bool {
+        var timing = CorrectionPerformanceTimer(kind: .manual)
         isApplyingCorrection = true
         defer { isApplyingCorrection = false }
 
@@ -567,6 +793,7 @@ final class KeyboardMonitor {
         diagnostics.lastTerminator = "Manual"
 
         let candidates = correctionEngine.manualReplacements(for: selectedWord)
+        timing.markEvaluationComplete()
         guard let decision = candidates.first else {
             diagnostics.lastDecision = "Double Shift: no replacement for \(selectedWord)"
             diagnostics.lastCandidateInspector = "Manual Double Shift\nTyped: \(selectedWord)\nDecision: no replacement"
@@ -576,7 +803,8 @@ final class KeyboardMonitor {
         }
 
         TextReplacementPerformer.replaceSelection(with: decision.replacement)
-        handlePostCorrection(language: decision.language, origin: .manual)
+        timing.markReplacementComplete()
+        timing.addPostCorrection(handlePostCorrection(language: decision.language, origin: .manual))
         correctionEngine.recordManualCorrection(original: selectedWord, replacement: decision.replacement)
         rememberManualCycle(original: selectedWord, replacement: decision.replacement, candidates: candidates, source: .selection)
         diagnostics.lastCorrection = "\(selectedWord) -> \(decision.replacement)"
@@ -591,16 +819,19 @@ final class KeyboardMonitor {
             "Score: \(Int((decision.score * 100).rounded()))%"
         ].joined(separator: "\n")
         recordManualTrainingSample(original: selectedWord, decision: decision, reason: "Manual Double Shift")
+        recordPerformanceTiming(timing.finish())
         resetBuffer()
         return true
     }
 
     private func performBufferedManualTranslation() -> Bool {
+        var timing = CorrectionPerformanceTimer(kind: .manual)
         let original = typedText
         diagnostics.lastTypedWord = original
         diagnostics.lastTerminator = "Manual"
 
         let candidates = correctionEngine.manualReplacements(for: original)
+        timing.markEvaluationComplete()
         guard let decision = candidates.first else {
             diagnostics.lastDecision = "Double Shift: no replacement for \(original)"
             diagnostics.lastCandidateInspector = "Manual Double Shift\nTyped: \(original)\nMode: current word\nDecision: no replacement"
@@ -616,7 +847,8 @@ final class KeyboardMonitor {
             diagnostics.lastDecision = "Double Shift: focused text changed"
             return true
         }
-        handlePostCorrection(language: decision.language, origin: .manual)
+        timing.markReplacementComplete()
+        timing.addPostCorrection(handlePostCorrection(language: decision.language, origin: .manual))
         correctionEngine.recordManualTranslation(original: original, replacement: decision.replacement)
         rememberManualCycle(original: original, replacement: decision.replacement, candidates: candidates, source: .bufferedWord)
         diagnostics.lastCorrection = "\(original) -> \(decision.replacement)"
@@ -633,6 +865,7 @@ final class KeyboardMonitor {
             "Score: \(Int((decision.score * 100).rounded()))%"
         ].joined(separator: "\n")
         recordManualTrainingSample(original: original, decision: decision, reason: "Manual Double Shift current word")
+        recordPerformanceTiming(timing.finish())
         resetBuffer()
         return true
     }
@@ -645,12 +878,15 @@ final class KeyboardMonitor {
 
         let nextIndex = (cycle.index + 1) % cycle.candidates.count
         let decision = cycle.candidates[nextIndex]
+        var timing = CorrectionPerformanceTimer(kind: .manual)
+        timing.markEvaluationComplete()
         TextReplacementPerformer.replacePreviousText(
             characterCount: cycle.currentReplacement.count,
             expectedPreviousText: cycle.currentReplacement,
             with: decision.replacement
         )
-        handlePostCorrection(language: decision.language, origin: .manual)
+        timing.markReplacementComplete()
+        timing.addPostCorrection(handlePostCorrection(language: decision.language, origin: .manual))
         switch cycle.source {
         case .selection:
             correctionEngine.recordManualCorrection(original: cycle.original, replacement: decision.replacement)
@@ -678,6 +914,7 @@ final class KeyboardMonitor {
             "Score: \(Int((decision.score * 100).rounded()))%"
         ].joined(separator: "\n")
         recordManualTrainingSample(original: cycle.original, decision: decision, reason: "Manual Double Shift candidate cycling")
+        recordPerformanceTiming(timing.finish())
         return true
     }
 
@@ -718,13 +955,18 @@ final class KeyboardMonitor {
 
     private func applyManualCandidate(at index: Int, from cycle: ManualCandidateCycleState) {
         let decision = cycle.candidates[index]
+        var timing = CorrectionPerformanceTimer(kind: .manual)
+        timing.markEvaluationComplete()
         if decision.replacement != cycle.currentReplacement {
             TextReplacementPerformer.replacePreviousText(
                 characterCount: cycle.currentReplacement.count,
                 expectedPreviousText: cycle.currentReplacement,
                 with: decision.replacement
             )
-            handlePostCorrection(language: decision.language, origin: .manual)
+            timing.markReplacementComplete()
+            timing.addPostCorrection(handlePostCorrection(language: decision.language, origin: .manual))
+        } else {
+            timing.markReplacementComplete()
         }
 
         switch cycle.source {
@@ -748,6 +990,7 @@ final class KeyboardMonitor {
             "Score: \(Int((decision.score * 100).rounded()))%"
         ].joined(separator: "\n")
         recordManualTrainingSample(original: cycle.original, decision: decision, reason: "Manual candidate keyboard selection")
+        recordPerformanceTiming(timing.finish())
         manualCycleState = nil
     }
 
@@ -892,21 +1135,35 @@ final class KeyboardMonitor {
         diagnostics.trainingSampleCount = trainingSampleStore.summary().count
     }
 
-    private func handlePostCorrection(language: KeyboardLanguage, origin: CorrectionOrigin) {
+    private func handlePostCorrection(language: KeyboardLanguage, origin: CorrectionOrigin) -> PostCorrectionPerformanceTiming {
         guard preferences.shouldSwitchInputSource() else {
             diagnostics.lastLayoutSwitch = "Switch disabled"
-            return
+            return PostCorrectionPerformanceTiming()
         }
-        switchInputSource(to: language, origin: origin)
+        return switchInputSource(to: language, origin: origin)
     }
 
-    private func switchInputSource(to language: KeyboardLanguage, origin: CorrectionOrigin) {
+    private func switchInputSource(to language: KeyboardLanguage, origin: CorrectionOrigin) -> PostCorrectionPerformanceTiming {
+        var timing = PostCorrectionPerformanceTiming()
         let previousLanguage = inputSourceManager.currentKeyboardLanguage()
+        let layoutStart = DispatchTime.now()
         let didSwitch = inputSourceManager.selectKeyboardLanguage(language)
+        timing.layoutSwitchMilliseconds = Self.milliseconds(from: layoutStart, to: .now())
         if didSwitch && previousLanguage != language && preferences.shouldPlaySound(origin: origin) {
+            let soundStart = DispatchTime.now()
             soundPlayer.playLayoutSwitch(volume: preferences.soundVolume)
+            timing.soundMilliseconds = Self.milliseconds(from: soundStart, to: .now())
         }
         diagnostics.lastLayoutSwitch = didSwitch ? "Switched to \(language.displayName)" : "Could not switch to \(language.displayName)"
+        return timing
+    }
+
+    private func recordPerformanceTiming(_ sample: PerformanceTimingSample) {
+        diagnostics.performance = performanceMetricsStore.record(sample)
+    }
+
+    private static func milliseconds(from start: DispatchTime, to end: DispatchTime) -> Double {
+        Double(end.uptimeNanoseconds - start.uptimeNanoseconds) / 1_000_000
     }
 
     static func allowsSyntheticReplacementFallback(bundleIdentifier: String?, inputContext: FocusedInputContext) -> Bool {

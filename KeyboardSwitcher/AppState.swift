@@ -224,6 +224,7 @@ final class AppState: ObservableObject {
         startInputSourcePolling()
         bindUndoState()
         updateMonitorState()
+        scheduleCorrectionWarmUp()
     }
 
     func refreshRuntimeState() {
@@ -449,6 +450,21 @@ final class AppState: ObservableObject {
             "Candidate Inspector:",
             diagnostics.lastCandidateInspector,
             "Correction: \(diagnostics.lastCorrection.isEmpty ? "-" : diagnostics.lastCorrection)",
+            "Performance:",
+            "Last Mode: \(diagnostics.performance.lastKind?.displayName ?? "-")",
+            "Last Latency: \(Self.performanceMilliseconds(diagnostics.performance.lastTotalMilliseconds))",
+            "Evaluation: \(Self.performanceMilliseconds(diagnostics.performance.lastEvaluationMilliseconds))",
+            "Replacement: \(Self.performanceMilliseconds(diagnostics.performance.lastReplacementMilliseconds))",
+            "Layout Switch: \(Self.performanceMilliseconds(diagnostics.performance.lastLayoutSwitchMilliseconds))",
+            "Sound Dispatch: \(Self.performanceMilliseconds(diagnostics.performance.lastSoundMilliseconds))",
+            "Session Average: \(Self.performanceMilliseconds(diagnostics.performance.overall.averageMilliseconds))",
+            "Session p50: \(Self.performanceMilliseconds(diagnostics.performance.overall.p50Milliseconds))",
+            "Session p95: \(Self.performanceMilliseconds(diagnostics.performance.overall.p95Milliseconds))",
+            "Warm Session p95: \(Self.performanceMilliseconds(diagnostics.performance.warmOverall.p95Milliseconds))",
+            "Session Max: \(Self.performanceMilliseconds(diagnostics.performance.overall.maxMilliseconds))",
+            "Cold Start Samples: \(diagnostics.performance.coldStartSamples)",
+            "Session Samples: \(diagnostics.performance.overall.count)",
+            "Performance Warning: \(diagnostics.performance.warning)",
             "Privacy Metrics:",
             "Corrections Today: \(privacyMetrics.correctionsToday)",
             "Undo Rate: \(privacyMetrics.undoRate.formatted(.percent.precision(.fractionLength(0))))",
@@ -461,6 +477,18 @@ final class AppState: ObservableObject {
             "Last Training Outcome: \(trainingSummary.lastOutcome?.rawValue ?? "-")",
             "Last Text Context: \(trainingSummary.lastTextContext)"
         ].joined(separator: "\n")
+    }
+
+    private func scheduleCorrectionWarmUp() {
+        let engine = correctionEngine
+        DispatchQueue.global(qos: .utility).async {
+            engine.warmUp()
+        }
+    }
+
+    private static func performanceMilliseconds(_ value: Double) -> String {
+        guard value > 0 else { return "-" }
+        return "\(Int(value.rounded())) ms"
     }
 
     func exportTrainingSamples(to url: URL) throws {

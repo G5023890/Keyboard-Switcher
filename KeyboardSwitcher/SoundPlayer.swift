@@ -3,6 +3,7 @@ import AppKit
 final class SoundPlayer {
     private var layoutSwitchSound: NSSound?
     private var possibleTypoSound: NSSound?
+    private let playbackQueue = DispatchQueue(label: "com.local.KeyboardSwitcher.soundPlayback", qos: .utility)
 
     init() {
         if let url = Bundle.main.url(forResource: "switch_typewriter_shift", withExtension: "wav") {
@@ -23,12 +24,15 @@ final class SoundPlayer {
 
     private func play(_ sound: NSSound?, volume: Double) {
         guard let sound else { return }
+        let clampedVolume = Float(max(0, min(volume, 1)))
 
-        if sound.isPlaying {
-            sound.stop()
+        playbackQueue.async {
+            if sound.isPlaying {
+                sound.stop()
+            }
+            sound.volume = clampedVolume
+            sound.currentTime = 0
+            sound.play()
         }
-        sound.volume = Float(max(0, min(volume, 1)))
-        sound.currentTime = 0
-        sound.play()
     }
 }

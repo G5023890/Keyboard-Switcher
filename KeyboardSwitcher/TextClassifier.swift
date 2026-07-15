@@ -208,6 +208,23 @@ final class TextClassifier {
         .hebrew: ["של", "לו", "ום", "מה", "תו", "דה", "בר", "ים", "ני", "את"]
     ]
 
+    func warmUp() {
+        _ = Self.russianAutoWords.count
+        _ = Self.englishAutoWords.count
+        _ = Self.russianManualWords.count
+        _ = Self.englishManualWords.count
+        _ = Self.russianShortAutoWords.count
+        _ = Self.englishShortAutoWords.count
+        _ = Self.hebrewShortAutoWords.count
+        _ = Self.russianShortExtendedWords.count
+        _ = Self.englishShortExtendedWords.count
+        _ = Self.russianPromotedWords.count
+        _ = Self.hebrewAutoWords.count
+        _ = TechnicalTermLexicon.warmUp()
+        _ = isCorrectlySpelled("test", language: .english)
+        _ = isCorrectlySpelled("пример", language: .russian)
+    }
+
     func score(_ candidate: LayoutCandidate) -> CandidateScore {
         let normalized = candidate.text.lowercased()
         let lexical = lexicalToken(normalized)
@@ -687,6 +704,10 @@ enum TechnicalTermLexicon {
         }
         return values
     }()
+
+    static func warmUp() -> Int {
+        records.count + rules.count + terms.count + preferredByNormalized.count
+    }
 
     static func preferredSpelling(for normalized: String) -> String? {
         preferredByNormalized[normalized.lowercased()]

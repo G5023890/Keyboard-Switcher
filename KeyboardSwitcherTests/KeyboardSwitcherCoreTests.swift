@@ -50,6 +50,99 @@ final class KeyboardSwitcherCoreTests: XCTestCase {
         XCTAssertEqual(CorrectionSensitivity.closest(to: 0.70), .custom)
     }
 
+    func testPerformanceMetricsAggregateLatencyBuckets() {
+        let store = PerformanceMetricsStore()
+        _ = store.record(PerformanceTimingSample(
+            kind: .automatic,
+            totalMilliseconds: 10,
+            evaluationMilliseconds: 3,
+            replacementMilliseconds: 4,
+            layoutSwitchMilliseconds: 2,
+            soundMilliseconds: 1
+        ))
+        _ = store.record(PerformanceTimingSample(
+            kind: .automatic,
+            totalMilliseconds: 20,
+            evaluationMilliseconds: 6,
+            replacementMilliseconds: 7,
+            layoutSwitchMilliseconds: 5,
+            soundMilliseconds: 2
+        ))
+        let snapshot = store.record(PerformanceTimingSample(
+            kind: .manual,
+            totalMilliseconds: 150,
+            evaluationMilliseconds: 50,
+            replacementMilliseconds: 70,
+            layoutSwitchMilliseconds: 30,
+            soundMilliseconds: 0
+        ))
+
+        XCTAssertEqual(snapshot.lastKind, .manual)
+        XCTAssertEqual(snapshot.lastTotalMilliseconds, 150)
+        XCTAssertEqual(snapshot.overall.count, 3)
+        XCTAssertEqual(snapshot.overall.averageMilliseconds, 60)
+        XCTAssertEqual(snapshot.overall.p50Milliseconds, 20)
+        XCTAssertEqual(snapshot.overall.p95Milliseconds, 150)
+        XCTAssertEqual(snapshot.overall.maxMilliseconds, 150)
+        XCTAssertEqual(snapshot.coldStartSamples, 1)
+        XCTAssertEqual(snapshot.warmOverall.count, 2)
+        XCTAssertEqual(snapshot.warmOverall.p95Milliseconds, 150)
+        XCTAssertEqual(snapshot.warning, "Session p95 is above 120 ms")
+    }
+
+    func testPerformanceMetricsSeparateColdStartFromWarmP95() {
+        let store = PerformanceMetricsStore()
+        _ = store.record(PerformanceTimingSample(kind: .automatic, totalMilliseconds: 650, evaluationMilliseconds: 500, replacementMilliseconds: 100, layoutSwitchMilliseconds: 3, soundMilliseconds: 47))
+        _ = store.record(PerformanceTimingSample(kind: .automatic, totalMilliseconds: 32, evaluationMilliseconds: 18, replacementMilliseconds: 10, layoutSwitchMilliseconds: 2, soundMilliseconds: 2))
+        let snapshot = store.record(PerformanceTimingSample(kind: .manual, totalMilliseconds: 40, evaluationMilliseconds: 20, replacementMilliseconds: 15, layoutSwitchMilliseconds: 3, soundMilliseconds: 2))
+
+        XCTAssertEqual(snapshot.coldStartSamples, 1)
+        XCTAssertEqual(snapshot.overall.p95Milliseconds, 650)
+        XCTAssertEqual(snapshot.warmOverall.count, 2)
+        XCTAssertEqual(snapshot.warmOverall.p95Milliseconds, 40)
+        XCTAssertEqual(snapshot.warning, "Latency looks normal")
+    }
+
+    func testPerformanceMetricsSeparateCorrectionKinds() {
+        let store = PerformanceMetricsStore()
+        _ = store.record(PerformanceTimingSample(kind: .automatic, totalMilliseconds: 12, evaluationMilliseconds: 4, replacementMilliseconds: 4, layoutSwitchMilliseconds: 3, soundMilliseconds: 1))
+        _ = store.record(PerformanceTimingSample(kind: .manual, totalMilliseconds: 30, evaluationMilliseconds: 5, replacementMilliseconds: 20, layoutSwitchMilliseconds: 5, soundMilliseconds: 0))
+        let snapshot = store.record(PerformanceTimingSample(kind: .spelling, totalMilliseconds: 42, evaluationMilliseconds: 22, replacementMilliseconds: 15, layoutSwitchMilliseconds: 5, soundMilliseconds: 0))
+
+        XCTAssertEqual(snapshot.automatic.count, 1)
+        XCTAssertEqual(snapshot.manual.count, 1)
+        XCTAssertEqual(snapshot.spelling.count, 1)
+        XCTAssertEqual(snapshot.automatic.maxMilliseconds, 12)
+        XCTAssertEqual(snapshot.manual.maxMilliseconds, 30)
+        XCTAssertEqual(snapshot.spelling.maxMilliseconds, 42)
+    }
+
+    func testPerformanceTimingSampleDoesNotStoreTypedText() {
+        let sample = PerformanceTimingSample(
+            kind: .automatic,
+            totalMilliseconds: 20,
+            evaluationMilliseconds: 8,
+            replacementMilliseconds: 7,
+            layoutSwitchMilliseconds: 4,
+            soundMilliseconds: 1
+        )
+        let labels = Set(Mirror(reflecting: sample).children.compactMap(\.label))
+
+        XCTAssertFalse(labels.contains("original"))
+        XCTAssertFalse(labels.contains("replacement"))
+        XCTAssertFalse(labels.contains("typedText"))
+        XCTAssertFalse(labels.contains("word"))
+    }
+
+    func testCorrectionEngineWarmUpCompletes() {
+        let undo = CorrectionUndoManager()
+        let engine = CorrectionEngine(undoController: undo, learningStore: isolatedLearningStore())
+
+        engine.warmUp()
+
+        XCTAssertTrue(true)
+    }
+
     func testPhysicalReplayRespectsCapsLockForLetters() {
         let capsG = KeyStroke(keyCode: 5, isShifted: false, isCapsLocked: true)
         let shiftCapsG = KeyStroke(keyCode: 5, isShifted: true, isCapsLocked: true)
@@ -1020,6 +1113,39 @@ final class KeyboardSwitcherCoreTests: XCTestCase {
         XCTAssertEqual(engine.manualReplacement(for: "'то")?.replacement, "это")
         XCTAssertEqual(engine.manualReplacement(for: "‘то")?.replacement, "это")
         XCTAssertEqual(engine.manualReplacement(for: "[орошо")?.replacement, "хорошо")
+    }
+
+    func testOpeningBracketKeyCanBeRussianLetterWhenWholeReplayIsDictionaryWord() {
+        let undo = CorrectionUndoManager()
+        let engine = CorrectionEngine(undoController: undo, learningStore: isolatedLearningStore())
+        engine.confidenceThreshold = 0.62
+
+        let typed = "[jhjij"
+        let strokes = LayoutEngine.strokes(for: typed, language: .english) ?? []
+        let evaluation = engine.evaluate(strokes: strokes, typedText: typed, terminatorType: "space")
+
+        XCTAssertEqual(evaluation.decision?.replacement, "хорошо", evaluation.diagnosticSummary)
+        XCTAssertEqual(engine.manualReplacement(for: typed)?.replacement, "хорошо")
+    }
+
+    func testOpeningBracketIsPreservedWhenReplayBodyIsNotDictionaryWord() {
+        let undo = CorrectionUndoManager()
+        let engine = CorrectionEngine(undoController: undo, learningStore: isolatedLearningStore())
+
+        XCTAssertEqual(engine.manualReplacement(for: "[djn")?.replacement, "[вот")
+    }
+
+    func testClosingBracketKeyCanBeRussianHardSignWhenWholeReplayIsDictionaryWord() {
+        let undo = CorrectionUndoManager()
+        let engine = CorrectionEngine(undoController: undo, learningStore: isolatedLearningStore())
+        engine.confidenceThreshold = 0.62
+
+        let typed = "j,]trn"
+        let strokes = LayoutEngine.strokes(for: typed, language: .english) ?? []
+        let evaluation = engine.evaluate(strokes: strokes, typedText: typed, terminatorType: "space")
+
+        XCTAssertEqual(evaluation.decision?.replacement, "объект", evaluation.diagnosticSummary)
+        XCTAssertEqual(engine.manualReplacement(for: typed)?.replacement, "объект")
     }
 
     func testRussianLetterPunctuationKeysReplayLowercaseAndShiftedVariants() {

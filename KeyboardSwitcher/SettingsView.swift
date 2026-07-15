@@ -476,6 +476,15 @@ struct SettingsView: View {
                 ])
             }
 
+            SettingsCard("Performance") {
+                DiagnosticKeyValueGrid(rows: performanceRows)
+                if appState.diagnostics.performance.overall.p95Milliseconds > 120 {
+                    Text("Session p95 is above 120 ms. Corrections may feel noticeable during fast typing.")
+                        .font(.system(size: 12))
+                        .foregroundStyle(.orange)
+                }
+            }
+
             SettingsCard("Candidate Inspector") {
                 CandidateInspectorView(rawInspector: appState.diagnostics.lastCandidateInspector)
             }
@@ -521,6 +530,30 @@ struct SettingsView: View {
                 }
             }
         }
+    }
+
+    private var performanceRows: [DiagnosticKeyValueGrid.Row] {
+        let performance = appState.diagnostics.performance
+        return [
+            .init("Last Mode", performance.lastKind?.displayName ?? "-"),
+            .init("Last Latency", Self.performanceMilliseconds(performance.lastTotalMilliseconds)),
+            .init("Evaluation", Self.performanceMilliseconds(performance.lastEvaluationMilliseconds)),
+            .init("Replacement", Self.performanceMilliseconds(performance.lastReplacementMilliseconds)),
+            .init("Layout Switch", Self.performanceMilliseconds(performance.lastLayoutSwitchMilliseconds)),
+            .init("Sound Dispatch", Self.performanceMilliseconds(performance.lastSoundMilliseconds)),
+            .init("Session Average", Self.performanceMilliseconds(performance.overall.averageMilliseconds)),
+            .init("Session p50", Self.performanceMilliseconds(performance.overall.p50Milliseconds)),
+            .init("Session p95", Self.performanceMilliseconds(performance.overall.p95Milliseconds)),
+            .init("Warm p95", Self.performanceMilliseconds(performance.warmOverall.p95Milliseconds)),
+            .init("Session Max", Self.performanceMilliseconds(performance.overall.maxMilliseconds)),
+            .init("Cold Samples", "\(performance.coldStartSamples)"),
+            .init("Samples", "\(performance.overall.count) total · \(performance.automatic.count) auto · \(performance.manual.count) manual · \(performance.spelling.count) spelling")
+        ]
+    }
+
+    private static func performanceMilliseconds(_ value: Double) -> String {
+        guard value > 0 else { return "-" }
+        return "\(Int(value.rounded())) ms"
     }
 
     private func exportTrainingSamples() {
