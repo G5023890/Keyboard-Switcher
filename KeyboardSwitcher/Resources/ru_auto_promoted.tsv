@@ -1,0 +1,7 @@
+word	rank	source_rank	zipf	score
+двоеточиями	1	manual_review	4.40	0.74
+запятыми	2	manual_review	4.55	0.76
+пробела	3	manual_review	4.70	0.78
+раскладка	4	manual_review	4.85	0.80
+раскладке	5	manual_review	4.70	0.78
+ёлка	6	manual_review	4.95	0.81

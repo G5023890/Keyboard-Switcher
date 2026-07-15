@@ -70,8 +70,7 @@ final class InputSourceManager {
     @discardableResult
     func selectKeyboardLanguage(
         _ language: KeyboardLanguage,
-        confirmationTimeout: TimeInterval = 0.06,
-        settlingDelay: TimeInterval = 0.04
+        confirmationTimeout: TimeInterval = 0.02
     ) -> Bool {
         if currentKeyboardLanguage() == language {
             return true
@@ -85,15 +84,15 @@ final class InputSourceManager {
             return false
         }
 
+        // The token terminator is now inserted atomically by the replacement
+        // path, so this short confirmation cannot reorder text. It does ensure
+        // that the next physical key uses the selected input source.
         let deadline = Date().addingTimeInterval(confirmationTimeout)
         repeat {
             if currentKeyboardLanguage() == language {
-                if settlingDelay > 0 {
-                    usleep(useconds_t(settlingDelay * 1_000_000))
-                }
                 return true
             }
-            usleep(1_000)
+            usleep(500)
         } while Date() < deadline
 
         return currentKeyboardLanguage() == language

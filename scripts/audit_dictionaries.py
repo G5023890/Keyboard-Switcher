@@ -48,8 +48,8 @@ def read_frequency_tsv(resource_name: str) -> WordSet:
     return WordSet(resource_name, path, words, max(0, len(lines) - 1), path.stat().st_size)
 
 
-def read_short_whitelist(language_code: str) -> WordSet:
-    path = RESOURCES / "short_words_auto_whitelist.tsv"
+def read_short_whitelist(resource_name: str, language_code: str) -> WordSet:
+    path = RESOURCES / resource_name
     lines = path.read_text(encoding="utf-8").splitlines()
     words: set[str] = set()
     duplicate_rows = 0
@@ -64,8 +64,8 @@ def read_short_whitelist(language_code: str) -> WordSet:
             duplicate_rows += 1
         words.add(word)
     if duplicate_rows:
-        raise AssertionError(f"short_words_auto_whitelist.tsv:{language_code} contains {duplicate_rows} duplicate rows")
-    return WordSet(f"short_words_auto_whitelist.tsv:{language_code}", path, words, len(words), path.stat().st_size)
+        raise AssertionError(f"{resource_name}:{language_code} contains {duplicate_rows} duplicate rows")
+    return WordSet(f"{resource_name}:{language_code}", path, words, len(words), path.stat().st_size)
 
 
 def read_technical_exact_words() -> WordSet:
@@ -121,19 +121,35 @@ def main() -> int:
     ru_manual = read_frequency_tsv("ru_manual_extended_300k.tsv")
     en_auto = read_frequency_tsv("en_auto_core_50k.tsv")
     en_manual = read_frequency_tsv("en_manual_extended_200k.tsv")
-    ru_short = read_short_whitelist("ru")
-    en_short = read_short_whitelist("en")
+    ru_short_extended = read_short_whitelist("short_words_auto_whitelist.tsv", "ru")
+    en_short_extended = read_short_whitelist("short_words_auto_whitelist.tsv", "en")
+    ru_short_safe = read_short_whitelist("short_words_auto_safe.tsv", "ru")
+    en_short_safe = read_short_whitelist("short_words_auto_safe.tsv", "en")
+    he_short_safe = read_short_whitelist("short_words_auto_safe.tsv", "he")
+    ru_promoted = read_frequency_tsv("ru_auto_promoted.tsv")
+    he_auto = read_frequency_tsv("he_auto_core.tsv")
     technical = read_technical_exact_words()
     regex_rule_count = technical_regex_rule_count()
 
-    print_summary([ru_auto, ru_manual, en_auto, en_manual, ru_short, en_short, technical])
+    print_summary([
+        ru_auto, ru_manual, en_auto, en_manual,
+        ru_short_extended, en_short_extended,
+        ru_short_safe, en_short_safe, he_short_safe,
+        ru_promoted, he_auto, technical,
+    ])
     print(f"technical_never_correct.tsv:regex rules={regex_rule_count:,}")
     print()
 
     assert_disjoint(ru_manual, ru_auto)
-    assert_disjoint(ru_manual, ru_short)
+    assert_disjoint(ru_manual, ru_short_extended)
     assert_disjoint(en_manual, en_auto)
-    assert_disjoint(en_manual, en_short)
+    assert_disjoint(en_manual, en_short_extended)
+    if not ru_short_safe.words <= ru_short_extended.words:
+        raise AssertionError("short_words_auto_safe.tsv:ru must be a subset of the extended short-word list")
+    if not en_short_safe.words <= en_short_extended.words:
+        raise AssertionError("short_words_auto_safe.tsv:en must be a subset of the extended short-word list")
+    print("short_words_auto_safe.tsv is a subset of the RU/EN extended short-word list")
+    assert_disjoint(ru_promoted, ru_manual)
     assert_disjoint(technical, ru_auto, required=False)
     assert_disjoint(technical, ru_manual, required=False)
     assert_disjoint(technical, en_auto, required=False)

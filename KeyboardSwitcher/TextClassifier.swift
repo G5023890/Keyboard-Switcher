@@ -142,14 +142,39 @@ final class TextClassifier {
         fallbackWords: []
     )
     private static let russianShortAutoWords = RankedWordList.loadShortWordWhitelist(
-        resourceName: "short_words_auto_whitelist",
+        resourceName: "short_words_auto_safe",
         extension: "tsv",
         languageCode: "ru"
     )
     private static let englishShortAutoWords = RankedWordList.loadShortWordWhitelist(
+        resourceName: "short_words_auto_safe",
+        extension: "tsv",
+        languageCode: "en"
+    )
+    private static let hebrewShortAutoWords = RankedWordList.loadShortWordWhitelist(
+        resourceName: "short_words_auto_safe",
+        extension: "tsv",
+        languageCode: "he"
+    )
+    private static let russianShortExtendedWords = RankedWordList.loadShortWordWhitelist(
+        resourceName: "short_words_auto_whitelist",
+        extension: "tsv",
+        languageCode: "ru"
+    )
+    private static let englishShortExtendedWords = RankedWordList.loadShortWordWhitelist(
         resourceName: "short_words_auto_whitelist",
         extension: "tsv",
         languageCode: "en"
+    )
+    private static let russianPromotedWords = RankedWordList.load(
+        resourceName: "ru_auto_promoted",
+        extension: "tsv",
+        fallbackWords: []
+    )
+    private static let hebrewAutoWords = RankedWordList.load(
+        resourceName: "he_auto_core",
+        extension: "tsv",
+        fallbackWords: []
     )
     private static let builtInTechnicalTermsByNormalizedText: [String: String] = [
         "airplay": "AirPlay",
@@ -176,19 +201,6 @@ final class TextClassifier {
     ]
 
     private let spellChecker = NSSpellChecker.shared
-
-    private let hebrewBuiltInWords: Set<String> = [
-        "אני", "את", "אתה", "בוקר", "בית", "גם", "הוא", "היא", "היום", "זה", "טוב", "כן",
-        "לא", "לה", "מה", "מבחן", "מקלדת", "עברית", "עם", "שלום", "של", "תודה"
-    ]
-    private let russianSupplementalTokenWords: Set<String> = [
-        "двоеточиями",
-        "запятыми",
-        "пробела",
-        "раскладка",
-        "раскладке",
-        "ёлка"
-    ]
 
     private let ngrams: [KeyboardLanguage: Set<String>] = [
         .english: ["th", "he", "in", "er", "an", "re", "on", "at", "en", "nd", "ou", "ing", "ion"],
@@ -219,6 +231,10 @@ final class TextClassifier {
         let normalized = lexicalToken(candidate.text.lowercased())
         guard normalized.count >= 3 else { return false }
 
+        if hasStrongHyphenatedLexicalEvidence(normalized, language: candidate.language) {
+            return true
+        }
+
         if isCoreShortWord(normalized, language: candidate.language) {
             return true
         }
@@ -235,11 +251,11 @@ final class TextClassifier {
             return true
         }
 
-        if candidate.language == .russian, russianSupplementalTokenWords.contains(normalized) {
+        if candidate.language == .russian, Self.russianPromotedWords.contains(normalized) {
             return true
         }
 
-        return candidate.language == .hebrew && hebrewBuiltInWords.contains(normalized)
+        return candidate.language == .hebrew && Self.hebrewAutoWords.contains(normalized)
     }
 
     func hasManualLexicalEvidence(_ candidate: LayoutCandidate) -> Bool {
@@ -322,8 +338,12 @@ final class TextClassifier {
         case .russian:
             return Self.russianShortAutoWords.contains(normalized)
         case .hebrew:
-            return false
+            return Self.hebrewShortAutoWords.contains(normalized)
         }
+    }
+
+    func isSafeShortFunctionalWord(_ text: String, language: KeyboardLanguage) -> Bool {
+        isCoreShortWord(text, language: language)
     }
 
     private func isAutoDictionaryWord(_ text: String, language: KeyboardLanguage) -> Bool {
@@ -333,7 +353,7 @@ final class TextClassifier {
         case .russian:
             return Self.russianAutoWords.contains(text)
         case .hebrew:
-            return false
+            return Self.hebrewAutoWords.contains(text)
         }
     }
 
@@ -353,9 +373,9 @@ final class TextClassifier {
         guard (1...4).contains(normalized.count) else { return false }
         switch language {
         case .english:
-            return Self.englishManualWords.contains(normalized) && !Self.englishShortAutoWords.contains(normalized)
+            return Self.englishShortExtendedWords.contains(normalized) && !Self.englishShortAutoWords.contains(normalized)
         case .russian:
-            return Self.russianManualWords.contains(normalized) && !Self.russianShortAutoWords.contains(normalized)
+            return Self.russianShortExtendedWords.contains(normalized) && !Self.russianShortAutoWords.contains(normalized)
         case .hebrew:
             return false
         }
@@ -396,12 +416,12 @@ final class TextClassifier {
             return score
         }
 
-        if language == .russian, russianSupplementalTokenWords.contains(text) {
-            return 0.54
+        if language == .russian, let score = Self.russianPromotedWords.score(for: text) {
+            return score
         }
 
-        if language == .hebrew, hebrewBuiltInWords.contains(text) {
-            return 0.46
+        if language == .hebrew, let score = Self.hebrewAutoWords.score(for: text) {
+            return score
         }
 
         return 0
@@ -409,6 +429,35 @@ final class TextClassifier {
 
     private func lexicalToken(_ text: String) -> String {
         text.trimmingCharacters(in: CharacterSet.punctuationCharacters.union(CharacterSet.symbols))
+    }
+
+    // A hyphenated prose word is safe for automatic correction only when every
+    // segment independently belongs to the automatic vocabulary. This admits
+    // forms such as "кому-то" without treating technical identifiers as words.
+    private func hasStrongHyphenatedLexicalEvidence(_ text: String, language: KeyboardLanguage) -> Bool {
+        let parts = text.split(separator: "-", omittingEmptySubsequences: false).map(String.init)
+        guard parts.count == 2,
+              parts.allSatisfy({ $0.count >= 2 }),
+              parts.allSatisfy({ $0.rangeOfCharacter(from: CharacterSet.letters.inverted) == nil }) else {
+            return false
+        }
+
+        return parts.allSatisfy { isStrongAutomaticWord($0, language: language) }
+    }
+
+    private func isStrongAutomaticWord(_ text: String, language: KeyboardLanguage) -> Bool {
+        if isCoreShortWord(text, language: language) {
+            return true
+        }
+
+        switch language {
+        case .english:
+            return Self.englishAutoWords.contains(text)
+        case .russian:
+            return Self.russianAutoWords.contains(text) || Self.russianPromotedWords.contains(text)
+        case .hebrew:
+            return Self.hebrewAutoWords.contains(text)
+        }
     }
 
     private func shortWordDictionaryScore(_ text: String, language: KeyboardLanguage) -> Double? {

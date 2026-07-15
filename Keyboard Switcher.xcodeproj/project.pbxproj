@@ -40,6 +40,9 @@
 		1A0001270000000000000001 /* en_manual_extended_200k.tsv in Resources */ = {isa = PBXBuildFile; fileRef = 1A00002A0000000000000001 /* en_manual_extended_200k.tsv */; };
 		1A0001280000000000000001 /* short_words_auto_whitelist.tsv in Resources */ = {isa = PBXBuildFile; fileRef = 1A00002B0000000000000001 /* short_words_auto_whitelist.tsv */; };
 		1A0001290000000000000001 /* technical_never_correct.tsv in Resources */ = {isa = PBXBuildFile; fileRef = 1A00002C0000000000000001 /* technical_never_correct.tsv */; };
+		1A0001300000000000000001 /* short_words_auto_safe.tsv in Resources */ = {isa = PBXBuildFile; fileRef = 1A0000300000000000000001 /* short_words_auto_safe.tsv */; };
+		1A0001310000000000000001 /* ru_auto_promoted.tsv in Resources */ = {isa = PBXBuildFile; fileRef = 1A0000310000000000000001 /* ru_auto_promoted.tsv */; };
+		1A0001320000000000000001 /* he_auto_core.tsv in Resources */ = {isa = PBXBuildFile; fileRef = 1A0000320000000000000001 /* he_auto_core.tsv */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -89,6 +92,9 @@
 		1A00002A0000000000000001 /* en_manual_extended_200k.tsv */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Resources/en_manual_extended_200k.tsv"; sourceTree = "<group>"; };
 		1A00002B0000000000000001 /* short_words_auto_whitelist.tsv */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Resources/short_words_auto_whitelist.tsv"; sourceTree = "<group>"; };
 		1A00002C0000000000000001 /* technical_never_correct.tsv */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Resources/technical_never_correct.tsv"; sourceTree = "<group>"; };
+		1A0000300000000000000001 /* short_words_auto_safe.tsv */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Resources/short_words_auto_safe.tsv"; sourceTree = "<group>"; };
+		1A0000310000000000000001 /* ru_auto_promoted.tsv */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Resources/ru_auto_promoted.tsv"; sourceTree = "<group>"; };
+		1A0000320000000000000001 /* he_auto_core.tsv */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Resources/he_auto_core.tsv"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -137,6 +143,9 @@
 				1A00002A0000000000000001 /* en_manual_extended_200k.tsv */,
 				1A00002B0000000000000001 /* short_words_auto_whitelist.tsv */,
 				1A00002C0000000000000001 /* technical_never_correct.tsv */,
+				1A0000300000000000000001 /* short_words_auto_safe.tsv */,
+				1A0000310000000000000001 /* ru_auto_promoted.tsv */,
+				1A0000320000000000000001 /* he_auto_core.tsv */,
 				1A0000170000000000000001 /* AppIcon.icns */,
 				1A0000180000000000000001 /* KeyboardSwitcherIcon_1024_whitebg.png */,
 				1A00001A0000000000000001 /* switch_typewriter_shift.wav */,
@@ -237,6 +246,9 @@
 				1A0001270000000000000001 /* en_manual_extended_200k.tsv in Resources */,
 				1A0001280000000000000001 /* short_words_auto_whitelist.tsv in Resources */,
 				1A0001290000000000000001 /* technical_never_correct.tsv in Resources */,
+				1A0001300000000000000001 /* short_words_auto_safe.tsv in Resources */,
+				1A0001310000000000000001 /* ru_auto_promoted.tsv in Resources */,
+				1A0001320000000000000001 /* he_auto_core.tsv in Resources */,
 				1A0001140000000000000001 /* AppIcon.icns in Resources */,
 				1A0001150000000000000001 /* KeyboardSwitcherIcon_1024_whitebg.png in Resources */,
 				1A0001170000000000000001 /* switch_typewriter_shift.wav in Resources */,

@@ -322,9 +322,9 @@ def suppressed_short_word_samples(rng):
 
 def load_word_sources(limit_per_source):
     return {
-        "en_core": read_short_whitelist(RESOURCES / "short_words_auto_whitelist.tsv", "en", limit_per_source),
+        "en_core": read_short_whitelist(RESOURCES / "short_words_auto_safe.tsv", "en", limit_per_source),
         "en_common": read_words(RESOURCES / "en_auto_core_50k.tsv", limit_per_source),
-        "ru_core": read_short_whitelist(RESOURCES / "short_words_auto_whitelist.tsv", "ru", limit_per_source),
+        "ru_core": read_short_whitelist(RESOURCES / "short_words_auto_safe.tsv", "ru", limit_per_source),
         "ru_freq": read_words(RESOURCES / "ru_auto_core_100k.tsv", limit_per_source),
         "he": HEBREW_WORDS,
     }

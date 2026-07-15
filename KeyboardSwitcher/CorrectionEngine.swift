@@ -110,11 +110,6 @@ final class CorrectionEngine {
     private let commonCandidateFixes = [
         "спосибо": "спасибо"
     ]
-    private let shortFunctionalWords: [KeyboardLanguage: Set<String>] = [
-        .english: ["a", "as", "at", "by", "i", "if", "in", "is", "it", "of", "on", "or", "to", "we"],
-        .russian: ["а", "бы", "в", "и", "из", "к", "о", "с", "у", "я"],
-        .hebrew: ["ב", "ו", "זה", "לא", "ל", "מה", "על", "עם", "של"]
-    ]
     private let automaticHebrewShortFunctionalWords: Set<String> = ["של"]
 
     init(
@@ -239,6 +234,24 @@ final class CorrectionEngine {
                 candidateScores: scores,
                 decision: punctuationTokenDecision,
                 reason: "Corrected punctuation token",
+                confidenceThreshold: activeConfidenceThreshold,
+                minimumConfidenceDelta: activeMinimumConfidenceDelta,
+                safetyFeatures: safety.features,
+                safetyPrediction: safety.prediction,
+                safetyFallbackPrediction: safety.fallbackPrediction
+            )
+        }
+
+        if let hyphenatedWordDecision = hyphenatedWordDecision(
+            for: winner,
+            scores: scores,
+            typedText: typedText
+        ) {
+            return makeEvaluation(
+                typedText: typedText,
+                candidateScores: scores,
+                decision: hyphenatedWordDecision,
+                reason: "Corrected hyphenated dictionary token",
                 confidenceThreshold: activeConfidenceThreshold,
                 minimumConfidenceDelta: activeMinimumConfidenceDelta,
                 safetyFeatures: safety.features,
@@ -521,6 +534,36 @@ final class CorrectionEngine {
         )
     }
 
+    private func hyphenatedWordDecision(
+        for winner: CandidateScore,
+        scores: [CandidateScore],
+        typedText: String
+    ) -> CorrectionDecision? {
+        guard typedText.contains("-"),
+              winner.candidate.text.contains("-"),
+              winner.score >= 0.34,
+              classifier.hasStrongLexicalEvidence(winner.candidate),
+              scores.filter({ classifier.hasStrongLexicalEvidence($0.candidate) }).count == 1 else {
+            return nil
+        }
+
+        let replacement = casingAdjustedReplacement(
+            winner.candidate.text,
+            language: winner.candidate.language,
+            typedText: typedText
+        )
+        guard !learningStore.isSuppressed(original: typedText, replacement: replacement) else {
+            return nil
+        }
+
+        return CorrectionDecision(
+            replacement: replacement,
+            language: winner.candidate.language,
+            score: max(winner.score, 0.72),
+            runnerUpScore: scores.dropFirst().first?.score ?? 0
+        )
+    }
+
     private func hasFinalSentencePunctuation(_ text: String) -> Bool {
         guard let last = text.last else { return false }
         return "?!".contains(last)
@@ -536,17 +579,18 @@ final class CorrectionEngine {
         allowSyntheticFallback: Bool = false
     ) -> TextReplacementMethod? {
         let previousText = String(original.prefix(originalLength))
+        let insertedText = replacement + terminator
         let replacementMethod = TextReplacementPerformer.replacePreviousTextMethod(
             characterCount: originalLength,
             expectedPreviousText: previousText,
-            with: replacement,
-            syntheticReplacement: replacement + terminator,
+            with: insertedText,
+            syntheticReplacement: insertedText,
             allowSyntheticFallback: allowSyntheticFallback
         )
         guard let replacementMethod else { return nil }
         undoController.record(
             original: original + terminator,
-            replacement: replacement + terminator,
+            replacement: insertedText,
             language: language,
             origin: .automatic
         )
@@ -968,7 +1012,7 @@ final class CorrectionEngine {
             .filter { candidate in
                 candidate.text != typedText
                     && candidate.language != currentLanguage
-                    && shortFunctionalWords[candidate.language]?.contains(candidate.text.lowercased()) == true
+                    && classifier.isSafeShortFunctionalWord(candidate.text, language: candidate.language)
                     && isAllowedShortFunctionalCandidate(candidate, mode: mode)
             }
 
@@ -1025,7 +1069,7 @@ final class CorrectionEngine {
             return true
         }
 
-        let layoutLetterPunctuation = CharacterSet(charactersIn: ".,;:'\"`‘’“”!?()[]{}<>%^*")
+        let layoutLetterPunctuation = CharacterSet(charactersIn: ".,;:'\"`‘’“”!?()[]{}<>%^*-")
         let hasAmbiguousPunctuationKey = text.rangeOfCharacter(from: layoutLetterPunctuation) != nil
         let hasLetters = text.rangeOfCharacter(from: .letters) != nil
         return hasAmbiguousPunctuationKey && hasLetters

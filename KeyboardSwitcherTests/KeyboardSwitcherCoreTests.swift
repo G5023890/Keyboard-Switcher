@@ -68,6 +68,42 @@ final class KeyboardSwitcherCoreTests: XCTestCase {
         XCTAssertEqual(LayoutEngine.character(for: shiftedCapsSlash, language: .english), "?")
     }
 
+    func testRussianPunctuationLayoutCorpusReplaysExactly() throws {
+        let fixtureURL = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent()
+            .appendingPathComponent("Fixtures/russian-words-with-english-punctuation.tsv")
+        let contents = try String(contentsOf: fixtureURL, encoding: .utf8)
+        var checkedRows = 0
+
+        for line in contents.split(whereSeparator: \.isNewline).dropFirst() {
+            let columns = line.split(separator: "\t", omittingEmptySubsequences: false)
+            guard columns.count >= 3 else {
+                XCTFail("Malformed punctuation-layout fixture row: \(line)")
+                return
+            }
+
+            let expectedRussian = String(columns[0])
+            let englishLayout = String(columns[2])
+            guard let strokes = LayoutEngine.strokes(for: englishLayout, language: .english),
+                  let replayedRussian = LayoutEngine.candidates(
+                    for: strokes,
+                    enabledLanguages: [.russian]
+                  ).first?.text else {
+                XCTFail("Could not replay punctuation-layout row: \(englishLayout) -> \(expectedRussian)")
+                return
+            }
+
+            XCTAssertEqual(
+                replayedRussian,
+                expectedRussian,
+                "Punctuation-layout replay mismatch for \(englishLayout)"
+            )
+            checkedRows += 1
+        }
+
+        XCTAssertEqual(checkedRows, 102_232)
+    }
+
     func testNonReplayableModifiersAreDetected() {
         XCTAssertFalse(KeyStroke(keyCode: 5, isShifted: false, modifierFlagsRawValue: CGEventFlags.maskShift.rawValue).hasNonReplayableModifiers)
         XCTAssertTrue(KeyStroke(keyCode: 5, isShifted: false, modifierFlagsRawValue: CGEventFlags.maskAlternate.rawValue).hasNonReplayableModifiers)
@@ -1084,6 +1120,36 @@ final class KeyboardSwitcherCoreTests: XCTestCase {
         XCTAssertEqual(evaluation.decision?.language, .russian)
     }
 
+    func testHyphenatedRussianParticlesCorrectAsOneAutomaticToken() {
+        let undo = CorrectionUndoManager()
+        let engine = CorrectionEngine(undoController: undo, learningStore: isolatedLearningStore())
+        engine.confidenceThreshold = 0.62
+
+        let examples = [
+            ("rjve-nj", "кому-то"),
+            ("xtve-nj", "чему-то")
+        ]
+
+        for (typed, expected) in examples {
+            let strokes = LayoutEngine.strokes(for: typed, language: .english) ?? []
+            let evaluation = engine.evaluate(
+                strokes: strokes,
+                typedText: typed,
+                allowsShortFunctionalWords: true,
+                appMode: .textFocused,
+                terminatorType: "space"
+            )
+
+            XCTAssertEqual(evaluation.decision?.replacement, expected, "\(typed): \(evaluation.diagnosticSummary)")
+            XCTAssertEqual(evaluation.decision?.language, .russian, typed)
+        }
+    }
+
+    func testTechnicalHyphenatedTokensStayProtected() {
+        XCTAssertEqual(SafetyPreflight.blockReason(for: "feature-login"), "technical delimiter token")
+        XCTAssertEqual(SafetyPreflight.blockReason(for: "--force"), "command-line flag")
+    }
+
     func testRussianProseWordsWithLayoutPunctuationKeysCorrectAutomatically() {
         let undo = CorrectionUndoManager()
         let engine = CorrectionEngine(undoController: undo, learningStore: isolatedLearningStore())
@@ -1233,13 +1299,35 @@ final class KeyboardSwitcherCoreTests: XCTestCase {
         XCTAssertTrue(classifier.isCoreShortWord("you", language: .english))
     }
 
+    func testPromotedRussianWordsUseBundledDataLayer() {
+        let classifier = TextClassifier()
+
+        XCTAssertTrue(classifier.hasStrongLexicalEvidence(LayoutCandidate(language: .russian, text: "раскладка")))
+        XCTAssertTrue(classifier.hasStrongLexicalEvidence(LayoutCandidate(language: .russian, text: "раскладке")))
+        XCTAssertTrue(classifier.hasStrongLexicalEvidence(LayoutCandidate(language: .russian, text: "двоеточиями")))
+    }
+
+    func testHebrewAutoCoreSupportsNormalWordsWhileShortSafetyStaysStrict() {
+        let classifier = TextClassifier()
+        let undo = CorrectionUndoManager()
+        let engine = CorrectionEngine(undoController: undo, learningStore: isolatedLearningStore())
+
+        XCTAssertTrue(classifier.hasStrongLexicalEvidence(LayoutCandidate(language: .hebrew, text: "מקלדת")))
+        XCTAssertTrue(classifier.hasStrongLexicalEvidence(LayoutCandidate(language: .hebrew, text: "שלום")))
+        XCTAssertTrue(classifier.isSafeShortFunctionalWord("של", language: .hebrew))
+
+        let shortHebrew = LayoutCandidate(language: .hebrew, text: "זה")
+        XCTAssertTrue(classifier.isSafeShortFunctionalWord(shortHebrew.text, language: .hebrew))
+        XCTAssertNil(engine.decision(for: LayoutEngine.strokes(for: "zu", language: .english) ?? [], typedText: "zu"))
+    }
+
     func testShortWordExtendedResourcesStaySeparateFromCore() {
         let classifier = TextClassifier()
 
-        XCTAssertFalse(classifier.isCoreShortWord("вах", language: .russian))
-        XCTAssertTrue(classifier.isExtendedShortWord("вах", language: .russian))
-        XCTAssertFalse(classifier.isCoreShortWord("ae", language: .english))
-        XCTAssertTrue(classifier.isExtendedShortWord("ae", language: .english))
+        XCTAssertFalse(classifier.isCoreShortWord("дом", language: .russian))
+        XCTAssertTrue(classifier.isExtendedShortWord("дом", language: .russian))
+        XCTAssertFalse(classifier.isCoreShortWord("some", language: .english))
+        XCTAssertTrue(classifier.isExtendedShortWord("some", language: .english))
     }
 
     func testShortWordCoreProvidesStrongEvidenceAndExtendedSupportsManualLayer() {
@@ -1247,7 +1335,7 @@ final class KeyboardSwitcherCoreTests: XCTestCase {
 
         XCTAssertTrue(classifier.hasStrongLexicalEvidence(LayoutCandidate(language: .russian, text: "это")))
         XCTAssertTrue(classifier.hasStrongLexicalEvidence(LayoutCandidate(language: .english, text: "you")))
-        XCTAssertTrue(classifier.hasManualLexicalEvidence(LayoutCandidate(language: .english, text: "ae")))
+        XCTAssertTrue(classifier.hasManualLexicalEvidence(LayoutCandidate(language: .english, text: "some")))
     }
 
     func testDictionaryLayersKeepAutoManualAndShortWordsSeparated() {

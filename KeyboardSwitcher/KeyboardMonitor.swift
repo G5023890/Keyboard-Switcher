@@ -239,9 +239,17 @@ final class KeyboardMonitor {
                 resetBuffer()
                 return false
             }
-            let didCorrect = finalizeCurrentWord(terminator: terminator)
+            // Detach the completed token before touching the focused control.
+            // AX replacement and input-source switching can synchronously pump
+            // input events; a following key must never be appended to this word.
+            let completedStrokes = strokes
+            let completedTypedText = typedText
             resetBuffer()
-            return didCorrect
+            return finalizeWord(
+                strokes: completedStrokes,
+                typedText: completedTypedText,
+                terminator: terminator
+            )
         }
 
         if keyCode == 51 {
@@ -329,10 +337,6 @@ final class KeyboardMonitor {
         CGEvent.tapEnable(tap: eventTap, enable: true)
         diagnostics.status = "Listening"
         diagnostics.lastDecision = "Re-enabled event tap after \(reason)"
-    }
-
-    private func finalizeCurrentWord(terminator: String) -> Bool {
-        finalizeWord(strokes: strokes, typedText: typedText, terminator: terminator)
     }
 
     private func finalizeWord(strokes activeStrokes: [KeyStroke], typedText activeTypedText: String, terminator: String) -> Bool {
@@ -454,7 +458,7 @@ final class KeyboardMonitor {
                 inputContext: inputContext
             )
         )
-        guard let replacementMethod else {
+        guard replacementMethod != nil else {
             isApplyingCorrection = false
             diagnostics.lastDecision = "Skipped replacement: focused text unavailable"
             return false
@@ -470,7 +474,10 @@ final class KeyboardMonitor {
             prediction: evaluation.safetyPrediction,
             decisionReason: evaluation.reason
         )
-        return replacementMethod == .synthetic
+        // The replacement path inserted the terminator together with the word.
+        // Suppress the physical Space so it cannot arrive after the next input
+        // source selection.
+        return true
     }
 
     private func applySpellingCorrection(
@@ -493,7 +500,7 @@ final class KeyboardMonitor {
                 inputContext: inputContext
             )
         )
-        guard let replacementMethod else {
+        guard replacementMethod != nil else {
             isApplyingCorrection = false
             diagnostics.lastDecision = "Skipped spelling replacement: focused text unavailable"
             return false
@@ -503,7 +510,8 @@ final class KeyboardMonitor {
         diagnostics.lastCorrection = "\(original) -> \(decision.replacement)"
         diagnostics.lastSuggestion = ""
         diagnostics.lastDecision = "Spelling corrected with macOS spellchecker"
-        return replacementMethod == .synthetic
+        // Spelling replacement follows the same atomic word-plus-Space path.
+        return true
     }
 
     private func handleFlagsChanged(keyCode: Int64, flags: CGEventFlags) -> Bool {
@@ -600,7 +608,14 @@ final class KeyboardMonitor {
             return true
         }
 
-        TextReplacementPerformer.replacePreviousText(characterCount: original.count, with: decision.replacement)
+        guard TextReplacementPerformer.replacePreviousText(
+            characterCount: original.count,
+            expectedPreviousText: original,
+            with: decision.replacement
+        ) else {
+            diagnostics.lastDecision = "Double Shift: focused text changed"
+            return true
+        }
         handlePostCorrection(language: decision.language, origin: .manual)
         correctionEngine.recordManualTranslation(original: original, replacement: decision.replacement)
         rememberManualCycle(original: original, replacement: decision.replacement, candidates: candidates, source: .bufferedWord)

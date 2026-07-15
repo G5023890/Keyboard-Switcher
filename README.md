@@ -2,7 +2,17 @@
 
 Keyboard Switcher is a native macOS menu bar utility that corrects text typed with the wrong keyboard layout. It currently targets English, Russian, and Hebrew, runs locally, and keeps the app bundle small by using Apple system frameworks plus compact bundled word lists.
 
-Current release checkpoint: `v0.88 (0903.1706.26)`.
+Current release checkpoint: `v0.88 (1431.1507.26)`.
+
+## Current Release Notes
+
+`v0.88 (1431.1507.26)` is a stability restore point for the stricter local correction pipeline.
+
+- Restores the app to the signed `/Applications/Keyboard Switcher.app` runtime after Debug/DerivedData launches interfered with Accessibility stability.
+- Keeps automatic correction conservative with split dictionary layers: clean auto dictionaries, compact safe short-word auto lists, manual-only extended dictionaries, promoted Russian auto words, and a cautious Hebrew auto core.
+- Improves whole-token replay for Russian punctuation-key words and hyphenated particles such as `кому-то` and `чему-то`.
+- Preserves the current deterministic scoring pipeline; Core ML remains local diagnostic/reranker support, not the authority for automatic replacement.
+- Verifies the release with the full unit test suite, dictionary audit, codesign check, installed bundle resource check, and app-size check.
 
 ## What It Does
 
@@ -140,7 +150,10 @@ Bundled resources are kept small:
 - `KeyboardSwitcher/Resources/ru_manual_extended_300k.tsv`
 - `KeyboardSwitcher/Resources/en_auto_core_50k.tsv`
 - `KeyboardSwitcher/Resources/en_manual_extended_200k.tsv`
+- `KeyboardSwitcher/Resources/ru_auto_promoted.tsv`
 - `KeyboardSwitcher/Resources/short_words_auto_whitelist.tsv`
+- `KeyboardSwitcher/Resources/short_words_auto_safe.tsv`
+- `KeyboardSwitcher/Resources/he_auto_core.tsv`
 - `KeyboardSwitcher/Resources/technical_never_correct.tsv`
 - `KeyboardSwitcher/Resources/CorrectionSafetyClassifier.mlmodel`
 - `KeyboardSwitcher/Resources/AppIcon.icns`
@@ -152,10 +165,11 @@ The current dictionary TSV set adds roughly 20 MB of local data before app packa
 
 Dictionary policy:
 
-- Automatic correction uses only the clean auto dictionaries: `ru_auto_core_100k.tsv`, `en_auto_core_50k.tsv`, and `short_words_auto_whitelist.tsv`.
-- Manual correction and Double Shift may use the broader manual delta dictionaries: `ru_manual_extended_300k.tsv` and `en_manual_extended_200k.tsv`.
+- Automatic correction uses only the clean auto dictionaries: `ru_auto_core_100k.tsv`, `en_auto_core_50k.tsv`, `ru_auto_promoted.tsv`, `short_words_auto_safe.tsv`, and the cautious `he_auto_core.tsv`.
+- Manual correction and Double Shift may use the broader manual delta dictionaries: `ru_manual_extended_300k.tsv`, `en_manual_extended_200k.tsv`, and the extended `short_words_auto_whitelist.tsv`.
 - Manual extended dictionaries do not increase automatic confidence.
-- Manual delta dictionaries intentionally exclude words already covered by the automatic core dictionaries and short-word whitelist.
+- The broad 1-4 character list is manual-only; automatic short-word evidence comes from the compact curated `short_words_auto_safe.tsv`.
+- Manual delta dictionaries intentionally exclude words already covered by the automatic core dictionaries and extended short-word list.
 - `technical_never_correct.tsv` is checked before normal layout scoring to protect technical terms, paths, identifiers, versions, URLs, emails, and code-like tokens.
 - Some technical terms can also exist in word dictionaries; the technical preflight layer takes precedence.
 - Russian dictionary matching normalizes `ё` to `е`.
@@ -168,7 +182,8 @@ See `LICENSES/THIRD-PARTY-NOTICES.md` and the bundled `KeyboardSwitcher/Resource
 Summary:
 
 - Current Russian and English scoring dictionaries are project-provided TSV resources maintained for Keyboard Switcher, split into automatic core dictionaries and manual delta dictionaries. Older bundled `txt`/`csv` dictionary resources were removed after the TSV migration.
-- Short Russian and English 1-4 character word behavior is controlled by the project-provided `short_words_auto_whitelist.tsv`.
+- Short Russian and English 1-4 character behavior uses `short_words_auto_safe.tsv` for auto correction and `short_words_auto_whitelist.tsv` for manual candidates.
+- Hebrew uses a small curated `he_auto_core.tsv`; Hebrew short words remain subject to stricter automatic safety rules.
 - Technical terms and technical-token rules are project-provided resources, now backed by `technical_never_correct.tsv`, used to reduce false corrections around macOS, iOS, SwiftUI, Core ML, Xcode, APIs, filenames, and identifiers.
 - `CorrectionSafetyClassifier.mlmodel` is a project-generated local Core ML model trained from synthetic/project data for shadow safety diagnostics.
 - The app icon and switch sound are project-provided assets.
