@@ -592,13 +592,21 @@ final class KeyboardMonitor {
         }
 
         let activeProfile = appMode.correctionProfile.tightened(with: inputProfile)
+        let isStrictContext: Bool
+        switch inputContext.correctionPolicy {
+        case .strict:
+            isStrictContext = true
+        case .allow, .block:
+            isStrictContext = appMode == .strict
+        }
         let evaluation = correctionEngine.evaluate(
             strokes: activeStrokes,
             typedText: activeTypedText,
             allowsShortFunctionalWords: terminator == " ",
             profile: activeProfile,
             appMode: appMode,
-            terminatorType: terminator == " " ? "space" : "punctuation"
+            terminatorType: terminator == " " ? "space" : "punctuation",
+            isStrictContext: isStrictContext
         )
         timing.markEvaluationComplete()
         diagnostics.lastTypedWord = activeTypedText
@@ -678,7 +686,7 @@ final class KeyboardMonitor {
                 inputContext: inputContext
             )
         )
-        guard replacementMethod != nil else {
+        guard let replacementMethod else {
             isApplyingCorrection = false
             diagnostics.lastDecision = "Skipped replacement: focused text unavailable"
             return false
@@ -696,10 +704,16 @@ final class KeyboardMonitor {
             prediction: evaluation.safetyPrediction,
             decisionReason: evaluation.reason
         )
-        // The replacement path inserted the terminator together with the word.
-        // Suppress the physical Space so it cannot arrive after the next input
-        // source selection.
-        return true
+        switch replacementMethod {
+        case .accessibility:
+            // Keep the physical Space in the original event stream. Replacing
+            // only the word avoids merged words in AX-backed controls.
+            return false
+        case .synthetic:
+            // Synthetic fallback inserted the terminator atomically because
+            // browser-backed editors may not expose a stable AX caret.
+            return true
+        }
     }
 
     private func applySpellingCorrection(
@@ -723,7 +737,7 @@ final class KeyboardMonitor {
                 inputContext: inputContext
             )
         )
-        guard replacementMethod != nil else {
+        guard let replacementMethod else {
             isApplyingCorrection = false
             diagnostics.lastDecision = "Skipped spelling replacement: focused text unavailable"
             return false
@@ -735,8 +749,12 @@ final class KeyboardMonitor {
         diagnostics.lastSuggestion = ""
         diagnostics.lastDecision = "Spelling corrected with macOS spellchecker"
         recordPerformanceTiming(timing.finish())
-        // Spelling replacement follows the same atomic word-plus-Space path.
-        return true
+        switch replacementMethod {
+        case .accessibility:
+            return false
+        case .synthetic:
+            return true
+        }
     }
 
     private func handleFlagsChanged(keyCode: Int64, flags: CGEventFlags) -> Bool {
@@ -775,18 +793,16 @@ final class KeyboardMonitor {
         isApplyingCorrection = true
         defer { isApplyingCorrection = false }
 
-        if !typedText.isEmpty {
-            return performBufferedManualTranslation()
-        }
-
         if cycleManualCandidateIfAvailable() {
             return true
         }
 
-        guard let selectedWord = TextReplacementPerformer.copySpaceTokenBeforeCursor() ?? TextReplacementPerformer.copyWordBeforeCursor(),
-              !selectedWord.isEmpty else {
-            diagnostics.lastDecision = "Double Shift: no word before cursor"
-            return true
+        guard let selectedWord = TextReplacementPerformer.copySpaceTokenBeforeCursor(), !selectedWord.isEmpty else {
+            if !typedText.isEmpty {
+                return performBufferedManualTranslation()
+            }
+            diagnostics.lastDecision = "Double Shift: active text field unavailable"
+            return false
         }
 
         diagnostics.lastTypedWord = selectedWord
@@ -802,7 +818,11 @@ final class KeyboardMonitor {
             return true
         }
 
-        TextReplacementPerformer.replaceSelection(with: decision.replacement)
+        guard TextReplacementPerformer.replaceSelection(expectedText: selectedWord, with: decision.replacement) else {
+            diagnostics.lastDecision = "Double Shift: focused text changed"
+            TextReplacementPerformer.collapseSelectionToEnd()
+            return true
+        }
         timing.markReplacementComplete()
         timing.addPostCorrection(handlePostCorrection(language: decision.language, origin: .manual))
         correctionEngine.recordManualCorrection(original: selectedWord, replacement: decision.replacement)
@@ -1176,7 +1196,12 @@ final class KeyboardMonitor {
             return true
         case .unavailable:
             return bundleIdentifier == "com.openai.codex"
-        case .secureTextField, .searchField, .comboBox, .unknown:
+        case .unknown:
+            // Codex uses a browser-backed editor that can expose an AX element
+            // without a writable text value. Its fallback is deliberately
+            // limited to this trusted bundle identifier.
+            return bundleIdentifier == "com.openai.codex"
+        case .secureTextField, .searchField, .comboBox:
             return false
         }
     }

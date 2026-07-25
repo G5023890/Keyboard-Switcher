@@ -2,13 +2,16 @@
 
 Keyboard Switcher is a native macOS menu bar utility that corrects text typed with the wrong keyboard layout. It currently targets English, Russian, and Hebrew, runs locally, and keeps the app bundle small by using Apple system frameworks plus compact bundled word lists.
 
-Current release checkpoint: `v0.88 (1431.1507.26)`.
+Current release checkpoint: `v0.88 AX & Codex replacement stability (1947.2507.26)`.
 
 ## Current Release Notes
 
-`v0.88 (1431.1507.26)` is a stability restore point for the stricter local correction pipeline.
+`v0.88 AX & Codex replacement stability (1947.2507.26)` is a restore point for reliable word replacement across native macOS and browser-backed editors.
 
-- Restores the app to the signed `/Applications/Keyboard Switcher.app` runtime after Debug/DerivedData launches interfered with Accessibility stability.
+- Keeps AX-backed replacement and synthetic fallback as separate paths: native text controls receive the original Space event, while Codex receives an atomic word-plus-Space fallback when it cannot expose a writable Accessibility value.
+- Reworks Double Shift to select and replace the actual token through Accessibility rather than simulating copy/paste or changing the system pasteboard.
+- Keeps fallback restricted to the trusted Codex bundle when its text editor exposes only an unknown or unavailable Accessibility element; Finder, password fields, search fields, and other unknown controls remain protected.
+- Adds stricter automatic-correction gating in strict application or input contexts, without changing normal TextEdit, Siri, or Messages behavior.
 - Keeps automatic correction conservative with split dictionary layers: clean auto dictionaries, compact safe short-word auto lists, manual-only extended dictionaries, promoted Russian auto words, and a cautious Hebrew auto core.
 - Improves whole-token replay for Russian punctuation-key words and hyphenated particles such as `кому-то` and `чему-то`.
 - Preserves the current deterministic scoring pipeline; Core ML remains local diagnostic/reranker support, not the authority for automatic replacement.
@@ -114,7 +117,7 @@ Double Shift is the manual correction and learning path:
 
 1. Type a word in the wrong layout.
 2. Press Shift twice quickly.
-3. The app selects/copies the word before the cursor, finds the best replacement, replaces it, switches to the target layout, and records the choice locally.
+3. The app reads and selects the Space-token before the cursor through Accessibility, finds the best replacement, replaces it without using the system pasteboard, switches to the target layout, and records the choice locally.
 
 Future occurrences of the same source word can use the learned replacement before the normal scorer runs.
 

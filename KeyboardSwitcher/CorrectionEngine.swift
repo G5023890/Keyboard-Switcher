@@ -159,21 +159,11 @@ final class CorrectionEngine: @unchecked Sendable {
         allowsShortFunctionalWords: Bool = true,
         profile: CorrectionProfile = .normal,
         appMode: AppBehaviorMode = .normal,
-        terminatorType: String = "unknown"
+        terminatorType: String = "unknown",
+        isStrictContext: Bool = false
     ) -> CorrectionEvaluation {
         let activeConfidenceThreshold = max(0, min(confidenceThreshold + profile.confidenceThresholdOffset, 1))
         let activeMinimumConfidenceDelta = max(0, min(profile.minimumDeltaOverride ?? minimumConfidenceDelta, 1))
-
-        if allowsShortFunctionalWords, let decision = shortWordDecision(for: strokes, typedText: typedText, mode: .automatic) {
-            return makeEvaluation(
-                typedText: typedText,
-                candidateScores: [],
-                decision: decision,
-                reason: "Short functional word",
-                confidenceThreshold: activeConfidenceThreshold,
-                minimumConfidenceDelta: activeMinimumConfidenceDelta
-            )
-        }
 
         let typedSafetyReason = classifier.correctionSafetyReason(for: typedText)
         let replayableSafetyReasons = Set(["technical delimiter token", "path-like text"])
@@ -186,7 +176,20 @@ final class CorrectionEngine: @unchecked Sendable {
             return makeEvaluation(typedText: typedText, candidateScores: [], decision: nil, reason: "Skipped suspicious casing", confidenceThreshold: activeConfidenceThreshold, minimumConfidenceDelta: activeMinimumConfidenceDelta)
         }
 
-        if let learnedDecision = learnedDecision(for: typedText) {
+        if !isStrictContext,
+           allowsShortFunctionalWords,
+           let decision = shortWordDecision(for: strokes, typedText: typedText, mode: .automatic) {
+            return makeEvaluation(
+                typedText: typedText,
+                candidateScores: [],
+                decision: decision,
+                reason: "Short functional word",
+                confidenceThreshold: activeConfidenceThreshold,
+                minimumConfidenceDelta: activeMinimumConfidenceDelta
+            )
+        }
+
+        if !isStrictContext, let learnedDecision = learnedDecision(for: typedText) {
             return makeEvaluation(typedText: typedText, candidateScores: [], decision: learnedDecision, reason: "Learned correction", confidenceThreshold: activeConfidenceThreshold, minimumConfidenceDelta: activeMinimumConfidenceDelta)
         }
 
@@ -247,6 +250,26 @@ final class CorrectionEngine: @unchecked Sendable {
             minimumConfidenceDelta: activeMinimumConfidenceDelta
         ) {
             return makeEvaluation(typedText: typedText, candidateScores: scores, decision: nil, reason: hebrewSafetyReason, confidenceThreshold: activeConfidenceThreshold, minimumConfidenceDelta: activeMinimumConfidenceDelta, safetyFeatures: safety.features, safetyPrediction: safety.prediction, safetyFallbackPrediction: safety.fallbackPrediction)
+        }
+
+        if isStrictContext,
+           !meetsStrictAutomaticGate(
+                winner: winner,
+                margin: margin,
+                confidenceThreshold: activeConfidenceThreshold,
+                minimumConfidenceDelta: activeMinimumConfidenceDelta
+           ) {
+            return makeEvaluation(
+                typedText: typedText,
+                candidateScores: scores,
+                decision: nil,
+                reason: "Skipped strict confidence gate",
+                confidenceThreshold: activeConfidenceThreshold,
+                minimumConfidenceDelta: activeMinimumConfidenceDelta,
+                safetyFeatures: safety.features,
+                safetyPrediction: safety.prediction,
+                safetyFallbackPrediction: safety.fallbackPrediction
+            )
         }
 
         if let punctuationTokenDecision = punctuationTokenDecision(
@@ -410,6 +433,19 @@ final class CorrectionEngine: @unchecked Sendable {
             score: max(winner.score, confidenceThreshold),
             runnerUpScore: runnerUp
         )
+    }
+
+    // Strict contexts must not use an exception path that is more permissive
+    // than the normal confidence and separation requirements.
+    private func meetsStrictAutomaticGate(
+        winner: CandidateScore,
+        margin: Double,
+        confidenceThreshold: Double,
+        minimumConfidenceDelta: Double
+    ) -> Bool {
+        winner.score >= confidenceThreshold
+            && margin >= minimumConfidenceDelta
+            && classifier.hasStrongLexicalEvidence(winner.candidate)
     }
 
     private func makeEvaluation(
@@ -606,18 +642,20 @@ final class CorrectionEngine: @unchecked Sendable {
         allowSyntheticFallback: Bool = false
     ) -> TextReplacementMethod? {
         let previousText = String(original.prefix(originalLength))
-        let insertedText = replacement + terminator
         let replacementMethod = TextReplacementPerformer.replacePreviousTextMethod(
             characterCount: originalLength,
             expectedPreviousText: previousText,
-            with: insertedText,
-            syntheticReplacement: insertedText,
+            with: replacement,
+            // AX replacement leaves the real terminator in the event stream.
+            // Synthetic replay has no reliable AX caret, so it must remain an
+            // atomic word-plus-terminator operation.
+            syntheticReplacement: replacement + terminator,
             allowSyntheticFallback: allowSyntheticFallback
         )
         guard let replacementMethod else { return nil }
         undoController.record(
             original: original + terminator,
-            replacement: insertedText,
+            replacement: replacement + terminator,
             language: language,
             origin: .automatic
         )
@@ -1119,12 +1157,10 @@ enum TextReplacementPerformer {
         case expectedTextMismatch
     }
 
-    private static let pasteboardRestoreLock = NSLock()
     private static let maximumSyntheticReplacementLength = 16
     private static let shortSyntheticKeyPause: useconds_t = 8_000
     private static let syntheticDeletionSettlePause: useconds_t = 16_000
     private static let syntheticInsertionSettlePause: useconds_t = 35_000
-    nonisolated(unsafe) private static var pasteboardRestoreToken = UUID()
 
     @discardableResult
     static func replacePreviousText(
@@ -1175,9 +1211,72 @@ enum TextReplacementPerformer {
         return .synthetic
     }
 
-    static func replaceSelection(with replacement: String) {
-        guard !replacement.isEmpty else { return }
-        pasteText(replacement)
+    @discardableResult
+    static func replaceSelection(expectedText: String, with replacement: String) -> Bool {
+        guard !expectedText.isEmpty, !replacement.isEmpty else { return false }
+
+        let systemWideElement = AXUIElementCreateSystemWide()
+        var focusedElementRef: CFTypeRef?
+        guard AXUIElementCopyAttributeValue(
+            systemWideElement,
+            kAXFocusedUIElementAttribute as CFString,
+            &focusedElementRef
+        ) == .success, let focusedElementRef else {
+            return false
+        }
+
+        let focusedElement = focusedElementRef as! AXUIElement
+        var valueRef: CFTypeRef?
+        guard AXUIElementCopyAttributeValue(
+            focusedElement,
+            kAXValueAttribute as CFString,
+            &valueRef
+        ) == .success,
+            let value = valueRef as? String else {
+            return false
+        }
+
+        var rangeRef: CFTypeRef?
+        guard AXUIElementCopyAttributeValue(
+            focusedElement,
+            kAXSelectedTextRangeAttribute as CFString,
+            &rangeRef
+        ) == .success, let rangeRef else {
+            return false
+        }
+
+        let axRange = rangeRef as! AXValue
+        var selectedRange = CFRange()
+        guard AXValueGetValue(axRange, .cfRange, &selectedRange), selectedRange.length > 0 else {
+            return false
+        }
+
+        let nsValue = value as NSString
+        let range = NSRange(location: selectedRange.location, length: selectedRange.length)
+        guard NSMaxRange(range) <= nsValue.length,
+              nsValue.substring(with: range) == expectedText else {
+            return false
+        }
+
+        let updatedValue = nsValue.replacingCharacters(in: range, with: replacement)
+        if AXUIElementSetAttributeValue(
+            focusedElement,
+            kAXValueAttribute as CFString,
+            updatedValue as CFString
+        ) == .success {
+            setCaret(on: focusedElement, location: range.location + (replacement as NSString).length)
+            return true
+        }
+
+        guard AXUIElementSetAttributeValue(
+            focusedElement,
+            kAXSelectedTextAttribute as CFString,
+            replacement as CFString
+        ) == .success else {
+            return false
+        }
+        setCaret(on: focusedElement, location: range.location + (replacement as NSString).length)
+        return true
     }
 
     static func copySpaceTokenBeforeCursor() -> String? {
@@ -1289,30 +1388,6 @@ enum TextReplacementPerformer {
         )
     }
 
-    static func copyWordBeforeCursor() -> String? {
-        let pasteboard = NSPasteboard.general
-        let preservedString = pasteboard.string(forType: .string)
-        let previousChangeCount = pasteboard.changeCount
-
-        pasteboard.clearContents()
-        postKey(keyCode: 123, flags: [.maskAlternate, .maskShift])
-        postKey(keyCode: 8, flags: .maskCommand)
-
-        let copied = waitForPasteboardString(changeCount: previousChangeCount)
-        restorePasteboardString(preservedString)
-        return copied?.trimmingCharacters(in: .whitespacesAndNewlines)
-    }
-
-    private static func pasteText(_ text: String) {
-        let pasteboard = NSPasteboard.general
-        let preservedString = pasteboard.string(forType: .string)
-
-        pasteboard.clearContents()
-        pasteboard.setString(text, forType: .string)
-        postKey(keyCode: 9, flags: .maskCommand)
-        schedulePasteboardRestore(expectedTemporaryString: text, preservedString: preservedString)
-    }
-
     private static func replaceFocusedTextPreviousCharacters(characterCount: Int, expectedPreviousText: String?, with replacement: String) -> FocusedTextReplacementResult {
         let systemWideElement = AXUIElementCreateSystemWide()
         var focusedElementRef: CFTypeRef?
@@ -1415,57 +1490,6 @@ enum TextReplacementPerformer {
             kAXSelectedTextRangeAttribute as CFString,
             axRange
         )
-    }
-
-    private static func waitForPasteboardString(changeCount: Int) -> String? {
-        let pasteboard = NSPasteboard.general
-        let timeout = Date().addingTimeInterval(0.25)
-
-        while Date() < timeout {
-            if pasteboard.changeCount != changeCount, let string = pasteboard.string(forType: .string), !string.isEmpty {
-                return string
-            }
-            RunLoop.current.run(mode: .default, before: Date().addingTimeInterval(0.01))
-        }
-
-        return pasteboard.string(forType: .string)
-    }
-
-    private static func restorePasteboardString(_ string: String?) {
-        let pasteboard = NSPasteboard.general
-        pasteboard.clearContents()
-        if let string {
-            pasteboard.setString(string, forType: .string)
-        }
-    }
-
-    private static func schedulePasteboardRestore(expectedTemporaryString: String, preservedString: String?) {
-        let token = UUID()
-        setPasteboardRestoreToken(token)
-
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
-            guard currentPasteboardRestoreToken() == token else { return }
-
-            let pasteboard = NSPasteboard.general
-            guard pasteboard.string(forType: .string) == expectedTemporaryString else {
-                return
-            }
-
-            restorePasteboardString(preservedString)
-        }
-    }
-
-    private static func setPasteboardRestoreToken(_ token: UUID) {
-        pasteboardRestoreLock.lock()
-        pasteboardRestoreToken = token
-        pasteboardRestoreLock.unlock()
-    }
-
-    private static func currentPasteboardRestoreToken() -> UUID {
-        pasteboardRestoreLock.lock()
-        let token = pasteboardRestoreToken
-        pasteboardRestoreLock.unlock()
-        return token
     }
 
     private static func postKey(keyCode: CGKeyCode, flags: CGEventFlags = []) {

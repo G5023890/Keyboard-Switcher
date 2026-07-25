@@ -262,6 +262,14 @@ final class KeyboardSwitcherCoreTests: XCTestCase {
         XCTAssertTrue(KeyboardMonitor.allowsSyntheticReplacementFallback(bundleIdentifier: "com.apple.TextEdit", inputContext: textArea))
         XCTAssertFalse(KeyboardMonitor.allowsSyntheticReplacementFallback(bundleIdentifier: "com.apple.TextEdit", inputContext: unavailable))
         XCTAssertTrue(KeyboardMonitor.allowsSyntheticReplacementFallback(bundleIdentifier: "com.openai.codex", inputContext: unavailable))
+        XCTAssertTrue(KeyboardMonitor.allowsSyntheticReplacementFallback(
+            bundleIdentifier: "com.openai.codex",
+            inputContext: FocusedInputContext(kind: .unknown, role: "AXGroup", subrole: "")
+        ))
+        XCTAssertFalse(KeyboardMonitor.allowsSyntheticReplacementFallback(
+            bundleIdentifier: "com.apple.TextEdit",
+            inputContext: FocusedInputContext(kind: .unknown, role: "AXGroup", subrole: "")
+        ))
         XCTAssertFalse(KeyboardMonitor.allowsSyntheticReplacementFallback(bundleIdentifier: "com.apple.finder", inputContext: unavailable))
         XCTAssertFalse(KeyboardMonitor.allowsSyntheticReplacementFallback(
             bundleIdentifier: "com.apple.TextEdit",
@@ -450,6 +458,25 @@ final class KeyboardSwitcherCoreTests: XCTestCase {
 
         XCTAssertEqual(engine.decision(for: strokes, typedText: "b", allowsShortFunctionalWords: true)?.replacement, "и")
         XCTAssertNil(engine.decision(for: strokes, typedText: "b", allowsShortFunctionalWords: false))
+    }
+
+    func testStrictContextBlocksAutomaticShortFunctionalWordCorrection() {
+        let undo = CorrectionUndoManager()
+        let engine = CorrectionEngine(undoController: undo, learningStore: isolatedLearningStore())
+        let strokes = LayoutEngine.strokes(for: "b", language: .english) ?? []
+
+        let evaluation = engine.evaluate(
+            strokes: strokes,
+            typedText: "b",
+            allowsShortFunctionalWords: true,
+            profile: AppBehaviorMode.strict.correctionProfile,
+            appMode: .strict,
+            terminatorType: "space",
+            isStrictContext: true
+        )
+
+        XCTAssertNil(evaluation.decision)
+        XCTAssertEqual(evaluation.reason, "Need at least 3 letters")
     }
 
     func testShortEnglishPrepositionsCorrectAsFunctionalWords() {
@@ -1358,6 +1385,28 @@ final class KeyboardSwitcherCoreTests: XCTestCase {
         }
     }
 
+    func testStrictContextRequiresFullGateForPunctuationReplay() {
+        let undo = CorrectionUndoManager()
+        let engine = CorrectionEngine(undoController: undo, learningStore: isolatedLearningStore())
+        engine.confidenceThreshold = 0.90
+        let typed = "[djn"
+        let strokes = LayoutEngine.mixedLayoutStrokes(for: typed) ?? []
+
+        let normal = engine.evaluate(strokes: strokes, typedText: typed, terminatorType: "space")
+        let strict = engine.evaluate(
+            strokes: strokes,
+            typedText: typed,
+            profile: AppBehaviorMode.strict.correctionProfile,
+            appMode: .strict,
+            terminatorType: "space",
+            isStrictContext: true
+        )
+
+        XCTAssertEqual(normal.decision?.replacement, "[вот", normal.diagnosticSummary)
+        XCTAssertNil(strict.decision)
+        XCTAssertEqual(strict.reason, "Skipped strict confidence gate")
+    }
+
     func testShortRussianFunctionalWordsWithPunctuationKeys() {
         let undo = CorrectionUndoManager()
         let engine = CorrectionEngine(undoController: undo, learningStore: isolatedLearningStore())
@@ -1652,6 +1701,28 @@ final class KeyboardSwitcherCoreTests: XCTestCase {
         XCTAssertEqual(evaluation.safetyPrediction?.action, .doNothing)
         XCTAssertEqual(evaluation.safetyFallbackPrediction?.action, .autoCorrect)
         XCTAssertTrue(evaluation.diagnosticSummary.contains("ML divergence"))
+    }
+
+    func testStrictContextDoesNotUseLearnedDecisionBypass() {
+        let undo = CorrectionUndoManager()
+        let learning = isolatedLearningStore()
+        learning.setPreference(original: "ghbdtn", replacement: "привет", language: .russian)
+        let engine = CorrectionEngine(undoController: undo, learningStore: learning)
+        engine.confidenceThreshold = 0.62
+        let strokes = LayoutEngine.strokes(for: "ghbdtn", language: .english) ?? []
+
+        let normal = engine.evaluate(strokes: strokes, typedText: "ghbdtn", terminatorType: "space")
+        let strict = engine.evaluate(
+            strokes: strokes,
+            typedText: "ghbdtn",
+            profile: AppBehaviorMode.strict.correctionProfile,
+            appMode: .strict,
+            terminatorType: "space",
+            isStrictContext: true
+        )
+
+        XCTAssertEqual(normal.reason, "Learned correction")
+        XCTAssertNotEqual(strict.reason, "Learned correction")
     }
 
     func testCorrectionEvaluationStoresTerminatorInSafetyFeatures() {
