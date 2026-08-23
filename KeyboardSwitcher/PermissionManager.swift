@@ -5,9 +5,11 @@ import Foundation
 @MainActor
 final class PermissionManager: ObservableObject {
     @Published private(set) var isAccessibilityTrusted = AXIsProcessTrusted()
+    @Published private(set) var isInputMonitoringTrusted = CGPreflightListenEventAccess()
 
     func refresh() {
         isAccessibilityTrusted = AXIsProcessTrusted()
+        isInputMonitoringTrusted = CGPreflightListenEventAccess()
     }
 
     func requestAccessibilityPermission() {
@@ -15,8 +17,12 @@ final class PermissionManager: ObservableObject {
         isAccessibilityTrusted = AXIsProcessTrustedWithOptions(options)
     }
 
+    func requestInputMonitoringPermission() {
+        isInputMonitoringTrusted = CGRequestListenEventAccess()
+    }
+
     func openPrivacySettings() {
-        let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")
+        let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ListenEvent")
         if let url {
             NSWorkspace.shared.open(url)
         }

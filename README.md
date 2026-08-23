@@ -2,11 +2,13 @@
 
 Keyboard Switcher is a native macOS menu bar utility that corrects text typed with the wrong keyboard layout. It currently targets English, Russian, and Hebrew, runs locally, and keeps the app bundle small by using Apple system frameworks plus compact bundled word lists.
 
-Current release checkpoint: `v0.88 AX & Codex replacement stability (1947.2507.26)`.
+Current release checkpoint: `v0.89 AX & Codex replacement stability (1950.2507.26)`.
+
+**Restore point note:** Возможно, работает с ошибкой конвертации. This checkpoint preserves the restore-point replacement path while the current event-tap and TCC behavior is being verified.
 
 ## Current Release Notes
 
-`v0.88 AX & Codex replacement stability (1947.2507.26)` is a restore point for reliable word replacement across native macOS and browser-backed editors.
+`v0.89 AX & Codex replacement stability (1950.2507.26)` is a release for reliable word replacement across native macOS and browser-backed editors.
 
 - Keeps AX-backed replacement and synthetic fallback as separate paths: native text controls receive the original Space event, while Codex receives an atomic word-plus-Space fallback when it cannot expose a writable Accessibility value.
 - Reworks Double Shift to select and replace the actual token through Accessibility rather than simulating copy/paste or changing the system pasteboard.

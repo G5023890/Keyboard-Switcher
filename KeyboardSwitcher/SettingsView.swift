@@ -442,7 +442,11 @@ struct SettingsView: View {
                 ) {
                     appState.permissions.openPrivacySettings()
                 }
-                PermissionStatusRow(title: "Input Monitoring", status: "Managed by Accessibility", isGranted: appState.permissions.isAccessibilityTrusted)
+                PermissionStatusRow(
+                    title: "Input Monitoring",
+                    status: appState.permissions.isInputMonitoringTrusted ? "Granted" : "Required",
+                    isGranted: appState.permissions.isInputMonitoringTrusted
+                )
                 PermissionStatusRow(title: "Automation Permission", status: "Not required", isGranted: true)
             }
 
@@ -584,7 +588,7 @@ struct SettingsView: View {
                     VStack(alignment: .leading, spacing: 5) {
                         Text("Keyboard Switcher")
                             .font(.system(size: 20, weight: .semibold))
-                        Text("Version 0.88 · checkpoint 0903.1706.26")
+                        Text("Version 0.89 · checkpoint 1950.2507.26")
                             .font(.system(size: 13))
                             .foregroundStyle(.secondary)
                         Text("Local automatic correction for English, Russian, and Hebrew layouts.")
@@ -778,7 +782,7 @@ private struct SettingsSidebar: View {
                         .lineLimit(1)
                         .minimumScaleFactor(0.85)
                 }
-                Text("Version 0.88")
+                Text("Version 0.89")
                     .font(.system(size: 11))
                     .foregroundStyle(.secondary)
             }

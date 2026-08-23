@@ -375,6 +375,48 @@ final class KeyboardSwitcherCoreTests: XCTestCase {
         XCTAssertNil(evaluation.decision, evaluation.diagnosticSummary)
     }
 
+    func testValidRussianWordWinsOverEnglishDictionaryCollision() {
+        let undo = CorrectionUndoManager()
+        let engine = CorrectionEngine(undoController: undo, learningStore: isolatedLearningStore())
+        engine.confidenceThreshold = 0.62
+
+        let collisionWords = ["еще", "где", "руку"]
+        for word in collisionWords {
+            let strokes = LayoutEngine.strokes(for: word, language: .russian) ?? []
+            let evaluation = engine.evaluate(
+                strokes: strokes,
+                typedText: word,
+                allowsShortFunctionalWords: true,
+                appMode: .textFocused,
+                terminatorType: "space",
+                currentInputLanguage: .russian
+            )
+
+            XCTAssertNil(evaluation.decision, "\(word): \(evaluation.diagnosticSummary)")
+            XCTAssertTrue(evaluation.reason.contains("Kept valid word"), evaluation.diagnosticSummary)
+        }
+    }
+
+    func testWrongLayoutRussianInputStillCorrectsWhenActiveLayoutIsRussian() {
+        let undo = CorrectionUndoManager()
+        let engine = CorrectionEngine(undoController: undo, learningStore: isolatedLearningStore())
+        engine.confidenceThreshold = 0.62
+
+        let typed = "ghbdtn"
+        let strokes = [5, 4, 11, 2, 17, 45].map { KeyStroke(keyCode: Int64($0), isShifted: false, inputLanguage: .russian) }
+        let evaluation = engine.evaluate(
+            strokes: strokes,
+            typedText: typed,
+            allowsShortFunctionalWords: true,
+            appMode: .textFocused,
+            terminatorType: "space",
+            currentInputLanguage: .russian
+        )
+
+        XCTAssertEqual(evaluation.decision?.replacement, "привет", evaluation.diagnosticSummary)
+        XCTAssertEqual(evaluation.decision?.language, .russian)
+    }
+
     func testRussianCandidateForKak() {
         let strokes = [15, 3, 15].map { KeyStroke(keyCode: Int64($0), isShifted: false) }
         let candidates = LayoutEngine.candidates(for: strokes, enabledLanguages: Set(KeyboardLanguage.allCases))

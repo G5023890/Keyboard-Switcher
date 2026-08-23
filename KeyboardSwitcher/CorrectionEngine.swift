@@ -160,7 +160,8 @@ final class CorrectionEngine: @unchecked Sendable {
         profile: CorrectionProfile = .normal,
         appMode: AppBehaviorMode = .normal,
         terminatorType: String = "unknown",
-        isStrictContext: Bool = false
+        isStrictContext: Bool = false,
+        currentInputLanguage: KeyboardLanguage? = nil
     ) -> CorrectionEvaluation {
         let activeConfidenceThreshold = max(0, min(confidenceThreshold + profile.confidenceThresholdOffset, 1))
         let activeMinimumConfidenceDelta = max(0, min(profile.minimumDeltaOverride ?? minimumConfidenceDelta, 1))
@@ -174,6 +175,22 @@ final class CorrectionEngine: @unchecked Sendable {
 
         if hasSuspiciousCasing(typedText), !isMixedLayoutWord(typedText) {
             return makeEvaluation(typedText: typedText, candidateScores: [], decision: nil, reason: "Skipped suspicious casing", confidenceThreshold: activeConfidenceThreshold, minimumConfidenceDelta: activeMinimumConfidenceDelta)
+        }
+
+        // A valid word in the active layout is never replaced by a
+        // cross-language dictionary collision. Detection Priority orders
+        // ambiguous replay candidates, but cannot override this safety rule.
+        if let currentInputLanguage,
+           LayoutEngine.detectScriptLanguage(for: typedText) == currentInputLanguage,
+           classifier.hasStrongLexicalEvidence(LayoutCandidate(language: currentInputLanguage, text: typedText)) {
+            return makeEvaluation(
+                typedText: typedText,
+                candidateScores: [],
+                decision: nil,
+                reason: "Kept valid word in current \(currentInputLanguage.displayName) layout",
+                confidenceThreshold: activeConfidenceThreshold,
+                minimumConfidenceDelta: activeMinimumConfidenceDelta
+            )
         }
 
         if !isStrictContext,

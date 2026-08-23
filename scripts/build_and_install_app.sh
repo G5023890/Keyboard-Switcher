@@ -15,6 +15,7 @@ BUILD_ROOT="${BUILD_ROOT:-$PROJECT_DIR/dist/xcodebuild}"
 INSTALL_DIR="${INSTALL_DIR:-/Applications/${APP_DISPLAY_NAME}.app}"
 SIGN_IDENTITY="${SIGN_IDENTITY:-}"
 RESOLVED_SIGN_IDENTITY=""
+BUILD_VERSION="${BUILD_VERSION:-$(date '+%H%M.%d%m.%y')}"
 
 log() {
   echo "[build] $*"
@@ -54,6 +55,7 @@ rm -rf "$BUILD_ROOT"
 mkdir -p "$BUILD_ROOT"
 
 log "Building $CONFIGURATION with Xcode-beta"
+log "Build version: $BUILD_VERSION"
 build_args=(
   -project "$PROJECT_FILE"
   -scheme "$SCHEME"
@@ -63,6 +65,7 @@ build_args=(
   SYMROOT="$BUILD_ROOT/Products"
   DSTROOT="$BUILD_ROOT/Install"
   PRODUCT_BUNDLE_IDENTIFIER="$BUNDLE_ID"
+  CURRENT_PROJECT_VERSION="$BUILD_VERSION"
 )
 
 if [[ -n "$RESOLVED_SIGN_IDENTITY" ]]; then
